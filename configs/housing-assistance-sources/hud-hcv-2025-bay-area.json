@@ -1,0 +1,27 @@
+{
+  "adapter": "hud_housing_choice_vouchers",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_hcv_2025_bay_area_tracts",
+  "sourceName": "HUD Housing Choice Vouchers by Census Tract - Bay Area",
+  "hub": "Bay Area",
+  "coveragePeriod": "Up to 12/2025",
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Housing_Choice_Vouchers_by_Tract/FeatureServer/0",
+  "category": "Aggregate housing assistance",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::housing-choice-vouchers-by-tract/about",
+  "pageSize": 2000,
+  "maxPages": 10,
+  "notes": "Official HUD open-data ArcGIS layer for Housing Choice Voucher recipients aggregated to 2020 Census tract geography. HUD notes that public HCV participant locations are available only as tract aggregations and tracts with 10 or fewer voucher holders are omitted. This config imports only GEOID, state/county/tract codes, tract name, voucher count, and voucher percentage for the nine Bay Area counties; it does not request geometry, names, owner records, exact participant addresses, or household-level rows.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

@@ -5,11 +5,11 @@ const firstName = args.first || args.first_name || "";
 const lastName = args.last || args.last_name || "";
 const state = args.state || "";
 const city = args.city || "";
-const limit = Math.min(Number(args.limit || 10), 50);
+const limit = args.limit ? Math.min(Number(args.limit), 50) : undefined;
 
 if (!lastName && !args.npi) {
   console.error(
-    "Usage: npm run ingest:nppes -- --last=Smith [--first=John] [--state=CA] [--city=San Francisco] [--limit=10]",
+    "Usage: npm run ingest:nppes -- --last=Smith [--first=John] [--state=CA] [--city=San Francisco] [--limit=n]",
   );
   console.error("   or: npm run ingest:nppes -- --npi=1234567890");
   process.exit(1);

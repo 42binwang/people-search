@@ -1,0 +1,14 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "licensed_attributes_not_publicly_republishable",
+  "sourceId": "solano_county_ca_property_reference",
+  "sourceName": "Solano County Assessor/Recorder Property and Assessment Search",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Solano County, CA",
+  "url": "https://www.solanocounty.gov/government/assessorrecorder",
+  "discoveryUrls": [
+    "https://solanocountygis.com/portal/home/item.html?id=9465c36c29054db7a2fdc516cc7378fe"
+  ],
+  "notes": "Official county property search is tracked as reference. A public ArcGIS item for Solano parcels references owner attributes, but its license text identifies the data as a licensed CAL FIRE/LIGHTBOX product and says sensitive parcel attributes such as individual owner names cannot be disclosed; do not ingest that layer for public people-search display."
+}

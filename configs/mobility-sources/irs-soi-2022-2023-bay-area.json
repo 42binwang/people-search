@@ -1,0 +1,27 @@
+{
+  "adapter": "irs_soi_migration",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "irs_soi_2022_2023_bay_area_migration",
+  "sourceName": "IRS SOI 2022-2023 County-to-County Migration - Bay Area Counties",
+  "hub": "Bay Area",
+  "yearStart": 2022,
+  "yearEnd": 2023,
+  "category": "Aggregate county migration flows",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://www.irs.gov/statistics/soi-tax-stats-migration-data-2022-2023",
+  "inflowUrl": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+  "outflowUrl": "https://www.irs.gov/pub/irs-soi/countyoutflow2223.csv",
+  "notes": "Official IRS Statistics of Income county-to-county migration files based on year-to-year address changes on tax returns. Imports aggregate flow counts for Bay Area counties only; no individual taxpayer records, names, addresses, or household-level records are imported.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

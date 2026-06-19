@@ -1,0 +1,25 @@
+{
+  "adapter": "socrata_housing_permits",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "sf_building_permits_aggregate",
+  "sourceName": "DataSF Building Permits - Aggregate Residential Permit Activity",
+  "hub": "Bay Area",
+  "city": "San Francisco",
+  "state": "CA",
+  "domain": "data.sfgov.org",
+  "datasetId": "i98e-djp9",
+  "category": "Aggregate residential permit activity",
+  "jurisdiction": "San Francisco, CA",
+  "licenseUrl": "https://opendatacommons.org/licenses/pddl/1.0/",
+  "where": "permit_creation_date >= '2020-01-01T00:00:00' AND (lower(proposed_use) like '%residential%' OR lower(existing_use) like '%residential%' OR adu = 'Y')",
+  "pageSize": 5000,
+  "maxPages": 20,
+  "notes": "Official DataSF building permit records aggregated by month and permit type. The adapter selects only permit_creation_date, permit_type_definition, proposed_units, and estimated_cost; names, addresses, and contacts are not requested or stored. Existing units are not mapped as removals because that field is not equivalent to demolished units.",
+  "fields": {
+    "date": "permit_creation_date",
+    "category": "permit_type_definition",
+    "unitsAdded": "proposed_units",
+    "estimatedCost": "estimated_cost"
+  }
+}

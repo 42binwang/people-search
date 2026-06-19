@@ -1,0 +1,20 @@
+{
+  "adapter": "census_acs_housing",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_2024_nyc_housing",
+  "sourceName": "U.S. Census ACS 2024 5-Year Housing Characteristics - New York City Counties",
+  "hub": "New York City",
+  "year": 2024,
+  "category": "Aggregate housing stock characteristics",
+  "jurisdiction": "New York City",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year Data Profile DP04 aggregate county estimates. Covers housing units, occupancy, vacancy, tenure, median home value, and median gross rent for the five New York City borough counties. No individual addresses, names, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Bronx County, New York", "state": "36", "county": "005" },
+    { "label": "Kings County, New York", "state": "36", "county": "047" },
+    { "label": "New York County, New York", "state": "36", "county": "061" },
+    { "label": "Queens County, New York", "state": "36", "county": "081" },
+    { "label": "Richmond County, New York", "state": "36", "county": "085" }
+  ]
+}

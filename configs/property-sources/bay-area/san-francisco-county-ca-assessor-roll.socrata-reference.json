@@ -1,0 +1,14 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "no_owner_name_field",
+  "sourceId": "san_francisco_county_ca_assessor_roll_reference",
+  "sourceName": "San Francisco Assessor Historical Secured Property Tax Rolls",
+  "category": "County parcel/property reference",
+  "jurisdiction": "San Francisco County, CA",
+  "url": "https://data.sfgov.org/Housing-and-Buildings/Assessor-Historical-Secured-Property-Tax-Rolls/wv5m-vpq2",
+  "discoveryUrls": [
+    "https://dev.socrata.com/foundry/data.sfgov.org/wv5m-vpq2"
+  ],
+  "notes": "Official DataSF Socrata dataset contains parcel/property characteristics and location fields, but the verified API metadata does not expose an owner-name field suitable for people-search ingestion."
+}

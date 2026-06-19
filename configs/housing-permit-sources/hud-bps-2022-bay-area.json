@@ -1,0 +1,25 @@
+{
+  "adapter": "hud_residential_construction_permits",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_bps_2022_bay_area_residential_construction_permits",
+  "sourceName": "HUD Residential Construction Permits by County - Bay Area Counties",
+  "hub": "Bay Area",
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Residential_Construction_Permits_by_County/FeatureServer/24",
+  "years": [2020, 2021, 2022],
+  "category": "Aggregate residential construction permit activity",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::residential-construction-permits-by-county/about",
+  "notes": "Official HUD open-data ArcGIS layer derived from Census Building Permits Survey annual county permit totals. Covers all nine Bay Area counties and stores only aggregate all-residential, single-family, and multifamily permit counts by county and year. No individual addresses, names, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

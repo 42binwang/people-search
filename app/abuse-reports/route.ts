@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAbuseReport } from "@/lib/db";
+import {
+  checkRequestRateLimit,
+  RATE_LIMIT_POLICIES,
+  rateLimitHeaders,
+} from "@/lib/rate-limit";
 import { cleanText } from "@/lib/search-store";
 
 export async function POST(request: NextRequest) {
+  const rateLimit = checkRequestRateLimit(
+    request,
+    RATE_LIMIT_POLICIES.abuseReports,
+  );
+  if (!rateLimit.allowed) {
+    return new NextResponse("Too many reports. Please try again later.", {
+      status: 429,
+      headers: rateLimitHeaders(rateLimit),
+    });
+  }
+
   const form = await request.formData();
   const id = createAbuseReport({
     profileId: cleanText(form.get("profileId")),
@@ -18,4 +34,3 @@ export async function POST(request: NextRequest) {
     303,
   );
 }
-

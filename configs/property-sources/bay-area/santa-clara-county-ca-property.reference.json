@@ -1,0 +1,15 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "owner_names_not_published_online",
+  "sourceId": "santa_clara_county_ca_property_reference",
+  "sourceName": "Santa Clara County Assessor Property Search",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Santa Clara County, CA",
+  "url": "https://asr.santaclaracounty.gov/online-services/property-search/real-property",
+  "discoveryUrls": [
+    "https://asr.santaclaracounty.gov/online-services/property-search/searching-records-buying-maps",
+    "https://asr.santaclaracounty.gov/online-services/property-search/search-by-map"
+  ],
+  "notes": "Official Santa Clara County assessor page says the system does not allow searches by owner name and does not display individual property owner names. Track as reference only for parcel/address context."
+}

@@ -1,0 +1,21 @@
+{
+  "adapter": "irs_soi_migration",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "irs_soi_2022_2023_greater_seattle_migration",
+  "sourceName": "IRS SOI 2022-2023 County-to-County Migration - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "yearStart": 2022,
+  "yearEnd": 2023,
+  "category": "Aggregate county migration flows",
+  "jurisdiction": "Seattle-Tacoma-Bellevue, WA",
+  "licenseUrl": "https://www.irs.gov/statistics/soi-tax-stats-migration-data-2022-2023",
+  "inflowUrl": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+  "outflowUrl": "https://www.irs.gov/pub/irs-soi/countyoutflow2223.csv",
+  "notes": "Official IRS Statistics of Income county-to-county migration files based on year-to-year address changes on tax returns. Imports aggregate flow counts for King, Pierce, and Snohomish counties only; no individual taxpayer records, names, addresses, or household-level records are imported.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "adapter": "census_acs_health_insurance",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_health_insurance_2024_bay_area",
+  "sourceName": "U.S. Census ACS 2024 5-Year Health Insurance Coverage - Bay Area Counties",
+  "hub": "Bay Area",
+  "year": 2024,
+  "category": "Aggregate health insurance coverage",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year Data Profile DP03 aggregate county estimates for health insurance coverage. Covers the nine-county Bay Area. No individual names, addresses, medical records, insurance records, claims, income records, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

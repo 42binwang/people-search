@@ -5,11 +5,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "People Search",
-    template: "%s | People Search",
+    default: "Search People",
+    template: "%s | Search People",
   },
   description:
-    "Free public lookup prototype for people, phone, and address search.",
+    "AI-based people search for public and licensed-record lookup with privacy controls.",
   robots: {
     index: true,
     follow: true,
@@ -36,11 +36,11 @@ export default function RootLayout({
         <div className="site-shell">
           <header className="site-header">
             <div className="header-inner">
-              <Link href="/" className="brand" aria-label="People Search home">
+              <Link href="/" className="brand" aria-label="Search People home">
                 <span className="brand-mark">
                   <Search size={18} aria-hidden="true" />
                 </span>
-                <span>People Search</span>
+                <span>Search People</span>
               </Link>
               <nav className="nav" aria-label="Primary navigation">
                 <Link href="/opt-out">Opt Out</Link>
@@ -52,7 +52,7 @@ export default function RootLayout({
           <main className="main">{children}</main>
           <footer className="site-footer">
             <div className="footer-inner">
-              <span>Prototype. Not a consumer reporting agency.</span>
+              <span>AI-based public lookup. Not a consumer reporting agency.</span>
               <nav className="footer-links" aria-label="Footer navigation">
                 {footerLinks.map(([label, href]) => (
                   <Link key={href} href={href}>
@@ -67,4 +67,3 @@ export default function RootLayout({
     </html>
   );
 }
-

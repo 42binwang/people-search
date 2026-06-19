@@ -1,0 +1,18 @@
+{
+  "adapter": "census_acs_vacancy_status",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_vacancy_status_2024_greater_seattle",
+  "sourceName": "U.S. Census ACS 2024 5-Year Vacancy Status - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "year": 2024,
+  "category": "Aggregate vacancy status",
+  "jurisdiction": "Greater Seattle",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year detailed table B25004 aggregate county estimates for vacant units by status. Covers King, Pierce, and Snohomish counties. No individual addresses, names, occupancy records, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

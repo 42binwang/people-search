@@ -1,0 +1,24 @@
+{
+  "adapter": "census_cbp_county_business",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_cbp_county_business_2023_bay_area",
+  "sourceName": "U.S. Census County Business Patterns 2023 All-Sector Business Metrics - Bay Area Counties",
+  "hub": "Bay Area",
+  "year": 2023,
+  "category": "Aggregate county business patterns",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/cbp-zbp/cbp-api.html",
+  "notes": "Official U.S. Census County Business Patterns county-level all-sector establishments, employment, and annual payroll for the nine-county Bay Area using NAICS2017=00, LFO=001, and EMPSZES=001. No individual names, addresses, employers, employment records, payroll records for people, tax records, or household-level records are imported.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

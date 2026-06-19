@@ -1,0 +1,26 @@
+{
+  "adapter": "census_lehd_lodes",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_lehd_lodes_2023_bay_area_commute_flows",
+  "sourceName": "U.S. Census LEHD LODES 2023 Origin-Destination Employment Flows - Bay Area",
+  "hub": "Bay Area",
+  "year": 2023,
+  "jobType": "JT00",
+  "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/od/ca_od_main_JT00_2023.csv.gz",
+  "category": "Aggregate residence-work commute flows",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://lehd.ces.census.gov/data/#lodes",
+  "notes": "Official U.S. Census LEHD Origin-Destination Employment Statistics (LODES) 2023 main OD file for California workplaces, aggregated from census-block rows to county-pair home/work flows involving Bay Area counties. Stores aggregate job counts only; no names, exact addresses, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

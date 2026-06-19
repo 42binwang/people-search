@@ -1,0 +1,25 @@
+{
+  "adapter": "census_acs_migration_flows",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_flows_2022_bay_area",
+  "sourceName": "U.S. Census ACS 2018-2022 Migration Flows - Bay Area Counties",
+  "hub": "Bay Area",
+  "year": 2022,
+  "periodLabel": "2018-2022",
+  "category": "Aggregate county migration flows",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-migration-flows.html",
+  "notes": "Official U.S. Census ACS 5-year migration-flow API. Imports aggregate county migration estimates for Bay Area reference counties only; no individual names, addresses, devices, or household-level records are imported. Census suppresses small flows for disclosure avoidance.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

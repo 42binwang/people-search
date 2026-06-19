@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ShieldCheck, SlidersHorizontal, Database, Ban } from "lucide-react";
+import {
+  ShieldCheck,
+  SlidersHorizontal,
+  Database,
+  Ban,
+  Sparkles,
+} from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 
 export default function HomePage() {
@@ -7,11 +13,12 @@ export default function HomePage() {
     <div className="content">
       <div className="home-layout">
         <section aria-labelledby="home-title">
-          <p className="eyebrow">Free public lookup</p>
-          <h1 id="home-title">Find possible people, phone, and address records.</h1>
+          <p className="eyebrow">AI-based people search</p>
+          <h1 id="home-title">Search People with smarter public-record matching.</h1>
           <p className="lede">
-            Search public and licensed-record profiles with privacy controls,
-            source governance, and removal workflows built into the product.
+            Search People uses AI-assisted matching signals to organize public
+            and licensed-record context for name, phone, and address lookup,
+            with privacy controls and removal workflows built in.
           </p>
           <div className="search-surface" aria-label="Search">
             <SearchForm />
@@ -19,6 +26,15 @@ export default function HomePage() {
         </section>
         <aside className="info-rail" aria-label="Service notices">
           <div className="ad-slot">Ad placement preview</div>
+          <div className="info-band">
+            <strong>
+              <Sparkles size={17} aria-hidden="true" /> AI-assisted matching
+            </strong>
+            <p className="fine-print">
+              Ranking and source signals help group possible matches while
+              preserving source provenance.
+            </p>
+          </div>
           <div className="info-band">
             <strong>
               <ShieldCheck size={17} aria-hidden="true" /> Not for screening
@@ -41,8 +57,8 @@ export default function HomePage() {
               <Database size={17} aria-hidden="true" /> Approved sources only
             </strong>
             <p className="fine-print">
-              The production data pipeline will require field-level provenance
-              and source approval before records can be displayed.
+              Displayed records are designed around source approval,
+              provenance, and privacy-safe handling.
             </p>
           </div>
           <div className="notice">
@@ -57,4 +73,3 @@ export default function HomePage() {
     </div>
   );
 }
-

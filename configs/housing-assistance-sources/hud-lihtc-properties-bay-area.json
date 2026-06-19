@@ -1,0 +1,27 @@
+{
+  "adapter": "hud_lihtc_properties",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_lihtc_properties_bay_area_counties",
+  "sourceName": "HUD Low-Income Housing Tax Credit Properties - Bay Area County Inventory",
+  "hub": "Bay Area",
+  "coveragePeriod": "HUD LIHTC national database current service layer",
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/LIHTC/FeatureServer/0",
+  "category": "Aggregate LIHTC property inventory",
+  "jurisdiction": "San Francisco Bay Area",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::low-income-housing-tax-credit-properties/about",
+  "pageSize": 2000,
+  "maxPages": 10,
+  "notes": "Official HUD open-data ArcGIS layer for Low-Income Housing Tax Credit properties. HUD describes the layer as the only complete national source of information on LIHTC project size, unit mix, and location. This config imports only county FIPS/name and non-address unit/year/allocation fields for the nine Bay Area counties, then stores county-level rollups. It does not request geometry, project names, project addresses, contact names, company names, company addresses, phone numbers, standardized addresses, lat/lon, or block-level geocoding fields.",
+  "counties": [
+    { "label": "Alameda County, California", "state": "06", "county": "001" },
+    { "label": "Contra Costa County, California", "state": "06", "county": "013" },
+    { "label": "Marin County, California", "state": "06", "county": "041" },
+    { "label": "Napa County, California", "state": "06", "county": "055" },
+    { "label": "San Francisco County, California", "state": "06", "county": "075" },
+    { "label": "San Mateo County, California", "state": "06", "county": "081" },
+    { "label": "Santa Clara County, California", "state": "06", "county": "085" },
+    { "label": "Solano County, California", "state": "06", "county": "095" },
+    { "label": "Sonoma County, California", "state": "06", "county": "097" }
+  ]
+}

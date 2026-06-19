@@ -1,0 +1,26 @@
+{
+  "adapter": "socrata_housing_permits",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "seattle_issued_building_permits_aggregate",
+  "sourceName": "Seattle Issued Building Permits - Aggregate Residential Permit Activity",
+  "hub": "Greater Seattle",
+  "city": "Seattle",
+  "state": "WA",
+  "domain": "data.seattle.gov",
+  "datasetId": "8tqq-u7ib",
+  "category": "Aggregate residential permit activity",
+  "jurisdiction": "Seattle, WA",
+  "licenseUrl": "https://data.seattle.gov/stories/s/City-of-Seattle-Open-Data-Policy/9w9j-sf2g/",
+  "where": "issueddate >= '2020-01-01T00:00:00' AND (housingunitsadded > 0 OR housingunitsremoved > 0 OR lower(permitclassmapped) like '%residential%')",
+  "pageSize": 5000,
+  "maxPages": 20,
+  "notes": "Official City of Seattle issued building permit records aggregated by issued month and mapped permit class. The adapter selects only issueddate, permitclassmapped, housing unit counts, and estimated cost; addresses, contractor names, locations, and links are not requested or stored.",
+  "fields": {
+    "date": "issueddate",
+    "category": "permitclassmapped",
+    "unitsAdded": "housingunitsadded",
+    "unitsRemoved": "housingunitsremoved",
+    "estimatedCost": "estprojectcost"
+  }
+}

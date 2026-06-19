@@ -5,8 +5,21 @@ import {
   normalizePhone,
   type SearchPayload,
 } from "@/lib/search-store";
+import {
+  checkRequestRateLimit,
+  RATE_LIMIT_POLICIES,
+  rateLimitHeaders,
+} from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const rateLimit = checkRequestRateLimit(request, RATE_LIMIT_POLICIES.search);
+  if (!rateLimit.allowed) {
+    return new NextResponse("Too many searches. Please try again later.", {
+      status: 429,
+      headers: rateLimitHeaders(rateLimit),
+    });
+  }
+
   const form = await request.formData();
   const mode = cleanText(form.get("mode"));
   const payload = createPayload(mode, form);
@@ -75,4 +88,3 @@ function createPayload(mode: string, form: FormData): SearchPayload | null {
 
   return null;
 }
-

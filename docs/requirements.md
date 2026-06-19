@@ -1,4 +1,4 @@
-# People Search Website Requirements
+# Search People Website Requirements
 
 Last updated: 2026-06-18
 
@@ -167,12 +167,19 @@ Requirements:
 - Include a visible prohibited-use notice.
 - Paginate results.
 - Apply bot and scraping defenses.
+- Cache computed result sets by a hashed, normalized query key with a configurable TTL.
+- Do not cache raw search terms, and re-check suppression before displaying cached results.
+- For name searches, check every built-in approved source adapter regardless of current local result count unless that source/query pair refreshed within the last hour.
+- Track name-source freshness per source using a hashed, normalized query key; do not store raw names in source refresh logs.
 
 Acceptance criteria:
 
 - Results load quickly for common searches.
 - Results show enough detail to choose a likely profile without exposing excessive data.
 - Ad code does not receive PII through URLs or ad targeting keys.
+- Repeated identical searches within the TTL use cached local result IDs instead of refreshing approved sources.
+- Cache entries expire automatically and do not bypass opt-out or suppression controls.
+- Repeated identical name searches refresh stale sources and skip only sources that are still inside the one-hour source refresh TTL.
 
 ### 5.6 Profile Page
 

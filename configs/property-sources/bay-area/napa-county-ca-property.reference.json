@@ -1,0 +1,15 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "parcel_lookup_only",
+  "sourceId": "napa_county_ca_property_reference",
+  "sourceName": "Napa County Assessor Parcel Data and GIS",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Napa County, CA",
+  "url": "https://www.napacounty.gov/149/Assessor",
+  "discoveryUrls": [
+    "https://www.napacounty.gov/1717/Property-Map-Information",
+    "https://www.napacounty.gov/1196/Geographic-Information-Systems-GIS"
+  ],
+  "notes": "Official Napa County pages document assessor parcel data, map information, and GIS resources, but no approved bulk owner-name endpoint was identified. Track as reference until an approved export or licensed feed is available."
+}

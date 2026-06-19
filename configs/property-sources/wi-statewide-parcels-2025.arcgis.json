@@ -1,0 +1,21 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "wi_statewide_parcels_2025",
+  "sourceName": "Wisconsin Statewide Parcel Map Database V11",
+  "category": "Statewide parcel/property open data",
+  "jurisdiction": "Wisconsin",
+  "layerUrl": "https://services3.arcgis.com/n6uYoouQZW75n5WI/arcgis/rest/services/Wisconsin_Statewide_Parcels/FeatureServer/0",
+  "licenseUrl": "https://www.sco.wisc.edu/parcels/data/",
+  "notes": "Official Wisconsin statewide parcel layer covering all 72 counties. The State Cartographer's Office says the data is provided free of charge. User approved this source for local ingestion on 2026-06-19; commercial/public republication, judicial privacy shielding, protected-address exclusions, and ongoing terms compliance remain operator responsibilities.",
+  "fields": {
+    "recordId": "PARCELID",
+    "name": "OWNERNME1",
+    "street": "SITEADRESS",
+    "city": "PLACENAME",
+    "state": "STATE",
+    "zip": "ZIPCODE",
+    "updatedAt": "PARCELDATE"
+  }
+}

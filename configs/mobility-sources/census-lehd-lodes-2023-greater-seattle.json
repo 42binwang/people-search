@@ -1,0 +1,20 @@
+{
+  "adapter": "census_lehd_lodes",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_lehd_lodes_2023_greater_seattle_commute_flows",
+  "sourceName": "U.S. Census LEHD LODES 2023 Origin-Destination Employment Flows - Greater Seattle",
+  "hub": "Greater Seattle",
+  "year": 2023,
+  "jobType": "JT00",
+  "url": "https://lehd.ces.census.gov/data/lodes/LODES8/wa/od/wa_od_main_JT00_2023.csv.gz",
+  "category": "Aggregate residence-work commute flows",
+  "jurisdiction": "Greater Seattle",
+  "licenseUrl": "https://lehd.ces.census.gov/data/#lodes",
+  "notes": "Official U.S. Census LEHD Origin-Destination Employment Statistics (LODES) 2023 main OD file for Washington workplaces, aggregated from census-block rows to county-pair home/work flows involving King, Pierce, and Snohomish counties. Stores aggregate job counts only; no names, exact addresses, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

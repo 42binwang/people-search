@@ -44,6 +44,7 @@ createReadStream(filePath)
     upsertProfile({
       id,
       fullName: row.full_name,
+      birthDate: row.birth_date,
       ageRange: row.age_range || "Unknown",
       confidence: row.confidence || "Medium",
       aliases: splitList(row.aliases),
@@ -100,6 +101,7 @@ type CsvPersonRow = {
   profile_id?: string;
   source_record_id?: string;
   full_name: string;
+  birth_date?: string;
   age_range?: string;
   confidence?: string;
   aliases?: string;
@@ -112,4 +114,3 @@ type CsvPersonRow = {
   emails?: string;
   relationships?: string;
 };
-

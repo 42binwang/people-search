@@ -1,0 +1,42 @@
+{
+  "adapter": "hud_fair_market_rents",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_fmr_2026_bay_area_fmr_areas",
+  "sourceName": "HUD Fair Market Rents 2026 - Bay Area FMR Area Metrics",
+  "hub": "Bay Area",
+  "fiscalYear": 2026,
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Fair_Market_Rents/FeatureServer/0",
+  "category": "Aggregate fair market rents",
+  "jurisdiction": "San Francisco Bay Area HUD FMR/MSA areas",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::fair-market-rents/about",
+  "pageSize": 1000,
+  "maxPages": 10,
+  "notes": "Official HUD Open Data ArcGIS layer for Fair Market Rents. This config imports area-level 0-4 bedroom FMR values for Bay Area-related HUD FMR/MSA areas. It does not request geometry, addresses, people, households, owners, contacts, parcel records, property names, or resident records.",
+  "areas": [
+    {
+      "label": "Napa, CA MSA",
+      "name": "Napa, CA MSA"
+    },
+    {
+      "label": "Oakland-Fremont, CA HUD Metro FMR Area",
+      "name": "Oakland-Fremont, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "San Francisco, CA HUD Metro FMR Area",
+      "name": "San Francisco, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "San Jose-Sunnyvale-Santa Clara, CA HUD Metro FMR Area",
+      "name": "San Jose-Sunnyvale-Santa Clara, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "Santa Rosa-Petaluma, CA MSA",
+      "name": "Santa Rosa-Petaluma, CA MSA"
+    },
+    {
+      "label": "Vallejo, CA MSA",
+      "name": "Vallejo, CA MSA"
+    }
+  ]
+}

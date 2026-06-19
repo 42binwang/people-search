@@ -1,0 +1,19 @@
+{
+  "adapter": "census_acs_migration_flows",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_flows_2022_greater_seattle",
+  "sourceName": "U.S. Census ACS 2018-2022 Migration Flows - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "year": 2022,
+  "periodLabel": "2018-2022",
+  "category": "Aggregate county migration flows",
+  "jurisdiction": "Seattle-Tacoma-Bellevue, WA",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-migration-flows.html",
+  "notes": "Official U.S. Census ACS 5-year migration-flow API. Imports aggregate county migration estimates for King, Pierce, and Snohomish counties only; no individual names, addresses, devices, or household-level records are imported. Census suppresses small flows for disclosure avoidance.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

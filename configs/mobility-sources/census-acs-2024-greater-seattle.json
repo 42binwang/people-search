@@ -1,0 +1,18 @@
+{
+  "adapter": "census_acs_mobility",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_2024_greater_seattle_mobility",
+  "sourceName": "U.S. Census ACS 2024 5-Year Residence One Year Ago - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "year": 2024,
+  "category": "Aggregate residential mobility statistics",
+  "jurisdiction": "Seattle-Tacoma-Bellevue, WA",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year Data Profile DP02 aggregate county estimates. Covers King, Snohomish, and Pierce counties as a practical Greater Seattle tech-hub region. No individual addresses, names, devices, or household-level records are imported.",
+  "geographies": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

@@ -1,4 +1,9 @@
-import { upsertApprovedSource, upsertProfile } from "@/lib/db";
+import {
+  upsertApprovedSource,
+  upsertProfile,
+  type UpsertProfileInput,
+} from "@/lib/db";
+import { clampLimit } from "@/lib/sources/limits";
 
 export type NppesIngestInput = {
   npi?: string;
@@ -26,7 +31,7 @@ export async function ingestNppes(input: NppesIngestInput): Promise<NppesIngestR
     lastName: input.lastName ?? "",
     city: input.city ?? "",
     state: input.state ?? "",
-    limit: Math.min(input.limit ?? 10, 50),
+    limit: clampLimit(input.limit, 50),
   });
 
   const response = await fetch(url, {
@@ -50,54 +55,12 @@ export async function ingestNppes(input: NppesIngestInput): Promise<NppesIngestR
       continue;
     }
 
-    const fullName = toFullName(result.basic);
-    if (!fullName) {
+    const profile = mapNppesResultToProfileInput(result);
+    if (!profile) {
       continue;
     }
 
-    const addresses = result.addresses
-      .filter((address) => address.country_code === "US")
-      .map((address) => ({
-        street: [address.address_1, address.address_2].filter(Boolean).join(" "),
-        city: titleCase(address.city),
-        state: address.state,
-        zip: formatZip(address.postal_code),
-        kind:
-          address.address_purpose === "LOCATION"
-            ? "professional location"
-            : "professional mailing",
-        sourceId,
-      }));
-
-    const contacts = unique(
-      result.addresses
-        .map((address) => address.telephone_number)
-        .filter((value): value is string => Boolean(value)),
-    ).map((value) => ({
-      type: "phone" as const,
-      value,
-      confidence: "Medium",
-      sourceId,
-    }));
-
-    upsertProfile({
-      id: `p_nppes_${result.number}`,
-      fullName,
-      ageRange: "Unknown",
-      confidence: "High",
-      aliases: [
-        ...toOtherNames(result.other_names ?? []),
-        ...taxonomyAliases(result.taxonomies ?? []),
-      ],
-      locations: addresses,
-      contacts,
-      relationships: [],
-      sourceRecord: {
-        sourceId,
-        sourceRecordId: String(result.number),
-        raw: result,
-      },
-    });
+    upsertProfile(profile);
 
     imported += 1;
   }
@@ -106,6 +69,63 @@ export async function ingestNppes(input: NppesIngestInput): Promise<NppesIngestR
     fetched: results.length,
     imported,
     url,
+  };
+}
+
+export function mapNppesResultToProfileInput(
+  result: NppesResult,
+): UpsertProfileInput | null {
+  if (result.enumeration_type !== "NPI-1" || result.basic.status !== "A") {
+    return null;
+  }
+
+  const fullName = toFullName(result.basic);
+  if (!fullName) {
+    return null;
+  }
+
+  const addresses = result.addresses
+    .filter((address) => address.country_code === "US")
+    .map((address) => ({
+      street: [address.address_1, address.address_2].filter(Boolean).join(" "),
+      city: titleCase(address.city),
+      state: address.state,
+      zip: formatZip(address.postal_code),
+      kind:
+        address.address_purpose === "LOCATION"
+          ? "professional location"
+          : "professional mailing",
+      sourceId,
+    }));
+
+  const contacts = unique(
+    result.addresses
+      .map((address) => address.telephone_number)
+      .filter((value): value is string => Boolean(value)),
+  ).map((value) => ({
+    type: "phone" as const,
+    value,
+    confidence: "Medium",
+    sourceId,
+  }));
+
+  return {
+    id: `p_nppes_${result.number}`,
+    fullName,
+    ageRange: "Unknown",
+    confidence: "High",
+    aliases: [
+      ...toOtherNames(result.other_names ?? []),
+      ...taxonomyAliases(result.taxonomies ?? []),
+    ],
+    locations: addresses,
+    contacts,
+    relationships: [],
+    sourceRecord: {
+      sourceId,
+      sourceRecordId: String(result.number),
+      raw: result,
+    },
   };
 }
 
@@ -128,7 +148,7 @@ function buildUrl(input: {
   lastName: string;
   city: string;
   state: string;
-  limit: number;
+  limit: number | undefined;
 }) {
   const url = new URL("https://npiregistry.cms.hhs.gov/api/");
   url.searchParams.set("version", "2.1");
@@ -146,7 +166,9 @@ function buildUrl(input: {
     if (input.state) {
       url.searchParams.set("state", input.state.toUpperCase());
     }
-    url.searchParams.set("limit", String(input.limit));
+    if (input.limit) {
+      url.searchParams.set("limit", String(input.limit));
+    }
   }
 
   return url.toString();
@@ -226,7 +248,7 @@ type NppesResponse = {
   results?: NppesResult[];
 };
 
-type NppesResult = {
+export type NppesResult = {
   number: number;
   enumeration_type: string;
   basic: NppesBasic;
@@ -266,4 +288,3 @@ type NppesTaxonomy = {
   desc?: string;
   primary?: boolean;
 };
-

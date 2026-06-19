@@ -1,0 +1,14 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "owner_names_not_published_online",
+  "sourceId": "contra_costa_county_ca_property_reference",
+  "sourceName": "Contra Costa County Maps and Property Information",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Contra Costa County, CA",
+  "url": "https://www.contracosta.ca.gov/552/Maps-Property-Information",
+  "discoveryUrls": [
+    "https://experience.arcgis.com/experience/caa59504ea0040cfac8ea0b11393c486"
+  ],
+  "notes": "Official Contra Costa County page states the county does not display property owner names on its website. GIS parcel downloads may be useful for APN/address context, but this is not approved for name-based residential ingestion."
+}

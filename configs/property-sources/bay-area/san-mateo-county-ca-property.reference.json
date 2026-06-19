@@ -1,0 +1,16 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "parcel_lookup_only",
+  "sourceId": "san_mateo_county_ca_property_reference",
+  "sourceName": "San Mateo County Parcel Information and GIS",
+  "category": "County parcel/property reference",
+  "jurisdiction": "San Mateo County, CA",
+  "url": "https://smcacre.gov/assessor/parcel-information",
+  "discoveryUrls": [
+    "https://www.smcgov.org/tsd/gis",
+    "https://www.smcgov.org/tsd/gis-data-download",
+    "https://smcacre.gov/county-clerk-recorder/search-grantor-grantee-information"
+  ],
+  "notes": "Official San Mateo County pages provide parcel information, maps, GIS downloads, and recorder index access. No approved bulk owner-name endpoint was identified; track as reference until an approved export or licensed feed is available."
+}

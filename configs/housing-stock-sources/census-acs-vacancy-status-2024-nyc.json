@@ -1,0 +1,20 @@
+{
+  "adapter": "census_acs_vacancy_status",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_vacancy_status_2024_nyc",
+  "sourceName": "U.S. Census ACS 2024 5-Year Vacancy Status - New York City Counties",
+  "hub": "New York City",
+  "year": 2024,
+  "category": "Aggregate vacancy status",
+  "jurisdiction": "New York City",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year detailed table B25004 aggregate county estimates for vacant units by status. Covers Bronx, Kings, New York, Queens, and Richmond counties. No individual addresses, names, occupancy records, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Bronx County, New York", "state": "36", "county": "005" },
+    { "label": "Kings County, New York", "state": "36", "county": "047" },
+    { "label": "New York County, New York", "state": "36", "county": "061" },
+    { "label": "Queens County, New York", "state": "36", "county": "081" },
+    { "label": "Richmond County, New York", "state": "36", "county": "085" }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "adapter": "hud_residential_construction_permits",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_bps_2022_nyc_residential_construction_permits",
+  "sourceName": "HUD Residential Construction Permits by County - New York City Counties",
+  "hub": "New York City",
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Residential_Construction_Permits_by_County/FeatureServer/24",
+  "years": [2020, 2021, 2022],
+  "category": "Aggregate residential construction permit activity",
+  "jurisdiction": "New York City",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::residential-construction-permits-by-county/about",
+  "notes": "Official HUD open-data ArcGIS layer derived from Census Building Permits Survey annual county permit totals. Covers Bronx, Kings, New York, Queens, and Richmond counties and stores only aggregate all-residential, single-family, and multifamily permit counts by county and year. No individual addresses, names, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "Bronx County, New York", "state": "36", "county": "005" },
+    { "label": "Kings County, New York", "state": "36", "county": "047" },
+    { "label": "New York County, New York", "state": "36", "county": "061" },
+    { "label": "Queens County, New York", "state": "36", "county": "081" },
+    { "label": "Richmond County, New York", "state": "36", "county": "085" }
+  ]
+}

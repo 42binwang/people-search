@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, BadgeInfo, Flag, UserRoundX } from "lucide-react";
 import { ProfileDetailGate } from "@/components/profile-detail-gate";
+import { RecordFeedbackButtons } from "@/components/record-feedback-buttons";
 import { getProfile } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -90,6 +91,7 @@ export default async function ProfilePage({
 
         <aside className="info-rail" aria-label="Profile actions">
           <div className="ad-slot">Ad placement preview</div>
+          <RecordFeedbackButtons context="profile" profileId={profile.id} />
           <Link className="button secondary" href={`/opt-out?profile=${profile.id}`}>
             <UserRoundX size={17} aria-hidden="true" />
             Remove my info

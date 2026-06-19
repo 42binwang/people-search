@@ -1,0 +1,15 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "owner_names_not_in_free_download",
+  "sourceId": "sonoma_county_ca_property_reference",
+  "sourceName": "Sonoma County Parcel Search and GIS Data",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Sonoma County, CA",
+  "url": "https://sonomacounty.gov/administrative-support-and-fiscal-services/clerk-recorder-assessor/assessor/real-property/search-parcel-info",
+  "discoveryUrls": [
+    "https://gis.sonomacounty.ca.gov/datasets/parcels-public/about",
+    "https://sonomacounty.gov/administrative-support-and-fiscal-services/clerk-recorder-assessor/assessor/property-data-for-sale-to-the-public"
+  ],
+  "notes": "Official Sonoma County pages provide parcel search and GIS parcel data. Sonoma says parcel-level data without owner name is downloadable at no cost; owner-name coverage requires a separate approved export or licensed feed."
+}

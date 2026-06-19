@@ -1,0 +1,15 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "parcel_lookup_only",
+  "sourceId": "marin_county_ca_property_reference",
+  "sourceName": "Marin County Assessor Records and Maps",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Marin County, CA",
+  "url": "https://apps.marincounty.gov/TaxRollSearch",
+  "discoveryUrls": [
+    "https://www.arcc.marincounty.gov/general-information/about-our-department/assessors-office/assessor-mapping-division",
+    "https://www.marinmap.org/Html5Viewer/Index.html?viewer=smmdataviewer"
+  ],
+  "notes": "Official Marin County assessor lookup is organized around parcel/map searches rather than a documented bulk owner-name API. Track as reference until a lawful records-request export or licensed file is available."
+}

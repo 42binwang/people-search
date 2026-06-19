@@ -1,0 +1,20 @@
+{
+  "adapter": "census_pep_components",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_pep_2025_greater_seattle_components",
+  "sourceName": "U.S. Census PEP 2020-2025 Components of Change - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "vintage": 2025,
+  "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+  "years": [2021, 2022, 2023, 2024, 2025],
+  "category": "Aggregate population change components",
+  "jurisdiction": "Seattle-Tacoma-Bellevue, WA",
+  "licenseUrl": "https://www.census.gov/data/tables/time-series/demo/popest/2020s-counties-total.html",
+  "notes": "Official U.S. Census Population Estimates Program county population totals and components of change. Imports aggregate annual domestic migration, international migration, net migration, births, deaths, and population estimates for King, Pierce, and Snohomish counties only.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

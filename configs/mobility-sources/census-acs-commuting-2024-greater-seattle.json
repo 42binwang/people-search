@@ -1,0 +1,18 @@
+{
+  "adapter": "census_acs_commuting",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "census_acs_commuting_2024_greater_seattle",
+  "sourceName": "U.S. Census ACS 2024 5-Year Commuting Characteristics - Greater Seattle Counties",
+  "hub": "Greater Seattle",
+  "year": 2024,
+  "category": "Aggregate commuting characteristics",
+  "jurisdiction": "Greater Seattle",
+  "licenseUrl": "https://www.census.gov/data/developers/data-sets/acs-5year/2024.html",
+  "notes": "Official U.S. Census ACS 2020-2024 5-year Data Profile DP03 aggregate county estimates. Covers commute mode, work-from-home, and mean travel time for King, Pierce, and Snohomish counties. No individual addresses, names, workplaces, devices, or household-level records are imported.",
+  "counties": [
+    { "label": "King County, Washington", "state": "53", "county": "033" },
+    { "label": "Pierce County, Washington", "state": "53", "county": "053" },
+    { "label": "Snohomish County, Washington", "state": "53", "county": "061" }
+  ]
+}

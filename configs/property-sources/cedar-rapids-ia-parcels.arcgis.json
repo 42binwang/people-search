@@ -1,0 +1,20 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "cedar_rapids_ia_parcels",
+  "sourceName": "Cedar Rapids Parcels",
+  "category": "City parcel/property open data",
+  "jurisdiction": "Cedar Rapids, IA",
+  "layerUrl": "https://crgis.cedar-rapids.org/arcgis/rest/services/Parcels/FeatureServer/1",
+  "licenseUrl": "https://crgis.cedar-rapids.org/arcgis/rest/services/Parcels/FeatureServer/1",
+  "notes": "Official Cedar Rapids ArcGIS parcel layer. This config maps owner mailing address fields. User approved this source for local ingestion on 2026-06-19; commercial/public republication, protected-address exclusions, and ongoing terms compliance remain operator responsibilities.",
+  "fields": {
+    "recordId": "PARCELID",
+    "name": "OWNERNME1",
+    "street": "PSTLADDRESS",
+    "city": "PSTLCITY",
+    "state": "PSTLSTATE",
+    "zip": "PSTLZIP5"
+  }
+}

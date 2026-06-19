@@ -1,0 +1,15 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "not_ingestable_name_search",
+  "sourceId": "alameda_county_ca_property_reference",
+  "sourceName": "Alameda County Assessor Property Search and Open Data",
+  "category": "County parcel/property reference",
+  "jurisdiction": "Alameda County, CA",
+  "url": "https://propinfo.acgov.org/",
+  "discoveryUrls": [
+    "https://www.acassessor.org/homeowners/parcel-viewer/",
+    "https://data.acgov.org/"
+  ],
+  "notes": "Official Alameda County property search and open-data entry points. The assessor parcel viewer terms restrict use to official Alameda County business, so this is tracked as a reference source only and must not be scraped or imported for public people-search display without separate authorization."
+}

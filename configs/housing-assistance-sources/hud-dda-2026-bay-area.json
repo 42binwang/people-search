@@ -1,0 +1,42 @@
+{
+  "adapter": "hud_difficult_development_areas",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "hud_dda_2026_bay_area_fmr_areas",
+  "sourceName": "HUD Difficult Development Areas 2026 - Bay Area FMR Area Counts",
+  "hub": "Bay Area",
+  "fiscalYear": 2026,
+  "layerUrl": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/DIFFICULT_DEVELOPMENT_AREAS_2026/FeatureServer/0",
+  "category": "Aggregate LIHTC difficult development areas",
+  "jurisdiction": "San Francisco Bay Area HUD FMR/MSA areas",
+  "licenseUrl": "https://hudgis-hud.opendata.arcgis.com/datasets/HUD::difficult-development-areas-2026/about",
+  "pageSize": 2000,
+  "maxPages": 10,
+  "notes": "Official HUD open-data ArcGIS layer for LIHTC Difficult Development Areas. In metropolitan areas HUD designates DDAs along Census ZIP Code Tabulation Area boundaries, so this config imports only ZCTA identifiers and HUD FMR/MSA area labels for Bay Area-related HUD areas and stores aggregate ZCTA counts. It does not request geometry, addresses, people, households, owners, contacts, parcel records, property names, or resident records.",
+  "areas": [
+    {
+      "label": "Napa, CA MSA",
+      "name": "Napa, CA MSA"
+    },
+    {
+      "label": "Oakland-Fremont, CA HUD Metro FMR Area",
+      "name": "Oakland-Fremont, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "San Francisco, CA HUD Metro FMR Area",
+      "name": "San Francisco, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "San Jose-Sunnyvale-Santa Clara, CA HUD Metro FMR Area",
+      "name": "San Jose-Sunnyvale-Santa Clara, CA HUD Metro FMR Area"
+    },
+    {
+      "label": "Santa Rosa-Petaluma, CA MSA",
+      "name": "Santa Rosa-Petaluma, CA MSA"
+    },
+    {
+      "label": "Vallejo, CA MSA",
+      "name": "Vallejo, CA MSA"
+    }
+  ]
+}

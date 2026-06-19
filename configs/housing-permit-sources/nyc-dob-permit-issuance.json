@@ -1,0 +1,23 @@
+{
+  "adapter": "socrata_housing_permits",
+  "approved": true,
+  "approvalStatus": "approved_official_aggregate",
+  "sourceId": "nyc_dob_permit_issuance_aggregate",
+  "sourceName": "NYC DOB Permit Issuance - Aggregate Residential Permit Activity",
+  "hub": "New York City",
+  "city": "New York",
+  "state": "NY",
+  "domain": "data.cityofnewyork.us",
+  "datasetId": "ipu4-2q9a",
+  "category": "Aggregate residential permit activity",
+  "jurisdiction": "New York City",
+  "licenseUrl": "https://opendata.cityofnewyork.us/open-data-law/",
+  "where": "issuance_date >= '2020-01-01T00:00:00' AND residential = 'YES'",
+  "pageSize": 5000,
+  "maxPages": 20,
+  "notes": "Official NYC DOB permit issuance records aggregated by issuance month and job type. The adapter selects only issuance_date, job_type, and non-personal permit classification fields; owner, permittee, superintendent, address, and phone fields are not requested or stored.",
+  "fields": {
+    "date": "issuance_date",
+    "category": "job_type"
+  }
+}

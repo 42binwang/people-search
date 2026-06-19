@@ -1,0 +1,22 @@
+{
+  "adapter": "licensed_provider",
+  "approved": false,
+  "approvalStatus": "contract_required",
+  "sourceId": "parcelquest_california_property",
+  "sourceName": "ParcelQuest California Property Data",
+  "category": "Licensed California parcel/property provider",
+  "jurisdiction": "California, including all nine Bay Area counties",
+  "url": "https://www.parcelquest.com/",
+  "coverage": [
+    "Alameda County, CA",
+    "Contra Costa County, CA",
+    "Marin County, CA",
+    "Napa County, CA",
+    "San Francisco County, CA",
+    "San Mateo County, CA",
+    "Santa Clara County, CA",
+    "Solano County, CA",
+    "Sonoma County, CA"
+  ],
+  "notes": "ParcelQuest advertises owner names and addresses for every California property and coverage for all 58 California counties. This is the practical all-Bay-Area owner-name path, but ingestion requires a signed license that allows public people-search display, commercial/ad-supported use, caching, opt-out processing, and downstream republication."
+}

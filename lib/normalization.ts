@@ -38,6 +38,10 @@ export function normalizeAddress(parts: {
   );
 }
 
+export function escapeSqlLike(value: string) {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
+}
+
 export function maskEmail(value: string) {
   const [local, domain] = value.split("@");
   if (!local || !domain) {
@@ -46,4 +50,3 @@ export function maskEmail(value: string) {
   const visible = local.slice(0, 2);
   return `${visible}${"*".repeat(Math.max(3, local.length - 2))}@${domain}`;
 }
-
