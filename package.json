@@ -7,12 +7,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "eslint . --max-warnings=0",
+    "db:seed": "tsx scripts/seed.ts",
+    "ingest:csv": "tsx scripts/ingest-approved-csv.ts",
+    "ingest:nppes": "tsx scripts/ingest-nppes.ts",
+    "collect:source": "tsx scripts/collect-approved-source.ts"
   },
   "keywords": [],
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "csv-parse": "^7.0.0",
     "lucide-react": "^1.21.0",
     "next": "^16.2.9",
     "react": "^19.2.7",
@@ -22,11 +28,13 @@
     "postcss": "^8.5.10"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.9",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
 }

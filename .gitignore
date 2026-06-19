@@ -8,4 +8,8 @@ coverage/
 !.env.example
 npm-debug.log*
 .DS_Store
+data/*.sqlite
+data/*.sqlite-*
+data/raw/
+data/imports/
 

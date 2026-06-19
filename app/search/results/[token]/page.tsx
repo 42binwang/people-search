@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, RotateCcw, ShieldAlert } from "lucide-react";
-import { getMockResults } from "@/lib/mock-data";
+import { searchProfiles } from "@/lib/db";
+import { ingestNppes } from "@/lib/sources/nppes";
 import { getStoredSearch } from "@/lib/search-store";
 
 export const metadata: Metadata = {
@@ -38,7 +39,28 @@ export default async function ResultsPage({
     );
   }
 
-  const results = getMockResults(storedSearch.payload);
+  let results = searchProfiles(storedSearch.payload);
+  let refreshNotice: string | null = null;
+
+  if (
+    storedSearch.payload.mode === "name" &&
+    results.length < 3
+  ) {
+    try {
+      const refresh = await ingestNppes({
+        firstName: storedSearch.payload.firstName,
+        lastName: storedSearch.payload.lastName,
+        city: storedSearch.payload.city,
+        state: storedSearch.payload.state,
+        limit: 10,
+      });
+      results = searchProfiles(storedSearch.payload);
+      refreshNotice = `Checked CMS NPPES and imported ${refresh.imported} approved professional record(s).`;
+    } catch {
+      refreshNotice =
+        "Approved-source refresh was unavailable, so these results only use local records.";
+    }
+  }
 
   return (
     <div className="content">
@@ -55,10 +77,20 @@ export default async function ResultsPage({
           report and may not be used for employment, tenant screening, credit,
           insurance, or eligibility decisions.
         </div>
+        {refreshNotice && <p className="fine-print">{refreshNotice}</p>}
       </section>
 
       <div className="results-grid">
         <div className="result-list" aria-label="Search results">
+          {results.length === 0 && (
+            <section className="legal-panel">
+              <h2>No matches found</h2>
+              <p>
+                Try another search. Approved professional sources are checked
+                automatically for name searches.
+              </p>
+            </section>
+          )}
           {results.map((result) => (
             <article className="result-card" key={result.id}>
               <div>
@@ -102,4 +134,3 @@ export default async function ResultsPage({
     </div>
   );
 }
-

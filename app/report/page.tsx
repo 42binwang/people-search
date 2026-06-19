@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ReportPage() {
+export default async function ReportPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ profile?: string }>;
+}) {
+  const { profile } = await searchParams;
+
   return (
     <div className="content">
       <section className="legal-panel">
@@ -20,8 +26,7 @@ export default function ReportPage() {
           field-level audit history.
         </p>
       </section>
-      <SimpleForm type="report" />
+      <SimpleForm type="report" action="/abuse-reports" profileId={profile} />
     </div>
   );
 }
-

@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function OptOutPage() {
+export default async function OptOutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ profile?: string }>;
+}) {
+  const { profile } = await searchParams;
+
   return (
     <div className="content">
       <section className="legal-panel">
@@ -21,8 +27,11 @@ export default function OptOutPage() {
           after future imports.
         </p>
       </section>
-      <SimpleForm type="opt-out" />
+      <SimpleForm
+        type="opt-out"
+        action="/privacy-requests"
+        profileId={profile}
+      />
     </div>
   );
 }
-

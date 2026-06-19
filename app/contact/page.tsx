@@ -16,8 +16,7 @@ export default function ContactPage() {
           concerns.
         </p>
       </section>
-      <SimpleForm type="contact" />
+      <SimpleForm type="contact" action="/abuse-reports" />
     </div>
   );
 }
-

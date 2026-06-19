@@ -1,7 +1,11 @@
 export function SimpleForm({
   type,
+  action,
+  profileId,
 }: Readonly<{
   type: "opt-out" | "report" | "contact" | "do-not-sell";
+  action: string;
+  profileId?: string;
 }>) {
   const label =
     type === "opt-out"
@@ -13,7 +17,9 @@ export function SimpleForm({
           : "Message";
 
   return (
-    <form className="search-surface">
+    <form className="search-surface" action={action} method="post">
+      <input type="hidden" name="profileId" value={profileId ?? ""} />
+      <input type="hidden" name="type" value={type} />
       <div className="form-grid">
         <label className="field">
           Full name
@@ -37,11 +43,10 @@ export function SimpleForm({
           Submit
         </button>
         <span className="fine-print">
-          Prototype form only. Production submissions will create auditable
-          privacy and support tickets.
+          This creates an auditable local request. Production will add identity
+          verification and email status updates.
         </span>
       </div>
     </form>
   );
 }
-

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, BadgeInfo, Flag, UserRoundX } from "lucide-react";
 import { ProfileDetailGate } from "@/components/profile-detail-gate";
-import { getMockProfile } from "@/lib/mock-data";
+import { getProfile } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -19,7 +19,7 @@ export default async function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const profile = getMockProfile(id);
+  const profile = getProfile(id);
 
   if (!profile) {
     notFound();
@@ -90,11 +90,11 @@ export default async function ProfilePage({
 
         <aside className="info-rail" aria-label="Profile actions">
           <div className="ad-slot">Ad placement preview</div>
-          <Link className="button secondary" href="/opt-out">
+          <Link className="button secondary" href={`/opt-out?profile=${profile.id}`}>
             <UserRoundX size={17} aria-hidden="true" />
             Remove my info
           </Link>
-          <Link className="button secondary" href="/report">
+          <Link className="button secondary" href={`/report?profile=${profile.id}`}>
             <Flag size={17} aria-hidden="true" />
             Report data
           </Link>
@@ -107,4 +107,3 @@ export default async function ProfilePage({
     </div>
   );
 }
-

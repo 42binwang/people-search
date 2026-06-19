@@ -1,0 +1,8 @@
+{
+  "sourceId": "example_open_data_source",
+  "approved": false,
+  "method": "official_api",
+  "url": "https://example.gov/resource/records.json",
+  "extension": "json"
+}
+

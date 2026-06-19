@@ -20,8 +20,7 @@ export default function DoNotSellPage() {
           opt-outs and routed according to jurisdiction-specific deadlines.
         </p>
       </section>
-      <SimpleForm type="do-not-sell" />
+      <SimpleForm type="do-not-sell" action="/privacy-requests" />
     </div>
   );
 }
-
