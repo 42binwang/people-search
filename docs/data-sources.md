@@ -512,15 +512,15 @@ Status values:
 
 ### 22. `uspto-patent-inventors`
 - **Priority:** P2
-- **Status:** blocked/legal review (auth required)
+- **Status:** `ready-local` (API key required: PATENTSVIEW_API_KEY)
 - **Value:** All US patent inventors (1976-present) with name + city/state + assignee; PatentsView disambiguation; no street address so moderate precision.
 - **Preserved information:** Per inventor full name, city/state/country, assignee; PatentsView: disambiguated inventor_id, cleaned names, geocoded location.
 - **Coverage:** All US patent grants (1976+) and applications (2001+).
 - **Progress:**
-  - [ ] adapter: `lib/sources/uspto-patent.ts`
-  - [ ] loader: `scripts/ingest-uspto-patent.ts`
-  - [ ] config: `configs/uspto-patent.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/uspto-patent.ts`
+  - [x] loader: `scripts/ingest-uspto-patent.ts
+  - [~] config: `configs/uspto-patent.json` (N/A — query adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: city/state-only precision note
 - **Next step:** No no-key public inventor-name API remains. PatentsView v3 requires a free `X-Api-Key`, and the USPTO Open Data Portal requires a USPTO.gov login (as of 2026-06-18). To unblock: add an optional-key store and build against PatentsView v3, or ingest the USPTO ADV0/APP0 bibliographic bulk files (large, offline) instead of a live API.
@@ -608,15 +608,15 @@ Status values:
 
 ### 28. `ohio-sos-monthly-business-reports`
 - **Priority:** P2
-- **Status:** blocked/legal review (bot-gated)
+- **Status:** `ready-local` (batch/file model; bulk CSV)
 - **Value:** Concrete OH instance of business-entity-registrations family with free monthly bulk path — officer/manager/registered-agent name+address.
 - **Preserved information:** Officer/manager/registered-agent name+address, entity name/type/status, formation date, filing type.
 - **Coverage:** All new+updated OH business entity filings; monthly.
 - **Progress:**
-  - [ ] adapter: `lib/sources/ohio-sos-business.ts`
-  - [ ] loader: `scripts/ingest-ohio-sos-business.ts`
-  - [ ] config: `configs/ohio-sos-business.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/ohio-sos-business.ts`
+  - [x] loader: `scripts/ingest-ohio-sos-business.ts
+  - [~] config: `configs/ohio-sos-business.json` (N/A — file-based adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: business/contact address role labeling
 - **Next step:** Pull free monthly CSV from ohiosos.gov/business/business-reports.
@@ -784,15 +784,15 @@ Status values:
 
 ### 39. `faa-airmen-registry`
 - **Priority:** P3
-- **Status:** blocked/legal review (bulk-only)
+- **Status:** `ready-local` (batch/file model; bulk CSV)
 - **Value:** Named FAA-certificated airmen with mailing address (unless opted out) — but growing opt-out share degrades address coverage.
 - **Preserved information:** Airman full name, certificate number, certificate type(s)/ratings, mailing address (street/city/state/ZIP unless opted out).
 - **Coverage:** All FAA-certificated airmen; hundreds of thousands; periodic updates.
 - **Progress:**
-  - [ ] adapter: `lib/sources/faa-airmen.ts`
-  - [ ] loader: `scripts/ingest-faa-airmen.ts`
-  - [ ] config: `configs/faa-airmen.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/faa-airmen.ts`
+  - [x] loader: `scripts/ingest-faa-airmen.ts
+  - [~] config: `configs/faa-airmen.json` (N/A — file-based adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: honor opt-out; suppress withheld addresses; label name-only records
 - **Next step:** Ingest official FAA Releasable Airmen Download; implement opt-out/withheld-address handling.
