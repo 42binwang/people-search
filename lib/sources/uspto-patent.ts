@@ -31,7 +31,7 @@ export async function ingestUsptoPatentInventors(
 
   const limit = clampLimit(input.limit, 100);
   const apiKey = input.apiKey || process.env.PATENTSVIEW_API_KEY;
-  const { firstName, lastName } = splitQueryName(input.query);
+  const { lastName } = splitQueryName(input.query);
   if (!lastName) {
     return { fetched: 0, imported: 0, url: ENDPOINT };
   }
