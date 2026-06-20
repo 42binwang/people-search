@@ -2528,8 +2528,13 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
   Object.assign(params, tokenGroups.params);
   let tokenScoreExpr = "0";
   if (tokenGroups.groups.length > 0) {
+    // Require EVERY street token to match (via its suffix variants). Token-OR
+    // matching returned garbage because common tokens (Way/St/410) matched
+    // unrelated addresses; all-tokens-AND keeps results precise while still
+    // tolerating abbreviations (St<->Street) and extra tokens (Apt/Unit) in the
+    // stored address.
     where.push(
-      `(${tokenGroups.groups.map((group) => `(${group.condition})`).join(" OR ")})`,
+      `(${tokenGroups.groups.map((group) => `(${group.condition})`).join(" AND ")})`,
     );
     tokenScoreExpr = tokenGroups.groups
       .map((group) => `CASE WHEN (${group.condition}) THEN 1 ELSE 0 END`)

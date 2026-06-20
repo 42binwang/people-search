@@ -15,6 +15,7 @@ const profileIds = [
   "p_test_addr_pine_partial",
   "p_test_addr_arxiv_context",
   "p_test_addr_user_entered",
+  "p_test_addr_random_way",
 ];
 
 describe("address search (fuzzy / partial)", () => {
@@ -117,6 +118,21 @@ describe("address search (fuzzy / partial)", () => {
       ],
       sourceRecord: { sourceId, sourceRecordId: "user-entered", raw: {} },
     });
+
+    // Shares only the "Way" suffix with the Vesca query below — must NOT match.
+    upsertProfile({
+      id: "p_test_addr_random_way",
+      fullName: "Random Way Resident",
+      locations: [
+        {
+          street: "999 Random Way",
+          city: "Denver",
+          state: "CO",
+          sourceId,
+        },
+      ],
+      sourceRecord: { sourceId, sourceRecordId: "random-way", raw: {} },
+    });
   });
 
   afterEach(() => {
@@ -159,10 +175,11 @@ describe("address search (fuzzy / partial)", () => {
     expect(results.map((result) => result.id)).toContain("p_test_addr_main");
   });
 
-  it("ranks an exact street match above a partial street match", () => {
+  it("matches street-suffix variants (rd<->Road) but not unrelated street names", () => {
+    // "rd" matches stored "Road" via suffix variants; "Court" must not match "rd".
     const results = searchProfiles({
       mode: "address",
-      street: "789 pine road",
+      street: "789 pine rd",
       city: "",
       state: "CO",
       zip: "",
@@ -170,10 +187,24 @@ describe("address search (fuzzy / partial)", () => {
     const ids = results.map((result) => result.id);
 
     expect(ids).toContain("p_test_addr_pine_exact");
-    expect(ids).toContain("p_test_addr_pine_partial");
-    expect(ids.indexOf("p_test_addr_pine_exact")).toBeLessThan(
-      ids.indexOf("p_test_addr_pine_partial"),
-    );
+    expect(ids).not.toContain("p_test_addr_pine_partial");
+  });
+
+  it("does not return unrelated addresses that share only a common suffix token", () => {
+    // Regression: token-OR matched any address containing "Way"; all-tokens-AND
+    // must require the full street (number + name + suffix), so a query for an
+    // unrelated address returns nothing rather than every "... Way" record.
+    const results = searchProfiles({
+      mode: "address",
+      street: "4824 Vesca Way",
+      city: "",
+      state: "",
+      zip: "",
+    });
+    const ids = results.map((result) => result.id);
+
+    expect(ids).not.toContain("p_test_addr_random_way");
+    expect(ids).not.toContain("p_test_addr_main");
   });
 
   it("excludes source-context (generic city/state) locations", () => {
