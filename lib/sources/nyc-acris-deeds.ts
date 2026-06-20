@@ -187,11 +187,16 @@ function buildPartiesUrl(input: {
   last: string;
   limit: number | undefined;
 }) {
-  // ACRIS stores names as "LAST, FIRST" (and business names verbatim). We
-  // search case-insensitively on the leading token of the name so a grantor
-  // surname match is reliable regardless of first-name spelling.
-  const surname = (input.last || input.first).toUpperCase();
-  const where = `upper(name) like '${surname.replace(/'/g, "''")}%'`;
+  // ACRIS stores individuals as "LAST, FIRST" and businesses verbatim. When we
+  // have a given name, query "LAST, FIRST%" so common surnames stay precise
+  // (otherwise the N most-recent surname matches would rarely include the
+  // target); fall back to the surname prefix when only one name is given.
+  const surname = (input.last || input.first).toUpperCase().replace(/'/g, "''");
+  const given = input.last
+    ? input.first.trim().toUpperCase().replace(/'/g, "''")
+    : "";
+  const pattern = given ? `${surname}, ${given}` : surname;
+  const where = `upper(name) like '${pattern}%'`;
   const params = new URLSearchParams({
     $where: where,
     $order: "document_id DESC",
