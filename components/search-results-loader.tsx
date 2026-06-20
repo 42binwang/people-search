@@ -338,6 +338,11 @@ function ResultCard({
             .filter(Boolean)
             .join(" · ")}
         </p>
+        {result.sourceCategories.length > 0 && (
+          <p className="meta source-context">
+            {result.sourceCategories.join(" · ")}
+          </p>
+        )}
         <div className="pill-row">
           {result.relatives.map((relative) => (
             <span className="pill" key={relative}>

@@ -103,6 +103,7 @@ export type SearchResult = {
   locations: string[];
   relatives: string[];
   confidence: string;
+  sourceCategories: string[];
 };
 
 export type Profile = SearchResult & {
@@ -2399,6 +2400,16 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
       nameTokens,
       "aliasNameToken",
     );
+    // Rank profiles that carry a phone/email contact or a real geographic
+    // location above bare name-only matches (academic/catalog profiles whose
+    // only location is a generic source-context one).
+    const genericCityParams: Record<string, string> = {};
+    genericLocationCities.forEach((genericCity, index) => {
+      genericCityParams[`nameGCity${index}`] = genericCity;
+    });
+    const genericCityList = genericLocationCities
+      .map((_, index) => `@nameGCity${index}`)
+      .join(", ");
     const rows = db
       .prepare(
         `
@@ -2418,6 +2429,16 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
           AND (@state = '' OR l.state = @state)
           AND (@city = '' OR lower(l.city) LIKE @cityLike ESCAPE '\\')
         ORDER BY
+          CASE WHEN
+            EXISTS (SELECT 1 FROM profile_contacts c WHERE c.profile_id = p.id)
+            OR EXISTS (
+              SELECT 1
+              FROM profile_locations gl
+              WHERE gl.profile_id = p.id
+                AND lower(gl.city) NOT IN (${genericCityList})
+                AND gl.state NOT IN ('GLOBAL', 'USER-ENTERED', 'US')
+            )
+          THEN 0 ELSE 1 END,
           CASE p.confidence WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END,
           p.full_name
         LIMIT 25
@@ -2426,6 +2447,7 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
       .all({
         ...nameTokenParams(nameTokens, "profileNameToken"),
         ...nameTokenParams(nameTokens, "aliasNameToken"),
+        ...genericCityParams,
         state,
         city,
         cityLike: `%${escapeSqlLike(city)}%`,
@@ -6689,6 +6711,7 @@ function toSearchResult(row: DbProfileRow): SearchResult {
     confidence: row.confidence,
     locations: getLocations(row.id),
     relatives: getRelationships(row.id),
+    sourceCategories: getSourceCategories(row.id),
   };
 }
 
@@ -6863,6 +6886,35 @@ function getRelationshipsForProfiles(
   return byProfile;
 }
 
+function getSourceCategoriesForProfiles(
+  profileIds: string[],
+): Map<string, string[]> {
+  const byProfile = new Map<string, string[]>();
+  if (profileIds.length === 0) {
+    return byProfile;
+  }
+  const placeholders = profileIds.map(() => "?").join(",");
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT sr.profile_id AS profileId,
+             GROUP_CONCAT(DISTINCT s.category) AS categories
+      FROM source_records sr
+      JOIN approved_sources s ON s.id = sr.source_id
+      WHERE sr.profile_id IN (${placeholders})
+      GROUP BY sr.profile_id
+    `,
+    )
+    .all(...profileIds) as Array<{
+    profileId: string;
+    categories: string | null;
+  }>;
+  for (const row of rows) {
+    byProfile.set(row.profileId, splitSqlList(row.categories));
+  }
+  return byProfile;
+}
+
 function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
   if (rows.length === 0) {
     return [];
@@ -6870,6 +6922,7 @@ function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
   const ids = rows.map((row) => row.id);
   const locationsById = getLocationsForProfiles(ids);
   const relativesById = getRelationshipsForProfiles(ids);
+  const categoriesById = getSourceCategoriesForProfiles(ids);
   return rows.map((row) => ({
     id: row.id,
     name: row.full_name,
@@ -6877,6 +6930,7 @@ function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
     confidence: row.confidence,
     locations: locationsById.get(row.id) ?? [],
     relatives: relativesById.get(row.id) ?? [],
+    sourceCategories: categoriesById.get(row.id) ?? [],
   }));
 }
 
