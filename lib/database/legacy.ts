@@ -2757,6 +2757,42 @@ export function getFreshSourceSearchRefresh(input: {
   return row ?? null;
 }
 
+// One query for every fresh refresh record under a query key, so a name search
+// does not issue one DB query per source (~30+) just to decide what to skip.
+export function getFreshSourceSearchRefreshBatch(input: {
+  queryKey: string;
+  nowMs?: number;
+  ttlMs: number;
+}): Map<string, SourceSearchRefresh> {
+  const nowMs = input.nowMs ?? Date.now();
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT
+        source_id AS sourceId,
+        query_key AS queryKey,
+        refreshed_at_ms AS refreshedAtMs,
+        status,
+        fetched,
+        imported,
+        error_message AS errorMessage
+      FROM source_search_refreshes
+      WHERE query_key = @queryKey
+        AND refreshed_at_ms > @freshAfterMs
+    `,
+    )
+    .all({
+      queryKey: input.queryKey,
+      freshAfterMs: nowMs - input.ttlMs,
+    }) as SourceSearchRefresh[];
+
+  const bySource = new Map<string, SourceSearchRefresh>();
+  for (const row of rows) {
+    bySource.set(row.sourceId, row);
+  }
+  return bySource;
+}
+
 export function setSourceSearchRefresh(input: {
   sourceId: string;
   queryKey: string;

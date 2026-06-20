@@ -1,6 +1,7 @@
 import {
-  getFreshSourceSearchRefresh,
+  getFreshSourceSearchRefreshBatch,
   setSourceSearchRefresh,
+  type SourceSearchRefresh,
 } from "@/lib/db";
 import { createSearchCacheKey } from "@/lib/search-cache";
 import type { SearchPayload } from "@/lib/search-store";
@@ -83,6 +84,14 @@ export async function refreshNameSearchSources(
   const query = [payload.firstName, payload.lastName].filter(Boolean).join(" ");
   const adapters = options.adapters ?? automaticNameSourceAdapters;
 
+  // One query for every fresh source under this query key, instead of one DB
+  // round-trip per source on every search.
+  const freshBySource = getFreshSourceSearchRefreshBatch({
+    queryKey,
+    nowMs,
+    ttlMs,
+  });
+
   const outcomes = await Promise.all(
     adapters.map((adapter) =>
       refreshNameSourceAdapter({
@@ -91,7 +100,7 @@ export async function refreshNameSearchSources(
         query,
         queryKey,
         nowMs,
-        ttlMs,
+        freshBySource,
       }),
     ),
   );
@@ -178,14 +187,9 @@ async function refreshNameSourceAdapter(input: {
   query: string;
   queryKey: string;
   nowMs: number;
-  ttlMs: number;
+  freshBySource: Map<string, SourceSearchRefresh>;
 }): Promise<SourceRefreshOutcome> {
-  const fresh = getFreshSourceSearchRefresh({
-    sourceId: input.adapter.sourceId,
-    queryKey: input.queryKey,
-    nowMs: input.nowMs,
-    ttlMs: input.ttlMs,
-  });
+  const fresh = input.freshBySource.get(input.adapter.sourceId) ?? null;
 
   if (fresh) {
     return {
