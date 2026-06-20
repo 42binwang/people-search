@@ -30,7 +30,7 @@ const dbPath =
       ? `people-search-test-${process.env.VITEST_POOL_ID ?? process.pid}.sqlite`
       : "people-search.sqlite",
   );
-const schemaVersion = 40;
+const schemaVersion = 41;
 
 const streetSuffixVariants: Record<string, string[]> = {
   alley: ["alley", "aly"],
@@ -2259,6 +2259,10 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_locations_address ON profile_locations(normalized_address);
     CREATE INDEX IF NOT EXISTS idx_locations_city_state ON profile_locations(city, state);
     CREATE INDEX IF NOT EXISTS idx_contacts_normalized ON profile_contacts(type, normalized_value);
+    CREATE INDEX IF NOT EXISTS idx_aliases_profile ON profile_aliases(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_locations_profile ON profile_locations(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_relationships_profile ON relationships(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_contacts_profile ON profile_contacts(profile_id);
     CREATE INDEX IF NOT EXISTS idx_privacy_status ON privacy_requests(status, created_at);
     CREATE INDEX IF NOT EXISTS idx_search_result_cache_expires ON search_result_cache(expires_at_ms);
     CREATE INDEX IF NOT EXISTS idx_source_search_refreshes_refreshed ON source_search_refreshes(refreshed_at_ms);
