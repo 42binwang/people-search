@@ -23,10 +23,11 @@ describe("MusicBrainz source mapping", () => {
       "p_musicbrainz_20244d07_534f_4eff_b4d4_930878889970",
     );
     expect(profile?.fullName).toBe("Taylor Swift");
-    expect(profile?.ageRange).toBe("Born 1989-12-13");
+    expect(profile?.ageRange).toBe("Unknown");
     expect(profile?.aliases).toContain(
       "MusicBrainz artist ID: 20244d07-534f-4eff-b4d4-930878889970",
     );
+    expect(profile?.aliases).toContain("Birth date metadata: 1989-12-13");
     expect(profile?.aliases).toContain("ISNI: 0000000078519858");
     expect(profile?.locations?.[0]).toMatchObject({
       city: "West Reading",

@@ -97,7 +97,7 @@ export function mapMusicBrainzArtistToProfileInput(
   return {
     id: `p_musicbrainz_${slugify(artist.id)}`,
     fullName: displayName,
-    ageRange: birthDate ? `Born ${birthDate}` : "Unknown",
+    ageRange: "Unknown",
     confidence: "Low",
     aliases: [
       `MusicBrainz artist ID: ${artist.id}`,
@@ -105,6 +105,7 @@ export function mapMusicBrainzArtistToProfileInput(
       artist.type ? `Artist type: ${artist.type}` : "",
       artist.disambiguation ? `Disambiguation: ${artist.disambiguation}` : "",
       isni ? `ISNI: ${isni}` : "",
+      birthDate ? `Birth date metadata: ${birthDate}` : "",
       ended ? "MusicBrainz life-span marked ended" : "",
     ].filter(Boolean),
     locations: [

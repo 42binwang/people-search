@@ -22,6 +22,12 @@ npm run sources:validate-property
 
 The validator checks live Socrata or ArcGIS metadata and confirms that every mapped field exists before ingestion is attempted. It also validates reference-source URLs where possible. See `docs/property-source-candidates.md` for the current registry and operational checklist.
 
+## Reference-Only Broker Coverage Lists
+
+Reference configs under `configs/reference-sources/` document source-discovery or opt-out planning inputs that are not approved for person-profile ingestion. They must not be used to scrape people-search brokers, private datasets, or broker-derived personal information.
+
+The Incogni broker coverage list is tracked as `configs/reference-sources/incogni-data-broker-coverage.reference.json` for opt-out/suppression planning only. It has no adapter or loader, and no adapter should be added unless legal/product review approves a licensed or permissioned broker-registry use case that stores only broker metadata.
+
 ## Aggregate Census ACS Mobility Adapter
 
 The Census ACS mobility adapter imports aggregate county-level "Residence 1 year ago" estimates from the U.S. Census Bureau ACS 5-year Data Profile `DP02` table group. This source supports privacy-compliant mobility analysis for major tech hubs without importing names, addresses, device signals, or household-level records.

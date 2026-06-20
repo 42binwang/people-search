@@ -20,7 +20,8 @@ describe("VIAF source mapping", () => {
     expect(profile?.id).toBe("p_viaf_12345");
     expect(profile?.fullName).toBe("Twain, Mark, 1835-1910");
     expect(profile?.aliases).toContain("VIAF ID: 12345");
-    expect(profile?.ageRange).toBe("Born 1835");
+    expect(profile?.ageRange).toBe("Unknown");
+    expect(profile?.aliases).toContain("Birth date metadata: 1835");
     expect(profile?.locations?.[0]).toMatchObject({
       city: "VIAF",
       state: "Global",

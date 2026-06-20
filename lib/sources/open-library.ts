@@ -92,7 +92,7 @@ export function mapOpenLibraryAuthorToProfileInput(
   return {
     id: `p_openlibrary_${slugify(author.key)}`,
     fullName: author.name,
-    ageRange: author.birth_date ? `Born ${author.birth_date}` : "Unknown",
+    ageRange: "Unknown",
     confidence: "Low",
     aliases: [
       `Open Library author key: ${author.key}`,
@@ -101,6 +101,7 @@ export function mapOpenLibraryAuthorToProfileInput(
         ? `Work count: ${author.work_count}`
         : "",
       subjects.length ? `Subjects: ${subjects.join(", ")}` : "",
+      author.birth_date ? `Birth date metadata: ${author.birth_date}` : "",
     ].filter(Boolean),
     locations: [
       {

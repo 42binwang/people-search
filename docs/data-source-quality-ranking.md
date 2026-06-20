@@ -1,6 +1,6 @@
 # Data Source Quality Ranking
 
-Last updated: 2026-06-19
+Last updated: 2026-06-20
 
 A residential-weighted quality ranking of every people/profile data source — implemented, configured, and pending (the Potential Source Tracker in [`data-sources.md`](./data-sources.md)). Re-run this assessment when sources are added, licensed, or blocked. Companion to the tracker (which tracks *implementation status*); this doc ranks *data quality and product fit*.
 
@@ -54,6 +54,7 @@ Composite = `round((2·R + 1.5·C + F + A + U + L + S) / 8.5 · 20)`. Residentia
 | County/state civil, probate, and lien indexes | Public-records / Government | P3 blocked/legal-review | 2 | 4 | 3 | 2 | 4 | 1 | 1 | 49 | Stale, high-harm, FCRA-sensitive; records-request only, blocked |
 | Internet Archive | Academic/catalog/identity-context | Implemented | 1 | 4 | 2 | 4 | 2 | 2 | 3 | 49 | Large archive of creators; user-contributed, mixed license, post-Hachette posture |
 | Obituary / probate / death index (SSDI-style) | Consumer / social | deprioritized | 2 | 2 | 3 | 2 | 3 | 2 | 2 | 45 | Patchy, post-2014 gated by NTIS certification; deceased-profile risk |
+| Incogni broker coverage list | Broker-reference / opt-out | blocked/reference | 1 | 3 | 1 | 3 | 3 | 1 | 2 | 39 | Broker directory with no profile fields; useful only for opt-out/suppression planning and provider research, not ingestion |
 
 "(adj −N)" = a residential-relevance calibration penalty (see Calibration notes).
 
@@ -66,7 +67,7 @@ Composite = `round((2·R + 1.5·C + F + A + U + L + S) / 8.5 · 20)`. Residentia
 
 **Tier 2 — Useful context / secondary** (Composite 56–66): State Professional Licensing Boards (66), Licensed California Property Feed (65), PubMed/OpenAlex/Crossref/Federal Register/ORCID (60–66 after adj), SoS Business Entity (60), DataCite/Library of Congress (60), County Recorder Deed (59), Europe PMC/Wikidata (59). Sources that either carry a real name-to-address link but are access/license-blocked (CA property feed contract-locked; licensing boards/deed fee/PRA-gated) or are high-quality free identity-context sources that aid disambiguation but have no residential value.
 
-**Tier 3 — Low residential value or blocked** (Composite ≤ 56): everything R=1 in the academic/social catalog band with no address (arXiv, MusicBrainz, VIAF, Open Library, Semantic Scholar, Stack Exchange, GitHub, Google Books, Internet Archive), plus context-light OpenFEC candidates (56) and Local Person-Bearing Permits (56). Two important exceptions score in the upper-60s but are Tier 3 for product fit: **State voter registration (76, R=5)** and **Consumer marketing address feeds (76, R=5)** are the single highest-quality residential datasets but are hard-blocked by state commercial-use bans (voters) and GLBA/FCRA/CFPB rules (consumer feeds) — parked, not usable.
+**Tier 3 — Low residential value or blocked** (Composite ≤ 56): everything R=1 in the academic/social catalog band with no address (arXiv, MusicBrainz, VIAF, Open Library, Semantic Scholar, Stack Exchange, GitHub, Google Books, Internet Archive), plus context-light OpenFEC candidates (56), Local Person-Bearing Permits (56), and the Incogni broker coverage list (39), which is an opt-out planning reference rather than a person/profile source. Two important exceptions score in the upper-60s but are Tier 3 for product fit: **State voter registration (76, R=5)** and **Consumer marketing address feeds (76, R=5)** are the single highest-quality residential datasets but are hard-blocked by state commercial-use bans (voters) and GLBA/FCRA/CFPB rules (consumer feeds) — parked, not usable.
 
 ## Top residential picks
 

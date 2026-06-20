@@ -14,9 +14,10 @@ describe("Open Library source mapping", () => {
 
     expect(profile?.id).toBe("p_openlibrary_ol123a");
     expect(profile?.fullName).toBe("Jane Smith");
-    expect(profile?.ageRange).toBe("Born 1962");
+    expect(profile?.ageRange).toBe("Unknown");
     expect(profile?.aliases).toContain("Open Library author key: OL123A");
     expect(profile?.aliases).toContain("Top work: How do you sleep?");
+    expect(profile?.aliases).toContain("Birth date metadata: 1962");
     expect(profile?.locations?.[0]).toMatchObject({
       city: "Open Library",
       state: "Global",

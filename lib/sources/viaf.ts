@@ -95,7 +95,7 @@ export function mapViafRecordToProfileInput(
   return {
     id: `p_viaf_${slugify(viafId)}`,
     fullName: heading,
-    ageRange: formatLifeSpan(birthDate, deathDate),
+    ageRange: "Unknown",
     confidence: "Low",
     aliases: [
       `VIAF ID: ${viafId}`,
@@ -216,16 +216,6 @@ function getViafText(value: unknown) {
     return getViafText((value as Record<string, unknown>).content);
   }
   return "";
-}
-
-function formatLifeSpan(birthDate: string, deathDate: string) {
-  if (birthDate && deathDate) {
-    return `${birthDate}-${deathDate}`;
-  }
-  if (birthDate) {
-    return `Born ${birthDate}`;
-  }
-  return "Unknown";
 }
 
 function textMatchesQuery(text: string, query: string) {

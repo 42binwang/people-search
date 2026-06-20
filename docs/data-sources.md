@@ -942,6 +942,24 @@ Status values:
 - **Next step:** Decide public-display policy for salary amounts before production.
 - **Notes:** Official UC Office of the President disclosure; no-key JSON search. Campus = workplace context.
 
+### 49. `incogni-data-broker-coverage-list`
+
+- **Priority:** P4
+- **Status:** `blocked/legal-review`
+- **Value:** Reference-only map of data brokers and people-search sites used by a privacy-removal service; useful for opt-out/suppression workflow planning and licensed-provider outreach, not as profile data.
+- **Preserved information:** Broker/site name, public website or opt-out URL where listed, Incogni-provided sensitivity score, category, and coverage label. No person names, phones, emails, addresses, search terms, or profile records may be imported.
+- **Coverage:** Incogni's public list of covered data brokers and people-search sites across US, Canada, and EU/UK/EEA-adjacent coverage labels. Incogni says the list can change and continues expanding.
+- **Progress:**
+  - [ ] Approval/terms: not approved. Incogni's terms position the service as personal-use removal-request tooling, say the covered-broker list can change, and reserve website intellectual property; written permission or a separate license is required before any automated reuse.
+  - [ ] Adapter: blocked; do not scrape Incogni or any listed broker site.
+  - [ ] Loader/CLI: blocked; do not build ingestion.
+  - [x] Config: reference-only metadata exists at `configs/reference-sources/incogni-data-broker-coverage.reference.json`.
+  - N/A Tests: no adapter or loader exists; add tests only if a future approved opt-out registry format is created.
+  - [x] Docs: tracked here and in `docs/data-source-quality-ranking.md`.
+  - [ ] Display policy: do not display broker-derived personal data; use only as internal opt-out/suppression/provider-research reference after legal approval.
+- **Next step:** If this remains useful, design an opt-out/broker-registry data model that stores broker names, categories, legal basis, opt-out endpoints, and suppression workflow status only; seed it from official state data broker registries or licensed/permissioned directories, not Incogni scraping.
+- **Notes:** This is not an approved public, official, records-request, or licensed profile source. Do not add an Incogni-covered people-search site as a source unless that individual site independently passes the approval workflow and has explicit automated-access/reuse rights.
+
 ## Immediate Recommended Backlog
 
 Highest-leverage new sources (public record, free bulk/API, no scraping, no license negotiation) discovered 2026-06-19 — full quality ranking in `docs/data-source-quality-ranking.md`:

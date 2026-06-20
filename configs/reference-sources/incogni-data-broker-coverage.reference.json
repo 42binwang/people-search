@@ -1,0 +1,25 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "reference_only_blocked_legal_review",
+  "sourceId": "incogni_data_broker_coverage_list",
+  "sourceName": "Incogni Data Broker Coverage List",
+  "category": "Broker coverage / opt-out reference",
+  "jurisdiction": "US, Canada, EU/UK/EEA/Switzerland/Norway/Iceland/Liechtenstein as represented by Incogni coverage labels",
+  "url": "https://blog.incogni.com/data-brokers-incogni-covers/",
+  "termsUrl": "https://incogni.com/legal/terms-of-service",
+  "reviewDate": "2026-06-20",
+  "refreshCadence": "Unknown; Incogni says its covered-broker list can change and continues expanding.",
+  "collectionMethod": "Reference-only manual review; no automated collection approved.",
+  "fieldsAvailable": [
+    "broker_or_site_name",
+    "website_url",
+    "incogni_data_sensitivity_score",
+    "incogni_category",
+    "incogni_coverage_label"
+  ],
+  "fieldsImported": [],
+  "personProfileData": false,
+  "protectedAddressHandling": "No person-level addresses are imported. Do not use the listed broker sites as person-data sources unless each site independently passes source approval and suppression review.",
+  "notes": "Reference-only planning artifact for opt-out/suppression coverage and licensed-provider outreach. Incogni's terms describe covered brokers as part of its personal-use removal service, say the list can change, and reserve website intellectual property. Do not scrape Incogni or any listed broker site, and do not ingest broker-derived personal information from this source."
+}
