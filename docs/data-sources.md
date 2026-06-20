@@ -34,7 +34,7 @@ These adapters can create or enrich profile records. Many are identity/context s
 | --- | --- | --- | --- | --- | --- | --- |
 | CMS NPPES NPI Registry | Implemented, automatic name refresh | Public API | Provider name, credentials, practice/mailing location, phone, taxonomy | U.S. healthcare providers | High for professionals | Good structured identity and address-like fields, but only covers NPI providers. |
 | OpenFEC candidates | Implemented, automatic name refresh | Public API | Candidate name, office, party/state context | Federal candidates | Medium | Useful identity context, weak residential coverage. |
-| FEC Schedule A individual contributions | In progress in workspace | Public API | Contributor name, city/state/ZIP, employer, occupation, contribution dates, committee context, and possible address fields where exposed | U.S. federal political donors | High but sensitive | Treat as legal-review-first before broad display because political contribution context can be sensitive even when public. |
+| FEC Schedule A individual contributions | Implemented, automatic name refresh (local) | Public API | Contributor name, city/state/ZIP, employer, occupation, contribution dates, committee context, and possible address fields where exposed | U.S. federal political donors | High but sensitive | Local auto-refresh enabled for development; public display still gated pending display-policy review. Political contribution context can be sensitive even when public. |
 | Federal Register documents | Implemented, automatic name refresh | Public API | Public document mentions, agencies, publication dates | People named in federal documents | Low/medium | Good provenance context, not residential evidence. |
 | ClinicalTrials.gov | Implemented, automatic name refresh | Public API | Study personnel names and trial context | Researchers/clinical trial personnel | Low/medium | Identity context only. |
 | GitHub users | Implemented, automatic name refresh | Public API | Username, public profile URL, repo/follower counts, public location text if present, user-published public email when provided | Developers with public GitHub profiles | Medium | User-entered profile location is not a residence. Public email is opt-in/user-published only; never inferred. |
@@ -229,7 +229,7 @@ Status values:
 ### 6. `fec-schedule-a-individual-contributions`
 
 - Priority: P1
-- Status: `in-progress`
+- Status: `ready-local` (local auto-refresh enabled; public display still gated)
 - Value: High but sensitive
 - Preserved information: Contributor name, city/state/ZIP, employer, occupation, contribution dates, committee context, and possible street fields where exposed.
 - Coverage: U.S. federal political donors.
@@ -241,8 +241,8 @@ Status values:
   - [x] Tests: `tests/fec-schedule-a.test.ts` exists in the workspace.
   - [x] Docs: tracked here.
   - [ ] Display policy: do not infer politics; decide whether this is opt-in, hidden, or source-note-only.
-- Next step: finish code review and decide display policy before enabling automatic refresh.
-- Notes: Political contribution context can be sensitive even when public.
+- Next step: complete the display-policy review (opt-in / hidden / source-note-only) before any PUBLIC display; local auto-refresh is enabled for development.
+- Notes: Political contribution context can be sensitive even when public. Enabled in the local name-search auto-refresh (`lib/name-source-refresh.ts`) on 2026-06-19 for development; it MUST NOT appear on the public, ad-supported site until the display-policy review is complete.
 
 ### 7. `local-person-bearing-permits`
 

@@ -10,6 +10,7 @@ import { ingestCrossrefWorks } from "@/lib/sources/crossref";
 import { ingestDataCiteCreators } from "@/lib/sources/datacite";
 import { ingestEuropePmcAuthors } from "@/lib/sources/europe-pmc";
 import { ingestFecCandidates } from "@/lib/sources/fec";
+import { ingestFecScheduleAContributions } from "@/lib/sources/fec-schedule-a";
 import { ingestFederalRegisterMentions } from "@/lib/sources/federal-register";
 import { ingestGitHubUsers } from "@/lib/sources/github";
 import { ingestGoogleBooksAuthors } from "@/lib/sources/google-books";
@@ -244,6 +245,11 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     sourceId: "fec_openfec_candidates",
     label: "OpenFEC",
     run: (_payload, query) => ingestFecCandidates({ query }),
+  },
+  {
+    sourceId: "fec_openfec_schedule_a",
+    label: "FEC Schedule A",
+    run: (_payload, query) => ingestFecScheduleAContributions({ query }),
   },
   {
     sourceId: "federal_register_documents",
