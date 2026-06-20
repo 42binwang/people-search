@@ -48,7 +48,7 @@ export function SearchForm() {
           </label>
           <label className="field">
             Last name
-            <input name="lastName" autoComplete="family-name" required />
+            <input name="lastName" autoComplete="family-name" />
           </label>
           <label className="field">
             City

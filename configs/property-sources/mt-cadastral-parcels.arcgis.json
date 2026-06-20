@@ -1,0 +1,21 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "mt_cadastral_parcels",
+  "sourceName": "Montana Statewide Cadastral Parcels",
+  "category": "Statewide parcel/property open data",
+  "jurisdiction": "Montana",
+  "layerUrl": "https://gis.dnrc.mt.gov/arcgis/rest/services/DNRALL/Cadastral/FeatureServer/0",
+  "licenseUrl": "https://msl.mt.gov/Geographic_Information/Data_Framework/Cadastral",
+  "notes": "Official Montana statewide cadastral (MSDI framework) parcel layer hosted by the Department of Natural Resources and Conservation, exposing owner name and owner mailing address fields. Montana cadastral data is published as public open data. User approved this source for local ingestion on 2026-06-19; commercial/public republication, judicial privacy shielding, protected-address exclusions, and ongoing terms compliance remain operator responsibilities.",
+  "fields": {
+    "recordId": "PARCELID",
+    "name": "OwnerName",
+    "street": "OwnerAddress1",
+    "city": "OwnerCity",
+    "state": "OwnerState",
+    "zip": "OwnerZipCode",
+    "updatedAt": "RefreshDate"
+  }
+}

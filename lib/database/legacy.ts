@@ -2816,6 +2816,46 @@ export function getProfile(id: string): Profile | null {
   };
 }
 
+export interface ProfileSourceRecord {
+  sourceId: string;
+  sourceName: string;
+  category: string;
+  rawJson: string;
+}
+
+/**
+ * Structured source records attached to a profile, with their raw payloads.
+ * Used to render typed lists (publications, profiles) instead of flattened
+ * alias fragments.
+ */
+export function getSourceRecordsForProfile(
+  profileId: string,
+): ProfileSourceRecord[] {
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT s.id AS source_id, s.name AS source_name, s.category, sr.raw_json
+      FROM source_records sr
+      JOIN approved_sources s ON s.id = sr.source_id
+      WHERE sr.profile_id = ?
+      ORDER BY s.name, sr.id
+      `,
+    )
+    .all(profileId) as Array<{
+    source_id: string;
+    source_name: string;
+    category: string;
+    raw_json: string;
+  }>;
+
+  return rows.map((row) => ({
+    sourceId: row.source_id,
+    sourceName: row.source_name,
+    category: row.category,
+    rawJson: row.raw_json,
+  }));
+}
+
 export function upsertApprovedSource(source: {
   id: string;
   name: string;

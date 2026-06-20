@@ -1,0 +1,21 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "fl_fdor_statewide_parcels",
+  "sourceName": "Florida Statewide Cadastral Parcels (FDOR)",
+  "category": "Statewide parcel/property open data",
+  "jurisdiction": "Florida",
+  "layerUrl": "https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0",
+  "licenseUrl": "https://floridarevenue.com/property/Pages/DataPortal_RequestAssessmentRollGISData.aspx",
+  "notes": "Official Florida Department of Revenue Property Tax Oversight statewide cadastral layer aggregating parcel data from all 67 county property appraisers. Exposes owner name and owner mailing address fields (physical/situs fields also present). Published as public record under Chapter 119, Florida Statutes. User approved this source for local ingestion on 2026-06-19; commercial/public republication, protected-address exclusions, and ongoing terms compliance remain operator responsibilities.",
+  "fields": {
+    "recordId": "PARCEL_ID",
+    "name": "OWN_NAME",
+    "street": "OWN_ADDR1",
+    "city": "OWN_CITY",
+    "state": "OWN_STATE",
+    "zip": "OWN_ZIPCD",
+    "updatedAt": "ASMNT_YR"
+  }
+}

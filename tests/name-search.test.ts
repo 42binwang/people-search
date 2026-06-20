@@ -36,6 +36,20 @@ describe("name search token matching", () => {
     expect(normalizedNameMatchesTokens("cheng li", tokens)).toBe(false);
   });
 
+  it("supports first-name-only searches when no last name is given", () => {
+    const tokens = getNameSearchTokens({
+      mode: "name",
+      firstName: "mai",
+      lastName: "",
+      city: "",
+      state: "",
+    });
+
+    expect(tokens).toEqual(["mai"]);
+    expect(normalizedNameMatchesTokens("mai ren", tokens)).toBe(true);
+    expect(normalizedNameMatchesTokens("wenbo he", tokens)).toBe(false);
+  });
+
   it("escapes SQL LIKE wildcard characters in token patterns", () => {
     expect(nameTokenLikePattern("a%b_c\\d")).toBe("% a\\%b\\_c\\\\d %");
   });

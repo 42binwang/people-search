@@ -31,7 +31,7 @@ const AGE_BUCKETS = [
   { value: "70-plus", label: "70+", min: 70, max: 130 },
 ] as const;
 
-type AgeFilter = (typeof AGE_BUCKETS)[number]["value"] | "unknown" | "";
+type AgeFilter = (typeof AGE_BUCKETS)[number]["value"] | "";
 type ParsedLocation = NonNullable<ReturnType<typeof parseLocation>>;
 
 export function SearchResultsLoader({
@@ -225,26 +225,25 @@ function SearchResults({
         <div className="result-list" aria-label="Search results">
           {results.length > 0 && (
             <section className="result-filters" aria-label="Filter results">
-              <div>
-                <label htmlFor="age-filter">Age range</label>
-                <select
-                  id="age-filter"
-                  onChange={(event) =>
-                    setAgeFilter(event.target.value as AgeFilter)
-                  }
-                  value={ageFilter}
-                >
-                  <option value="">Any age</option>
-                  {filterOptions.ageBuckets.map((bucket) => (
-                    <option key={bucket.value} value={bucket.value}>
-                      {bucket.label}
-                    </option>
-                  ))}
-                  {filterOptions.hasUnknownAge && (
-                    <option value="unknown">Unknown age</option>
-                  )}
-                </select>
-              </div>
+              {filterOptions.ageBuckets.length > 0 && (
+                <div>
+                  <label htmlFor="age-filter">Age range</label>
+                  <select
+                    id="age-filter"
+                    onChange={(event) =>
+                      setAgeFilter(event.target.value as AgeFilter)
+                    }
+                    value={ageFilter}
+                  >
+                    <option value="">Any age</option>
+                    {filterOptions.ageBuckets.map((bucket) => (
+                      <option key={bucket.value} value={bucket.value}>
+                        {bucket.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label htmlFor="state-filter">State</label>
                 <select
@@ -332,7 +331,12 @@ function ResultCard({
           <span className="confidence">{result.confidence}</span>
         </div>
         <p className="meta">
-          Age {result.ageRange} · {result.locations.join(" · ")}
+          {[
+            parseAgeRange(result.ageRange) ? `Age ${result.ageRange}` : null,
+            result.locations.join(" · "),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
         <div className="pill-row">
           {result.relatives.map((relative) => (
@@ -374,9 +378,6 @@ function ResultControls() {
 function buildFilterOptions(results: SearchResult[]) {
   const stateSet = new Set<string>();
   const cityMap = new Map<string, { city: string; key: string; state: string }>();
-  const hasUnknownAge = results.some(
-    (result) => parseAgeRange(result.ageRange) === null,
-  );
   const ageBuckets = AGE_BUCKETS.filter((bucket) =>
     results.some((result) => {
       const range = parseAgeRange(result.ageRange);
@@ -401,7 +402,6 @@ function buildFilterOptions(results: SearchResult[]) {
     cities: Array.from(cityMap.values()).sort((a, b) =>
       `${a.city}, ${a.state}`.localeCompare(`${b.city}, ${b.state}`),
     ),
-    hasUnknownAge,
     states: Array.from(stateSet).sort(),
   };
 }
@@ -430,10 +430,6 @@ function matchesFilters(
 
 function matchesAgeFilter(ageRange: string, filter: AgeFilter) {
   const range = parseAgeRange(ageRange);
-  if (filter === "unknown") {
-    return range === null;
-  }
-
   const bucket = AGE_BUCKETS.find((item) => item.value === filter);
   return Boolean(range && bucket && rangesOverlap(range, bucket));
 }

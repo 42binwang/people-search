@@ -17,7 +17,18 @@ import { ingestGoogleBooksAuthors } from "@/lib/sources/google-books";
 import { ingestInternetArchiveCreators } from "@/lib/sources/internet-archive";
 import { ingestLibraryOfCongressSearch } from "@/lib/sources/library-of-congress";
 import { ingestMusicBrainzArtists } from "@/lib/sources/musicbrainz";
+import { ingestNihReporterProjects } from "@/lib/sources/nih-reporter";
 import { ingestNppes } from "@/lib/sources/nppes";
+import { ingestNsfAwards } from "@/lib/sources/nsf-award-search";
+import { ingestChicagoSalaries } from "@/lib/sources/chicago-salaries";
+import { ingestFloridaSalaries } from "@/lib/sources/florida-salaries";
+import { ingestNycPayroll } from "@/lib/sources/nyc-payroll";
+import { ingestSeeThroughNyPayrolls } from "@/lib/sources/seethroughny-payrolls";
+import { ingestUcAnnualWage } from "@/lib/sources/uc-annual-wage";
+import { ingestNycAcrisDeeds } from "@/lib/sources/nyc-acris-deeds";
+import { ingestChroniclingAmerica } from "@/lib/sources/chronicling-america";
+import { ingestSecEdgarInsiders } from "@/lib/sources/sec-edgar-insiders";
+import { ingestSenateLdaLobbying } from "@/lib/sources/senate-lda";
 import { ingestOpenLibraryAuthors } from "@/lib/sources/open-library";
 import { ingestOpenAlexAuthors } from "@/lib/sources/openalex";
 import { ingestOrcidPublicRecords } from "@/lib/sources/orcid";
@@ -260,6 +271,93 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     sourceId: "openalex_authors",
     label: "OpenAlex",
     run: (_payload, query) => ingestOpenAlexAuthors({ query }),
+  },
+  {
+    sourceId: "nih_reporter",
+    label: "NIH RePORTer",
+    run: (_payload, query) => ingestNihReporterProjects({ query }),
+  },
+  {
+    sourceId: "nsf_award_search",
+    label: "NSF Awards",
+    run: (payload) =>
+      ingestNsfAwards({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "nyc_citywide_payroll",
+    label: "NYC Payroll",
+    run: (payload) =>
+      ingestNycPayroll({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "chicago_current_employee_salaries",
+    label: "Chicago Salaries",
+    run: (payload) =>
+      ingestChicagoSalaries({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "florida_state_employee_salaries",
+    label: "Florida Salaries",
+    run: (payload) =>
+      ingestFloridaSalaries({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "seethroughny_payrolls",
+    label: "SeeThroughNY",
+    run: (payload) =>
+      ingestSeeThroughNyPayrolls({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "uc_annual_wage",
+    label: "UC Annual Wage",
+    run: (payload) =>
+      ingestUcAnnualWage({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "nyc_acris_deeds",
+    label: "NYC ACRIS",
+    run: (payload) =>
+      ingestNycAcrisDeeds({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "chronicling_america_obituaries",
+    label: "Chronicling America",
+    run: (_payload, query) => ingestChroniclingAmerica({ query }),
+  },
+  {
+    sourceId: "sec_edgar_insiders",
+    label: "SEC EDGAR Insiders",
+    run: (_payload, query) => ingestSecEdgarInsiders({ query }),
+  },
+  {
+    sourceId: "senate_lda_lobbying",
+    label: "Senate LDA",
+    run: (payload) =>
+      ingestSenateLdaLobbying({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
   },
   {
     sourceId: "wikidata_entities",

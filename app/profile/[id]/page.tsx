@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { AlertTriangle, BadgeInfo, Flag, UserRoundX } from "lucide-react";
 import { ProfileDetailGate } from "@/components/profile-detail-gate";
 import { RecordFeedbackButtons } from "@/components/record-feedback-buttons";
+import { SummaryCard } from "@/components/summary-card";
 import type { AddressHistoryEntry } from "@/lib/db";
-import { getProfile } from "@/lib/db";
+import { getProfile, getSourceRecordsForProfile } from "@/lib/db";
+import { normalizeProfileRecords } from "@/lib/profile-source-records";
+import { organizePublicSummaryAliases } from "@/lib/profile-summary";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -27,6 +30,14 @@ export default async function ProfilePage({
     notFound();
   }
 
+  const { works, profiles: accountProfiles } = normalizeProfileRecords(
+    getSourceRecordsForProfile(profile.id),
+  );
+  const hasDetailedData =
+    profile.phones.length > 0 ||
+    profile.emails.length > 0 ||
+    profile.addressHistory.length > 0;
+
   return (
     <div className="content">
       <div className="profile-layout">
@@ -37,10 +48,16 @@ export default async function ProfilePage({
                 <p className="eyebrow">Possible profile</p>
                 <h1>{profile.name}</h1>
                 <p className="lede">
-                  Age {profile.ageRange}
-                  {profile.locations.length > 0
-                    ? ` · ${profile.locations.join(" · ")}`
-                    : " · No geographic locations found"}
+                  {[
+                    hasAgeRange(profile.ageRange)
+                      ? `Age ${profile.ageRange}`
+                      : null,
+                    profile.locations.length > 0
+                      ? profile.locations.join(" · ")
+                      : "No geographic locations found",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               </div>
               <div className="profile-header-actions">
@@ -66,19 +83,26 @@ export default async function ProfilePage({
             />
           </section>
 
-          <ProfileDetailGate>
-            <ul className="data-list">
-              <li>
-                <span>Possible phones</span>
-                <strong>{formatInlineList(profile.phones)}</strong>
-              </li>
-              <li>
-                <span>Possible emails</span>
-                <strong>{formatInlineList(profile.emails)}</strong>
-              </li>
-            </ul>
-            <AddressHistory addresses={profile.addressHistory} />
-          </ProfileDetailGate>
+          {works.length > 0 && <PublicationsAndWorks works={works} />}
+          {accountProfiles.length > 0 && (
+            <ProfilesAndAccounts profiles={accountProfiles} />
+          )}
+
+          {hasDetailedData && (
+            <ProfileDetailGate>
+              <ul className="data-list">
+                <li>
+                  <span>Possible phones</span>
+                  <strong>{formatInlineList(profile.phones)}</strong>
+                </li>
+                <li>
+                  <span>Possible emails</span>
+                  <strong>{formatInlineList(profile.emails)}</strong>
+                </li>
+              </ul>
+              <AddressHistory addresses={profile.addressHistory} />
+            </ProfileDetailGate>
+          )}
         </main>
 
         <aside className="info-rail" aria-label="Profile actions">
@@ -114,11 +138,6 @@ function AddressHistory({ addresses }: { addresses: AddressHistoryEntry[] }) {
       <div className="section-heading-row">
         <div>
           <h3 id="address-history-title">Location history</h3>
-          <p className="fine-print">
-            Source-backed geographic records are shown here. Source platforms
-            such as arXiv or Internet Archive are excluded because they are not
-            places this person lived or moved through.
-          </p>
         </div>
       </div>
 
@@ -197,145 +216,76 @@ function PublicSummary({
       <SummaryCard title="Possible locations" values={locations} />
       <SummaryCard title="Possible relatives" values={relatives} />
       <SummaryCard title="Source types" values={sourceCategories} />
-      <SummaryCard
-        title="Source notes"
-        values={summary.notes}
-        className="summary-card wide"
-      />
+      {summary.notes.length > 0 && (
+        <SummaryCard
+          title="Source notes"
+          values={summary.notes}
+          className="summary-card wide"
+          initialLimit={summary.noteDefaultLimit}
+        />
+      )}
     </div>
   );
 }
 
-function SummaryCard({
-  title,
-  values,
-  className = "summary-card",
+function PublicationsAndWorks({
+  works,
 }: {
-  title: string;
-  values: string[];
-  className?: string;
+  works: ReturnType<typeof normalizeProfileRecords>["works"];
 }) {
-  const visibleValues = values.slice(0, 8);
-  const hiddenCount = Math.max(0, values.length - visibleValues.length);
-
   return (
-    <section className={className}>
-      <h3>{title}</h3>
-      {visibleValues.length > 0 ? (
-        <ul className="summary-list">
-          {visibleValues.map((value) => (
-            <li key={value}>{formatSummaryValue(value)}</li>
-          ))}
-          {hiddenCount > 0 && <li className="muted">+{hiddenCount} more</li>}
-        </ul>
-      ) : (
-        <p className="fine-print">No public entries shown.</p>
-      )}
+    <section className="profile-section">
+      <h2>Publications and works</h2>
+      <ul className="record-list">
+        {works.map((work) => (
+          <li className="record-item" key={work.title}>
+            <p className="record-title">
+              {work.url ? (
+                <a href={work.url} rel="nofollow noopener" target="_blank">
+                  {work.title}
+                </a>
+              ) : (
+                work.title
+              )}
+            </p>
+            <p className="fine-print">
+              {[work.detail, work.sources.join(", ")]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-function organizePublicSummaryAliases(aliases: string[]) {
-  const names: string[] = [];
-  const notes: string[] = [];
-
-  for (const alias of uniqueValues(aliases)) {
-    if (isHiddenSourceAlias(alias)) {
-      continue;
-    }
-
-    if (isSourceNoteAlias(alias)) {
-      notes.push(cleanSourceNote(alias));
-      continue;
-    }
-
-    if (isReadablePersonAlias(alias)) {
-      names.push(alias);
-    }
-  }
-
-  return {
-    names,
-    notes,
-  };
-}
-
-function isHiddenSourceAlias(value: string) {
-  return [
-    "LOC ID:",
-    "Resource:",
-    "arXiv entry:",
-    "Semantic Scholar profile:",
-    "Library of Congress result:",
-    "Archive identifier:",
-    "Open Library author key:",
-    "ORCID iD:",
-    "ISNI:",
-    "DOI:",
-    "PMID:",
-  ].some((prefix) => value.startsWith(prefix));
-}
-
-function isSourceNoteAlias(value: string) {
-  return [
-    "arXiv preprint:",
-    "Published:",
-    "Internet Archive item:",
-    "Year:",
-    "Works indexed by OpenAlex:",
-    "Cited by count:",
-    "Last known institution:",
-    "GitHub username:",
-    "GitHub profile:",
-    "Public repositories:",
-    "Followers:",
-    "Publication:",
-    "Container:",
-    "Semantic Scholar author ID:",
-    "Paper count:",
-    "Citation count:",
-    "h-index:",
-    "Federal Register mention:",
-    "Publication date:",
-    "Top work:",
-    "Work count:",
-    "Subjects:",
-    "Professional category:",
-    "Occupation:",
-    "Employer:",
-    "Party:",
-    "Office:",
-    "Agency:",
-    "Source updated:",
-  ].some((prefix) => value.startsWith(prefix));
-}
-
-function isReadablePersonAlias(value: string) {
-  if (value.length > 80 || value.includes("http://") || value.includes("https://")) {
-    return false;
-  }
-
-  const tokenCount = value
-    .replace(/[^\p{L}\p{N}\s'-]/gu, " ")
-    .split(/\s+/)
-    .filter(Boolean).length;
-  return tokenCount > 0 && tokenCount <= 6;
-}
-
-function cleanSourceNote(value: string) {
-  if (value.startsWith("GitHub profile:")) {
-    return "GitHub profile available";
-  }
-
-  if (value.length <= 140) {
-    return value;
-  }
-
-  return `${value.slice(0, 137).trim()}...`;
-}
-
-function formatSummaryValue(value: string) {
-  return value || "Unknown";
+function ProfilesAndAccounts({
+  profiles,
+}: {
+  profiles: ReturnType<typeof normalizeProfileRecords>["profiles"];
+}) {
+  return (
+    <section className="profile-section">
+      <h2>Profiles and accounts</h2>
+      <ul className="record-list">
+        {profiles.map((profile) => (
+          <li className="record-item" key={`${profile.label}-${profile.url ?? ""}`}>
+            <p className="record-title">
+              {profile.url ? (
+                <a href={profile.url} rel="nofollow noopener" target="_blank">
+                  {profile.label}
+                </a>
+              ) : (
+                profile.label
+              )}
+            </p>
+            <p className="fine-print">{profile.detail}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 function formatInlineList(values: string[]) {
@@ -346,6 +296,7 @@ function formatAddressType(kinds: string[]) {
   return kinds.length > 0 ? kinds.join(", ") : "possible address";
 }
 
-function uniqueValues(values: string[]) {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+function hasAgeRange(ageRange: string) {
+  const value = ageRange.trim().toLowerCase();
+  return value.length > 0 && value !== "unknown";
 }

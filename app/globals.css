@@ -753,6 +753,62 @@ a:focus-visible {
   background: transparent;
 }
 
+.summary-toggle {
+  display: inline;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.summary-toggle:hover {
+  color: #415049;
+  border-color: #c7d2cb;
+}
+
+.record-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-item {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fafbf8;
+  padding: 12px 14px;
+}
+
+.record-item .record-title {
+  margin: 0 0 4px;
+  color: #2f3d36;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.record-item .record-title a {
+  color: #2a6f4a;
+  text-decoration: none;
+}
+
+.record-item .record-title a:hover {
+  text-decoration: underline;
+}
+
+.record-item .fine-print {
+  margin: 0;
+}
+
 .address-history {
   margin-top: 18px;
   display: grid;

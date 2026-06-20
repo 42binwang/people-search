@@ -1,0 +1,21 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "maricopa_county_az_parcels",
+  "sourceName": "Maricopa County Assessor Parcels",
+  "category": "County parcel/property open data",
+  "jurisdiction": "Maricopa County, AZ",
+  "layerUrl": "https://gis.mcassessor.maricopa.gov/arcgis/rest/services/Parcels/MapServer/0",
+  "licenseUrl": "https://maps.mcassessor.maricopa.gov/",
+  "notes": "Official Maricopa County Assessor public parcel layer (Parcels MapServer), the same service that powers the Assessor's Parcel Viewer. Exposes owner name plus owner mailing address fields as public record. User approved this source for local ingestion on 2026-06-19; commercial/public republication, protected-address exclusions, and ongoing terms compliance remain operator responsibilities.",
+  "fields": {
+    "recordId": "APN",
+    "name": "OWNER_NAME",
+    "street": "MAIL_ADDR1",
+    "city": "MAIL_CITY",
+    "state": "MAIL_STATE",
+    "zip": "MAIL_ZIP",
+    "updatedAt": "DEED_DATE"
+  }
+}

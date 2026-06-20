@@ -45,11 +45,6 @@ export default async function ResultsPage({
       <section className="results-header">
         <p className="eyebrow">{payload.mode} search</p>
         <h1>Possible matches</h1>
-        <p className="lede">
-          Results are ranked prototype matches. Production profiles will require
-          approved sources, field provenance, suppression checks, and abuse
-          controls before display.
-        </p>
         <div className="notice">
           <ShieldAlert size={16} aria-hidden="true" /> This is not a consumer
           report and may not be used for employment, tenant screening, credit,

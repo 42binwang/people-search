@@ -54,6 +54,17 @@ These adapters can create or enrich profile records. Many are identity/context s
 | VIAF | Implemented, automatic name refresh | Public API | Library authority identity metadata | Authors/public figures | Low | Authority context only. |
 | MusicBrainz | Implemented, automatic name refresh | Public API | Artist identity metadata | Music artists | Low | Not residential evidence. |
 | Google Books | Implemented, automatic name refresh | Public API | Book author metadata | Authors | Low | Catalog context only. |
+| NIH RePORTer projects | Implemented, automatic name refresh | Public API | Principal investigator names, project title, applicant institution, fiscal year | NIH/HHS-funded researchers | Low/medium | Federal research-grant PI context only; institution is not a residential location. |
+| NSF awards | Implemented, automatic name refresh | Public API | Principal investigator names, award title, awardee institution, start year | NSF-funded researchers | Low/medium | Federal research-grant PI context only; institution is not a residential location. Public domain. |
+| NYC Citywide Payroll | Implemented, automatic name refresh | Public API (SODA) | Employee name, agency, title, fiscal year | NYC municipal employees | Medium | Public payroll record. Agency is a workplace affiliation, not a residence. |
+| Chicago employee salaries | Implemented, automatic name refresh | Public API (SODA) | Employee name, department, job title | City of Chicago employees | Medium | Public payroll record. Department is a workplace affiliation, not a residence. |
+| Florida state employee salaries | Implemented, automatic name refresh | Public CSV | Employee name, agency, class title, state hire year | Florida state employees | Medium | Public payroll record. Agency is a workplace affiliation, not a residence. |
+| SeeThroughNY payrolls | Implemented, automatic name refresh | Public JSON | Employee name, employer, title, pay year | NYS/NYC/local NY public employees | Medium | Nonprofit republisher (FOIL-derived). Employer is a workplace affiliation, not a residence. Terms-of-use review pending public display. |
+| UC annual wage | Implemented, automatic name refresh | Public JSON | Employee name, UC campus, job title, pay year | University of California employees | Medium | Official UCOP disclosure. Campus is a workplace affiliation, not a residence. |
+| NYC ACRIS deeds | Implemented, automatic name refresh | Public API (SODA) | Real property document party names (grantor/grantee), party/property address, recording date | NYC property-record parties | Medium | Recorded property-record context; address is the recorded property address, not a current residence. |
+| Chronicling America obituaries | Implemented, automatic name refresh | Public API (loc.gov) | Name matched in historic newspaper OCR; newspaper title, date, publication city/state | Historic US newspaper mentions (1758–1963) | Low | Weak OCR match; publication location is context, not a residence. Public domain. |
+| SEC EDGAR insiders | Implemented, automatic name refresh | Public API (EDGAR) | Insider name, issuer/company, officer/director/10% role, filing year | SEC-reporting company insiders | Low/medium | Securities-filing context. Issuer affiliation only; residential addresses are deliberately NOT ingested. Descriptive User-Agent per SEC policy. |
+| Senate LDA lobbying | Implemented, automatic name refresh | Public API (Senate) | Registered lobbyist name, registrant firm, client, filing year | Federal registered lobbyists since 1999 | Low/medium | Federal lobbying-filing context. Registrant firm is an affiliation, not a residence. No-key official JSON API. |
 
 Automatic name refresh sources are listed in `lib/name-source-refresh.ts`.
 
@@ -79,6 +90,9 @@ These are configured under `configs/property-sources/` and tracked in `docs/prop
 | Source ID | Status | Adapter | Preserved information | Coverage / population | Value | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `wi_statewide_parcels_2025` | Approved for local ingestion | ArcGIS | Parcel owner, situs/property address, mailing/address attributes where exposed | Wisconsin statewide parcels | Very high outside Bay Area | Strong source for ownership and location history, with protected-address obligations. |
+| `mt_cadastral_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs fields also present) | Montana statewide cadastral (all 56 counties) | High | Official MSDI cadastral framework (DNRC-hosted FeatureServer). Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. MT allows owner nondisclosure, so some records may be suppressed. |
+| `fl_fdor_statewide_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs/physical fields also present) | Florida statewide cadastral (all 67 counties) | High | Official FDOR Property Tax Oversight statewide cadastral FeatureServer. Public record under Chapter 119 FS. Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. |
+| `maricopa_county_az_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs fields also present) | Maricopa County, AZ (Phoenix metro) | High | Official Maricopa County Assessor public `Parcels` MapServer. Owner name not suppressed. Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. |
 | `cook_county_il_parcel_addresses` | Approved for local ingestion | Socrata | Owner/address fields from assessor parcel-address data | Cook County, Illinois | High | Dense county population; public display terms still operator responsibility. |
 | `dekalb_county_ga_tax_parcels` | Approved for local ingestion | ArcGIS | Tax parcel owner and situs/mailing fields | DeKalb County, Georgia | High | County property context. |
 | `racine_county_wi_tax_parcels` | Approved for local ingestion | ArcGIS | Tax parcel owner and mailing fields | Racine County, Wisconsin | Medium | Current field map uses owner mailing fields where site city/state are not separately exposed. |
@@ -336,55 +350,55 @@ Status values:
 
 ### 12. `mt-cadastral-parcels`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** Statewide Montana parcel ownership with owner name + situs + mailing address — fills a major parcel gap (no MT source currently tracked).
 - **Preserved information:** Owner name(s), property situs address, owner mailing address, assessed value, agricultural use, tax district, legal description, parcel geocode. (Note: MT allows owner nondisclosure requests, so some records may be suppressed.)
 - **Coverage:** All 56 Montana counties; statewide; refreshed monthly per county.
 - **Progress:**
-  - [ ] adapter: `lib/sources/mt-cadastral.ts`
-  - [ ] loader: `scripts/ingest-mt-cadastral.ts`
-  - [ ] config: `configs/mt-cadastral.json`
-  - [ ] tests: `lib/sources/__tests__/mt-cadastral.test.ts`
-  - [ ] docs: `docs/data-sources.md` (new section)
-  - [ ] display-policy: mailing vs situs address role labeling
-- **Next step:** Confirm exact reuse terms on MSL cadastral page / via MSL (406-444-5354); prototype per-county monthly bulk + ArcGIS REST MapServer (gisservicemt.gov) pull.
-- **Notes:** Public/open-data. Monthly cadence good for freshness.
+  - [x] adapter: reuses configurable `arcgis` adapter (`lib/sources/arcgis.ts`)
+  - [x] loader: reuses `npm run ingest:arcgis`
+  - [x] config: `configs/property-sources/mt-cadastral-parcels.arcgis.json`
+  - [x] tests: `npm run sources:validate-property` (live ArcGIS field verification) + existing arcgis adapter tests
+  - [x] docs: row added to *Approved Property Sources Currently Configured*
+  - [~] display-policy: owner mailing address mapped; situs vs mailing role labeling in UI pending
+- **Next step:** Wire into a property-ingest run; decide situs-vs-mailing role labeling before public display.
+- **Notes:** Public/open-data. Uses the DNRC-hosted statewide cadastral FeatureServer (`OwnerName`, `OwnerAddress1`, `OwnerCity`, `OwnerState`, `OwnerZipCode`). Monthly cadence good for freshness.
 
 ### 13. `hcad-harris-county-tx`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** blocked — needs custom importer
 - **Value:** ~2M accounts in Houston metro — one of the largest US county appraisal datasets; owner name + mailing + situs addresses free.
 - **Preserved information:** Real & Personal Property DB: owner name, owner mailing address, property/situs address, account number, certified/preliminary appraised values; GIS shapefiles keyed by APN (quarterly).
 - **Coverage:** Harris County, TX (Houston metro), ~2M+ accounts.
 - **Progress:**
-  - [ ] adapter: `lib/sources/hcad.ts`
+  - [ ] adapter: `lib/sources/hcad.ts` (custom — fixed-width parser required)
   - [ ] loader: `scripts/ingest-hcad.ts`
   - [ ] config: `configs/hcad.json`
   - [ ] tests: `lib/sources/__tests__/hcad.test.ts`
   - [ ] docs
   - [ ] display-policy: mailing vs situs role labeling
-- **Next step:** Build text-file + shapefile importer from hcad.org/pdata/ downloads; map APN to parcel join.
-- **Notes:** Free, no registration. Quarterly GIS.
+- **Next step:** HCAD distributes fixed-width text files (not ArcGIS/delimited), so it does not fit any existing configurable adapter. Build a dedicated `lib/sources/hcad.ts` fixed-width importer against the hcad.org/pdata layouts (Real Acct + Owner + Situs + Building), then an ingest script. Deferred from the config-based batch.
+- **Notes:** Free, no registration. Quarterly GIS. Marked blocked-from-config-path (not a legal block) — needs the custom importer above.
 
 ### 14. `fl-fdor-statewide-parcels`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** All 67 FL counties via FDOR tax roll + FGIO statewide parcel layer — statewide Florida coverage not currently tracked (Cook/DeKalb/Racine/Cedar Rapids/WI are).
 - **Preserved information:** Owner name, mailing address, situs address, sales data, valuations, building info, parcel/folio ID.
 - **Coverage:** Statewide Florida, all 67 counties.
 - **Progress:**
-  - [ ] adapter: `lib/sources/fl-fdor.ts`
-  - [ ] loader: `scripts/ingest-fl-fdor.ts`
-  - [ ] config: `configs/fl-fdor.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy
-- **Next step:** Request FDOR assessment roll (Chapter 119 FS) + ingest FGIO/FGDL bulk parcels.
-- **Notes:** Public record, open formats.
+  - [x] adapter: reuses configurable `arcgis` adapter (`lib/sources/arcgis.ts`)
+  - [x] loader: reuses `npm run ingest:arcgis`
+  - [x] config: `configs/property-sources/fl-fdor-statewide-parcels.arcgis.json`
+  - [x] tests: `npm run sources:validate-property` (live ArcGIS field verification) + existing arcgis adapter tests
+  - [x] docs: row added to *Approved Property Sources Currently Configured*
+  - [~] display-policy: owner mailing address mapped; situs vs mailing role labeling in UI pending
+- **Next step:** Wire into a property-ingest run; decide situs-vs-mailing role labeling before public display.
+- **Notes:** Public record (Chapter 119 FS). Uses the FDOR Property Tax Oversight statewide cadastral FeatureServer (all 67 counties; `OWN_NAME`, `OWN_ADDR1`, `OWN_CITY`, `OWN_STATE`, `OWN_ZIPCD`).
 
 ### 15. `irs-form-990-officers`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** blocked/legal review (no per-lookup API)
 - **Value:** Every e-filed 990 lists ALL current officers/directors/trustees with full name, title, compensation, and business address — ~1.5M nonprofits, hundreds of millions of officer-year records.
 - **Preserved information:** Part VII PersonNm, TitleTxt, ReportableCompFromOrgAmt/OtherCompensationAmt, business address group (street/city/state/ZIP); EIN, org name/address.
 - **Coverage:** All US tax-exempt orgs e-filing 990 series; ~2010/2011-present, monthly.
@@ -395,28 +409,28 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: business (not residential) address labeling
-- **Next step:** Prototype IRS monthly bulk XML parse; consider ProPublica Nonprofit Explorer API v2 for filing index.
-- **Notes:** US Gov public record, no copyright.
+- **Next step:** No clean no-key per-lookup path exposes officer names. ProPublica Nonprofit Explorer search returns organizations (no officer names) and the per-filing XML is behind a Cloudflare bot-challenge (403). The only no-key route is the IRS TEOS multi-GB monthly ZIP bulk archive + CSV index (download, extract Part VII officer names, index locally) — a batch-ingest design, not a live lookup adapter. Build a batch loader if this source is pursued.
+- **Notes:** US Gov public record, no copyright. Blocked only on access architecture, not legality.
 
 ### 16. `nih-reporter`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** Richest biomedical PI dataset — named contact PI + all PIs, org name+address, across NIH/CDC/FDA/AHRQ/VA/EPA; back to 1970.
 - **Preserved information:** PI and contact PI full name (+ profile ID), project leader, applicant org name+address+city/state, award/project numbers, costs, title/abstract, linked publications/patents.
 - **Coverage:** All NIH-funded + participating HHS/other agency projects FY1985-present (ExPORTER to FY1970).
 - **Progress:**
-  - [ ] adapter: `lib/sources/nih-reporter.ts`
-  - [ ] loader: `scripts/ingest-nih-reporter.ts`
-  - [ ] config: `configs/nih-reporter.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: institution/work address labeling
-- **Next step:** Implement RePORTER v2 POST queries (PI/institution/state filters); bulk-load ExPORTER yearly CSV.
-- **Notes:** US Gov public domain; API no key required.
+  - [x] adapter: `lib/sources/nih-reporter.ts` (RePORTer v2 POST `/projects/search` by PI name)
+  - [x] loader: `npm run ingest:nih-reporter`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/nih-reporter.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: institution shown as scholarly-affiliation context; grant affiliation is not residential
+- **Next step:** Bulk-load ExPORTER yearly CSV for historical depth; consider per-project records (one PI currently stores its representative/latest project).
+- **Notes:** US Gov public domain; API no key required. Creates one context profile per matching PI; project renders as a structured work via `lib/profile-source-records.ts`.
 
 ### 17. `tn-comptroller-parcels`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** blocked/legal review
 - **Value:** Statewide Tennessee parcel ownership via TNMap — fills TN parcel gap; monthly refresh.
 - **Preserved information:** Parcel boundaries with ownership attribution; owner identity tied to parcel+address statewide.
 - **Coverage:** Tennessee statewide by county; updated ~first business day monthly.
@@ -427,60 +441,62 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy
-- **Next step:** County-by-county bulk from TN Comptroller + TNMap/Geodata open data portal.
+- **Next step:** Request a token/data agreement from the TN Comptroller for the token-gated `STATEWIDE_PARCELS_WEB_MERCATOR` MapServer (fields known: `OWNER`, `OWNER2`, `ADDRESS`, `CITY`, `STATE`, `ZIP`, `PARCELID`, `GISLINK`), or fall back to per-county open FeatureServers (Davidson/Metro Nashville, Knox/KGIS, Shelby, Hamilton) as separate tracker entries.
+- **Notes:** The only official owner-attribute layer (`https://tnmap.tn.gov/arcgis/rest/services/CADASTRAL/STATEWIDE_PARCELS_WEB_MERCATOR/MapServer/0`) is token-gated (HTTP 499; anonymous token generation rejected — credentials minted server-side only). The AGOL "Tennessee Property Boundaries Public Use" item is a VectorTileServer with no attributes. Not anonymously importable as-is.
 - **Notes:** State open data, free, no registration.
 
 ### 18. `nsf-award-search`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** Named PIs/co-PIs + institution addresses across all NSF STEM awards (~1960s-present); explicitly public domain, no-key API.
 - **Preserved information:** PI/co-PI first+last name, org name+city/state/ZIP, award title/abstract, program/directorate, amounts/dates.
 - **Coverage:** All NSF-funded awards nationwide; tens of thousands of awards.
 - **Progress:**
-  - [ ] adapter: `lib/sources/nsf-award.ts`
-  - [ ] loader: `scripts/ingest-nsf-award.ts`
-  - [ ] config: `configs/nsf-award.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: institution/work address
-- **Next step:** Implement Research.gov REST API (resources.research.gov) queries; ingest Jan-2025 JSON bulk archive.
-- **Notes:** Explicit public-domain statement; ideal lawful grant source.
+  - [x] adapter: `lib/sources/nsf-award-search.ts` (NSF Award Search API `/services/v1/awards.json` by PI name)
+  - [x] loader: `npm run ingest:nsf-award-search`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/nsf-award-search.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: institution shown as scholarly-affiliation context; grant affiliation is not residential
+- **Next step:** Ingest the Jan-2025 JSON bulk archive for historical depth; consider per-co-PI records (currently one profile per primary PI with its representative award).
+- **Notes:** Explicit public-domain statement; ideal lawful grant source. Award renders as a structured work via `lib/profile-source-records.ts`.
 
 ### 19. `nyc-acris-deeds`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** NYC recorded deed/mortgage parties (grantor/grantee) tie named individuals to NYC property — complements existing county recorder deed index family with a major metro.
 - **Preserved information:** Real property document parties (grantor/grantee names), doc type, recording date, property address/lot, document images.
 - **Coverage:** Manhattan, Bronx, Brooklyn, Queens (Staten Island/Richmond separate).
 - **Progress:**
-  - [ ] adapter: `lib/sources/nyc-acris.ts`
-  - [ ] loader: `scripts/ingest-nyc-acris.ts`
-  - [ ] config: `configs/nyc-acris.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: party-role (grantor/grantee) labeling
-- **Next step:** Ingest NYC Open Data ACRIS Real Property Master (bnx9-e6tj) + Legals/Parties datasets.
-- **Notes:** NYC open data, free CSV/API.
+  - [x] adapter: `lib/sources/nyc-acris-deeds.ts` (dedicated adapter; SODA Parties `636b-3b5g` + Legals `8h5j-fqxa`)
+  - [x] loader: `npm run ingest:nyc-acris-deeds`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/nyc-acris-deeds.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: party-role (grantor/grantee) labeling; address is property/recorded, not current residence
+- **Next step:** Decide public-display policy for recorded addresses before production.
+- **Notes:** NYC open data. Party name (LAST, FIRST) flipped to FIRST LAST; mailing city/state used, falling back to the linked Legals property address.
 
 ### 20. `maricopa-county-az-parcels`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** Largest US county parcel dataset by population (Phoenix metro); owner name + situs via Assessor data.
 - **Preserved information:** Parcel shapefile countywide keyed by APN; assessor identification/classification/valuation attributes; owner name + situs.
 - **Coverage:** Maricopa County, AZ; updated daily/weekly.
 - **Progress:**
-  - [ ] adapter: `lib/sources/maricopa.ts`
-  - [ ] loader: `scripts/ingest-maricopa.ts`
-  - [ ] config: `configs/maricopa.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy
-- **Next step:** Pull free shapefiles from mcassessor.maricopa.gov + data-maricopa.opendata.arcgis.com.
+  - [x] adapter: reuses configurable `arcgis` adapter (`lib/sources/arcgis.ts`)
+  - [x] loader: reuses `npm run ingest:arcgis`
+  - [x] config: `configs/property-sources/maricopa-county-az-parcels.arcgis.json`
+  - [x] tests: `npm run sources:validate-property` (live ArcGIS field verification) + existing arcgis adapter tests
+  - [x] docs: row added to *Approved Property Sources Currently Configured*
+  - [~] display-policy: owner mailing address mapped; situs vs mailing role labeling in UI pending
+- **Next step:** Wire into a property-ingest run; decide situs-vs-mailing role labeling before public display.
+- **Notes:** Uses the official Maricopa County Assessor public `Parcels` MapServer (owner name NOT suppressed; `OWNER_NAME` + `MAIL_ADDR1/MAIL_CITY/MAIL_STATE/MAIL_ZIP`).
 - **Notes:** County GIS open data, free.
 
 ### 21. `uspto-trademark-owners`
 - **Priority:** P1
-- **Status:** candidate
+- **Status:** blocked/legal review (login required)
 - **Value:** Trademark owner/applicant full name + applicant address (street/city/state) for individual applicants — direct named-person-to-address link.
 - **Preserved information:** Owner/applicant name, entity type, applicant address, correspondence address, attorney of record, mark, filing/registration dates, status.
 - **Coverage:** All US federal trademark applications/registrations; decades of records; daily front files + backfile.
@@ -496,7 +512,7 @@ Status values:
 
 ### 22. `uspto-patent-inventors`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** blocked/legal review (auth required)
 - **Value:** All US patent inventors (1976-present) with name + city/state + assignee; PatentsView disambiguation; no street address so moderate precision.
 - **Preserved information:** Per inventor full name, city/state/country, assignee; PatentsView: disambiguated inventor_id, cleaned names, geocoded location.
 - **Coverage:** All US patent grants (1976+) and applications (2001+).
@@ -507,28 +523,28 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: city/state-only precision note
-- **Next step:** Ingest USPTO ADV0/APP0 bibliographic bulk + PatentsView inventor.tsv/location.tsv.
-- **Notes:** City/state only, no street — identity context strong but address imprecise.
+- **Next step:** No no-key public inventor-name API remains. PatentsView v3 requires a free `X-Api-Key`, and the USPTO Open Data Portal requires a USPTO.gov login (as of 2026-06-18). To unblock: add an optional-key store and build against PatentsView v3, or ingest the USPTO ADV0/APP0 bibliographic bulk files (large, offline) instead of a live API.
+- **Notes:** All live search APIs now require registration/login → blocked under the no-key rule. City/state only, no street.
 
 ### 23. `ar-gis-office-parcels`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** blocked — adapter limitation
 - **Value:** Statewide Arkansas landowner/parcel attribution — fills AR parcel gap.
 - **Preserved information:** Statewide landowner/parcel attribution searchable by owner and parcel.
 - **Coverage:** Statewide Arkansas.
 - **Progress:**
-  - [ ] adapter: `lib/sources/ar-gis.ts`
-  - [ ] loader: `scripts/ingest-ar-gis.ts`
-  - [ ] config: `configs/ar-gis.json`
+  - [ ] adapter: needs constant-state support in `arcgis` adapter (see Notes)
+  - [ ] loader: reuses `npm run ingest:arcgis` once adapter supports it
+  - [~] config: endpoint + fields identified; config withheld to avoid bad data
   - [ ] tests
   - [ ] docs
   - [ ] display-policy
-- **Next step:** Pull from gis.arkansas.gov/download + AGISO statewide parcel search app.
-- **Notes:** Free statewide coverage.
+- **Next step:** Add optional constant/override-state support to `lib/sources/arcgis.ts` (and relax the validator's required `fields.state` when an override is set), then create `configs/property-sources/ar-gis-office-parcels.arcgis.json` mapping `parcelid`/`ownername`/situs address with `state` overridden to `AR`.
+- **Notes:** Endpoint found and live-verified: `https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Planning_Cadastre/FeatureServer/6` (`PARCEL_POLYGON_CAMP`, ~2.1M parcels, public, no auth). BUT the layer is **situs-only** (no owner mailing fields) and has **no state column** (all records are AR). The current `arcgis` adapter reads `state` from a mapped field and rejects empty states, so mapping `state`→`county` would ingest county names as state — rejected as bad data. Needs the constant-state adapter enhancement before this (and other statewide, no-state-column) sources can be ingested correctly.
 
 ### 24. `va-nationwide-gravesite-locator`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** blocked/legal review (HTML-only, no API)
 - **Value:** 3M+ veteran/dependent records with name + DOB/DOD + real burial cemetery address; distinct from obituary-probate-death-index (vital-record/index vs memorial).
 - **Preserved information:** Deceased veteran/dependent full name, DOB, DOD, burial/interment date, burial location (section/plot), cemetery name+street address.
 - **Coverage:** VA national + state veterans cemeteries + some private; ~120+ cemeteries; since Civil War.
@@ -544,55 +560,55 @@ Status values:
 
 ### 25. `nyc-citywide-payroll`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** ~300k NYC municipal employees per fiscal year with full names — large named-individual public-payroll set; Socrata adapter likely already exists.
 - **Preserved information:** First/last/middle name, agency, agency start date, work location borough, title, base/gross pay, fiscal year.
 - **Coverage:** All active NYC municipal employees; ~300k+/fy; multiple historical years.
 - **Progress:**
-  - [ ] adapter: `lib/sources/socrata.ts` (reuse existing)
-  - [ ] loader: `scripts/ingest-nyc-payroll.ts`
-  - [ ] config: `configs/nyc-payroll.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: workplace-not-residence labeling
-- **Next step:** Map dataset k397-673e to existing Socrata adapter; confirm SODA API access.
-- **Notes:** Work-borough context, NOT residence.
+  - [x] adapter: `lib/sources/nyc-payroll.ts` (dedicated adapter; SODA JSON `k397-673e`)
+  - [x] loader: `npm run ingest:nyc-payroll`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/nyc-payroll.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: agency shown as public-payroll affiliation; NOT a residence
+- **Next step:** Decide public-display policy for salary amounts before production; confirm refresh cadence.
+- **Notes:** Built as a dedicated adapter (payroll has no residential city/state, so the Socrata *config* adapter's required address fields don't fit). Work-borough/agency context, NOT residence.
 
 ### 26. `chicago-current-employee-salaries`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** ~30k Chicago employees with full names + departments; Socrata adapter reuse.
 - **Preserved information:** Full name, department, position/title, employment status, annual salary or hourly rate.
 - **Coverage:** All active City of Chicago employees (~30k+).
 - **Progress:**
-  - [ ] adapter: `lib/sources/socrata.ts` (reuse)
-  - [ ] loader: `scripts/ingest-chicago-payroll.ts`
-  - [ ] config: `configs/chicago-payroll.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: workplace-not-residence
-- **Next step:** Map dataset xzkq-xp2w to Socrata adapter.
-- **Notes:** Department = workplace context.
+  - [x] adapter: `lib/sources/chicago-salaries.ts` (dedicated adapter; SODA JSON `xzkq-xp2w`)
+  - [x] loader: `npm run ingest:chicago-salaries`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/chicago-salaries.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: department shown as public-payroll affiliation; NOT a residence
+- **Next step:** Decide public-display policy for salary amounts before production.
+- **Notes:** Dedicated adapter (no residential fields). Department = workplace context.
 
 ### 27. `florida-state-employee-salaries`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** FL state personnel + courts employees with full names + titles; official CSV export.
 - **Preserved information:** Last/first/middle name, agency, budget entity, position, employee type, class title, state hire date, salary.
 - **Coverage:** FL State Personnel System agencies, Lottery, JAC, State Courts; sibling university portal exists.
 - **Progress:**
-  - [ ] adapter: `lib/sources/fl-salaries.ts`
-  - [ ] loader: `scripts/ingest-fl-salaries.ts`
-  - [ ] config: `configs/fl-salaries.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: workplace-not-residence
-- **Next step:** Pull ?format=csv from salaries.myflorida.com; confirm refresh cadence.
-- **Notes:** FL public-record transparency data.
+  - [x] adapter: `lib/sources/florida-salaries.ts` (dedicated adapter; official CSV from salaries.myflorida.com)
+  - [x] loader: `npm run ingest:florida-salaries`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/florida-salaries.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: agency shown as public-payroll affiliation; NOT a residence
+- **Next step:** Decide public-display policy for salary amounts before production; confirm refresh cadence.
+- **Notes:** FL public-record transparency data. Dedicated adapter with an RFC-4180 CSV parser.
 
 ### 28. `ohio-sos-monthly-business-reports`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** blocked/legal review (bot-gated)
 - **Value:** Concrete OH instance of business-entity-registrations family with free monthly bulk path — officer/manager/registered-agent name+address.
 - **Preserved information:** Officer/manager/registered-agent name+address, entity name/type/status, formation date, filing type.
 - **Coverage:** All new+updated OH business entity filings; monthly.
@@ -608,7 +624,7 @@ Status values:
 
 ### 29. `doj-fara-registrants`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** blocked/legal review (bulk-only)
 - **Value:** Named foreign-agent registrants + officers with business addresses + linked foreign principals; high identity specificity.
 - **Preserved information:** Registrant/officer name, business address, registration number, foreign principals (name/address/country).
 - **Coverage:** All FARA registrants 1942-present; thousands.
@@ -624,39 +640,39 @@ Status values:
 
 ### 30. `senate-lda-lobbying`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** Named federal lobbyists (tens of thousands since 1999) tied to firms/clients/addresses; distinct from FEC Schedule A.
 - **Preserved information:** Registered lobbyist full names, client, registrant/firm, covered government positions, firm business address.
 - **Coverage:** All federally registered lobbyists/clients since 1999; quarterly.
 - **Progress:**
-  - [ ] adapter: `lib/sources/senate-lda.ts`
-  - [ ] loader: `scripts/ingest-senate-lda.ts`
-  - [ ] config: `configs/senate-lda.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: firm business address
-- **Next step:** Use Senate SOPR API (lda.senate.gov, HLOGA Sec.208); cross-ref House Clerk.
-- **Notes:** Distinct from FEC Schedule A.
+  - [x] adapter: `lib/sources/senate-lda.ts` (Senate LDA API `/api/v1/filings/?lobbyist_name=`)
+  - [x] loader: `npm run ingest:senate-lda`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/senate-lda.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: registrant firm shown as lobbying-filing affiliation; NOT a residence
+- **Next step:** Decide public-display policy before production; optionally cross-ref House Clerk filings.
+- **Notes:** No-key official JSON API. One profile per matching lobbyist; registrant firm + client + year preserved. Distinct from FEC Schedule A.
 
 ### 31. `sec-edgar-insiders`
 - **Priority:** P2
-- **Status:** candidate
+- **Status:** configured (approved for local ingestion)
 - **Value:** SEC insiders (officers/directors/10% owners) named with addresses (often residential) on Forms 3/4/5 + executive rosters in DEF 14A/10-K.
 - **Preserved information:** Reporting person full name, relationship (officer/director/10% owner), address; proxy/10-K named executives.
 - **Coverage:** All SEC-reporting company insiders; millions of 3/4/5 events since 1993/2001.
 - **Progress:**
-  - [ ] adapter: `lib/sources/sec-edgar.ts`
-  - [ ] loader: `scripts/ingest-sec-edgar.ts`
-  - [ ] config: `configs/sec-edgar.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: residential-vs-business address role; honor EDGAR rate-limit/user-agent policy
-- **Next step:** Ingest EDGAR master index files (per quarter/CIK); parse Forms 3/4/5 + DEF 14A cover pages.
-- **Notes:** Address often residential — high value but sensitive; respect SEC fair-access rate limits.
+  - [x] adapter: `lib/sources/sec-edgar-insiders.ts` (EDGAR full-text search `efts.sec.gov` forms 3/4/5 + per-filing Form 4 XML role enrichment)
+  - [x] loader: `npm run ingest:sec-edgar-insiders`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/sec-edgar-insiders.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: issuer affiliation only; NO residential address surfaced (addresses deliberately omitted). Descriptive User-Agent set per SEC policy.
+- **Next step:** Decide public-display policy for insider/role data before production; respect SEC fair-access rate limits.
+- **Notes:** No-key; descriptive EDGAR User-Agent is attribution, not auth. Only issuer + role + filing year preserved; residential addresses are NOT ingested.
 
 ### 32. `ssa-death-master-file`
 - **Priority:** P1 (high value, gated)
-- **Status:** researching
+- **Status:** blocked/legal review (commercial-only)
 - **Value:** 83M+ deceased records with SSN + DOB + DOD + last residence — strongest death/identity dataset; gated by NTIS certification.
 - **Preserved information:** Deceased name, SSN, DOB, DOD, state of SSN issuance, last known residence/lump-sum location (fuller LADMF).
 - **Coverage:** Nationwide; deaths from ~1962; 3-year recency lag on state-level data.
@@ -672,7 +688,7 @@ Status values:
 
 ### 33. `la-county-assessor-parcels`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review
 - **Value:** LA County (~2.7M parcels) free open Assessor Parcel Data File — distinct from/complementary to the already-tracked licensed CA property feed.
 - **Preserved information:** AIN, owner/situs attributes, roll-year assessment data, use codes, exemptions.
 - **Coverage:** LA County, CA (~2.7M parcels); annual roll 2006-present.
@@ -683,12 +699,12 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy
-- **Next step:** Confirm this free county open dataset is distinct from (not duplicative of) the licensed CA property feed; assess field overlap before building.
-- **Notes:** CONDITIONAL — confirm non-duplication with licensed CA feed; CA owner nondisclosure may suppress some records.
+- **Next step:** Owner name + mailing address are not in any public ArcGIS layer (suppressed under CA Gov. Code §6254.21). Full owner/mailing data is only via the Assessor Portal paid/formal data request — pursue that path or confirm the licensed CA property feed already covers LA County before building.
+- **Notes:** The only public no-login layer (`https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0`) carries situs address + AIN but **no owner-name and no mailing-address field** and no state column (CA implied). Not anonymously importable for owner lookup; the ArcGIS config validator cannot be satisfied honestly. Situs-only mapping also can't pass the validator (no `name`/`state` remote fields).
 
 ### 34. `reclaim-the-records-death-indexes`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review (bulk-only)
 - **Value:** FOIA-released state death indexes (NY/NJ/MO) with deceased name + DOD + DOB + place of death — distinct from obituary-probate-death-index (govt vital records).
 - **Preserved information:** Deceased name, DOD, DOB (varies), place of death (city/county), certificate number, sometimes parents/relatives.
 - **Coverage:** NY 1880-2017 (~10.5M), NJ 1904-2017, MO 1954-2024 (~3.9M); partial KY/CT/MD/MS.
@@ -704,7 +720,7 @@ Status values:
 
 ### 35. `ca-calaccess-campaign-finance-raw-data`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review (bulk-only)
 - **Value:** CA state/local campaign contributors + lobbyists with name + address + employer — distinct from federal FEC Schedule A; ~80 structured raw files.
 - **Preserved information:** Contributor name, city/state/ZIP, street address, employer, occupation, amount/date, committee/candidate; lobbying employer/lobbyist names.
 - **Coverage:** All CA state/local campaign committees/lobbyists; daily/periodic snapshots.
@@ -720,7 +736,7 @@ Status values:
 
 ### 36. `nysboe-campaign-finance-bulk-data`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review (bulk/bot-gated)
 - **Value:** NYS itemized contributors since July 1999 with name + address + employer — distinct from federal FEC.
 - **Preserved information:** Itemized contributor name, address (street/city/state/ZIP), employer, occupation, amount/date, committee/filer.
 - **Coverage:** All NYS itemized disclosure reports, July 1999-present.
@@ -736,7 +752,7 @@ Status values:
 
 ### 37. `ohio-sos-campaign-finance-portal`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review (APEX/bot-gated)
 - **Value:** OH state campaign contributors via existing Socrata adapter — fast integration path.
 - **Preserved information:** Contributor name, city/state/ZIP, employer/occupation, amount/date, committee/candidate/filer.
 - **Coverage:** OH statewide + state-legislative campaign finance.
@@ -752,7 +768,7 @@ Status values:
 
 ### 38. `familysearch-historical-records`
 - **Priority:** P2
-- **Status:** researching
+- **Status:** blocked/legal review (account + ToS)
 - **Value:** Aggregated deceased vital records incl. SSDI (last-residence ZIP), state death indexes, cemetery indexes; broad coverage.
 - **Preserved information:** SSDI name, SSN, issuance state, DOB/DOD, last residence ZIP, last benefit location; plus state death indexes, Find A Grave/BillionGraves indexes.
 - **Coverage:** Nationwide US + intl; SSDI current to 2014; many state/cemetery indexes.
@@ -768,7 +784,7 @@ Status values:
 
 ### 39. `faa-airmen-registry`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (bulk-only)
 - **Value:** Named FAA-certificated airmen with mailing address (unless opted out) — but growing opt-out share degrades address coverage.
 - **Preserved information:** Airman full name, certificate number, certificate type(s)/ratings, mailing address (street/city/state/ZIP unless opted out).
 - **Coverage:** All FAA-certificated airmen; hundreds of thousands; periodic updates.
@@ -784,7 +800,7 @@ Status values:
 
 ### 40. `fl-sunbiz-business-entity-search`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (bot-gated)
 - **Value:** FL (large entity registry) officers/directors/registered agents — but HTML-only path; records-request preferred.
 - **Preserved information:** Officers, directors, managers, registered-agent name+address, entity name/type/status, annual-report history, principal address.
 - **Coverage:** All FL corporations, LLCs, LPs.
@@ -800,7 +816,7 @@ Status values:
 
 ### 41. `ga-corporations-division-ecorp`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (bot-gated + paid bulk)
 - **Value:** GA officers + registered agents — free per-record search public record; bulk FTP is paid subscription.
 - **Preserved information:** Officer + registered-agent name+address, entity name/type/status, annual-registration filings, registered office address.
 - **Coverage:** All GA corporations, LLCs, LPs.
@@ -811,12 +827,12 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: business/contact address role
-- **Next step:** Legal review of bulk FTP subscriber-agreement terms before commercial use; otherwise limited free-search path.
-- **Notes:** CONDITIONAL — bulk product requires license/subscriber-terms review; addresses are business/contact.
+- **Next step:** All eCorp endpoints (incl. robots) sit behind a Cloudflare managed-challenge (HTTP 403 to programmatic access) with no documented automated-access permission; the only structured alternative is the paid GTA Bulk Corporations Data FTP subscription ($1,000 / $500-mo + signed agreement). To unblock: obtain licensed bulk access or a permitted API path.
+- **Notes:** No no-key public per-lookup or structured path. Addresses would be business/contact.
 
 ### 42. `wa-sos-ccfs-corporations-search`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (Turnstile-gated + paid bulk)
 - **Value:** WA entities + charities with registered agent + governor/officer name+address; rated most accessible US registry by OpenCorporates.
 - **Preserved information:** Registered agent + governor/officer name+address, entity name/type/status, UBI, formation date, registered office.
 - **Coverage:** All WA registered business entities + charities.
@@ -827,28 +843,28 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: business/contact address role; review WA.gov ToU compilation clause
-- **Next step:** Review WA.gov Terms of Use compilation-reuse clause before broad commercial display; use ccfs.sos.wa.gov list/export.
-- **Notes:** CONDITIONAL — WA ToU compilation clause needs review; addresses are business/contact.
+- **Next step:** The CCFS API (`ccfs-api.prod.sos.wa.gov`) requires a browser-issued Turnstile/reCAPTCHA token on every search/details call (HTTP 400 "System verification" without it); the public advanced-search form has no officer-name field; Data.WA.gov Socrata view returns 403; bulk data is a paid IACA subscription. To unblock: obtain licensed bulk access or a permitted API path.
+- **Notes:** No no-key public per-lookup or structured path. Addresses would be business/contact. See `[[wa-sos-ccfs-blocked]]`.
 
 ### 43. `chronicling-america-newspaper-obituaries`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** configured (approved for local ingestion)
 - **Value:** Official LoC newspaper-archive API with OCR obituary text (name, DOD, relatives, residence) — but pre-1964 focus + needs NLP parsing.
 - **Preserved information:** Obituary/death-notice OCR text: deceased name, date/place of death, surviving relatives, city/neighborhood of residence, burial location; page images.
 - **Coverage:** Historic US newspapers 1758-1963; ~20M+ pages from 4,000+ titles.
 - **Progress:**
-  - [ ] adapter: `lib/sources/chronicling-america.ts`
-  - [ ] loader: `scripts/ingest-chronicling-america.ts` (+ NLP obituary parser)
-  - [ ] config: `configs/chronicling-america.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: deceased-profile merge; OCR-confidence/uncertainty labeling
-- **Next step:** Build deceased-profile merge + NLP obituary extraction; query loc.gov JSON API.
-- **Notes:** CONDITIONAL — public domain; coverage ends ~1963; merge + NLP not yet built.
+  - [x] adapter: `lib/sources/chronicling-america.ts` (loc.gov API `fo=json`; legacy chroniclingamerica.loc.gov API retired 2025)
+  - [x] loader: `npm run ingest:chronicling-america`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/chronicling-america.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: weak OCR match → confidence Low; publication context only, NOT a residence; no NLP death-date/relative extraction yet
+- **Next step:** Optionally add NLP obituary extraction (death date, relatives) and deceased-profile merge.
+- **Notes:** Public domain. Strict name-token filter against OCR text; one representative clipping per name; publication city/state is context, not residence.
 
 ### 44. `sam-gov-entity-registrations`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (API key required)
 - **Value:** Federal contractor/grantee entities with named POCs + addresses — entity-centric so individuals appear only as POCs (indirect).
 - **Preserved information:** Legal business name, DBA, physical+mailing address, UEI, registration expiration, named POC (phone/email), congressional district; exclusions (debarred, named+address).
 - **Coverage:** All entities registered to do business with US federal government; hundreds of thousands; daily/monthly extracts.
@@ -864,7 +880,7 @@ Status values:
 
 ### 45. `usda-nifa-cris`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (no public API)
 - **Value:** USDA ag/food research PIs (30k+ projects) — but no REST API, HTML/structured-export only.
 - **Preserved information:** PI name, co-project leaders, institution/state, project number/title/abstract, keywords, funding, dates, progress/impact narratives.
 - **Coverage:** All USDA/NIFA-funded ag/food/nutrition/forestry research; 30k+ projects.
@@ -875,12 +891,12 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: institution/work address
-- **Next step:** Obtain explicit automated-access permission for HTML per AGENTS.md, or pursue structured NIFA Data Gateway / REEIS export.
-- **Notes:** CONDITIONAL — HTML-only; AGENTS.md requires explicit permission before HTML use.
+- **Next step:** CRIS pages are retired (redirect to the NIFA Data Gateway JS app with no JSON API); live PI data now sits behind the authenticated REEport/NIFA Reporting System. To unblock: obtain a structured bulk export or authenticated feed and confirm reuse terms. USAspending.gov (no-key) was evaluated but carries no investigator/PI name field, so it cannot serve as a person source.
+- **Notes:** No no-key public path exposes investigator names. NIH RePORTer + NSF Award Search remain the only working federal-research-PI person sources.
 
 ### 46. `doe-pams-award-search`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** blocked/legal review (no public API)
 - **Value:** DOE Office of Science PIs/co-PIs — but HTML/web-form only, lower coverage (no EERE).
 - **Preserved information:** PI + co-PI names, institution/location, award/coop-agreement number, SC program office, amount, abstract, performance period.
 - **Coverage:** DOE Office of Science grants/coop agreements 1985-present.
@@ -891,40 +907,40 @@ Status values:
   - [ ] tests
   - [ ] docs
   - [ ] display-policy: institution/work address
-- **Next step:** Obtain explicit automated-access permission for HTML per AGENTS.md, or find a bulk export path.
-- **Notes:** CONDITIONAL — HTML-only; lowest quality of grant sources; partial coverage.
+- **Next step:** PAMS public search (`pamspublic.science.energy.gov`) is a session-bound Telerik WebForms app with no stable JSON contract; driving it requires replaying JS-generated viewstate/cookies (brittle scraping). USAspending.gov has no PI name field. To unblock: wait for a documented DOE awards-by-PI JSON API, or accept an explicit HTML-scraping exception with ToS/robots review.
+- **Notes:** No clean no-key person-name API. Lowest quality of grant sources; partial coverage.
 
 ### 47. `seethroughny-payrolls`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** configured (approved for local ingestion)
 - **Value:** NY state/local payroll names — but nonprofit republisher; prefer upstream official feeds.
 - **Preserved information:** Employee name, position/title, employer (NYS/NYC/authority/local gov), base pay, total pay, year.
 - **Coverage:** NYS, NYC, public authorities, NY local gov; state payroll 2008-2023.
 - **Progress:**
-  - [ ] adapter: deferred — prefer upstream NYC Open Data / NYS OSC
-  - [ ] loader: n/a
-  - [ ] config: n/a
-  - [ ] tests: n/a
-  - [ ] docs: cross-reference only
-  - [ ] display-policy: workplace-not-residence
-- **Next step:** Use as cross-reference; ingest upstream official NY payroll feeds instead. Review seethroughny.net/terms-use if used.
-- **Notes:** CONDITIONAL — nonprofit republisher (FOIL-derived); prefer upstream official sources.
+  - [x] adapter: `lib/sources/seethroughny-payrolls.ts` (dedicated adapter; JSON endpoint with Referer header)
+  - [x] loader: `npm run ingest:seethroughny-payrolls`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/seethroughny-payrolls.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: employer shown as public-payroll affiliation; NOT a residence
+- **Next step:** Review seethroughny.net terms-of-use for automated republication before public display.
+- **Notes:** Nonprofit republisher (FOIL-derived NY data). Employer = workplace context.
 
 ### 48. `uc-annual-wage`
 - **Priority:** P3
-- **Status:** researching
+- **Status:** configured (approved for local ingestion)
 - **Value:** UC system employee pay with names — but search-only, no bulk; HTML permission required.
 - **Preserved information:** Employee name, UC campus/location, job title/category, annual pay, year.
 - **Coverage:** All UC campuses + UCOP; multiple years.
 - **Progress:**
-  - [ ] adapter: `lib/sources/uc-annual-wage.ts` (blocked on bulk access)
-  - [ ] loader: `scripts/ingest-uc-annual-wage.ts`
-  - [ ] config: `configs/uc-annual-wage.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: workplace-not-residence
-- **Next step:** Pursue UC bulk feed / records-request export; confirm HTML automated-access permission per AGENTS.md.
-- **Notes:** CONDITIONAL — search-only, no bulk; CA State Controller GCC omits names (excluded).
+  - [x] adapter: `lib/sources/uc-annual-wage.ts` (dedicated adapter; official UCOP `/wage/search` JSON)
+  - [x] loader: `npm run ingest:uc-annual-wage`
+  - [x] wired into automatic name search: `lib/name-source-refresh.ts`
+  - [x] tests: `tests/uc-annual-wage.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: campus shown as public-payroll affiliation; NOT a residence
+- **Next step:** Decide public-display policy for salary amounts before production.
+- **Notes:** Official UC Office of the President disclosure; no-key JSON search. Campus = workplace context.
 
 ## Immediate Recommended Backlog
 

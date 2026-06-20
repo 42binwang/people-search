@@ -43,7 +43,11 @@ function createPayload(mode: string, form: FormData): SearchPayload | null {
     const city = cleanText(form.get("city"));
     const state = cleanText(form.get("state"));
 
-    if (!lastName || (lastName.length < 2 && !firstName)) {
+    // A name search needs at least a first or last name (each at least two
+    // characters). First-only, last-only, or both are all valid.
+    const hasFirstName = firstName.length >= 2;
+    const hasLastName = lastName.length >= 2;
+    if (!hasFirstName && !hasLastName) {
       return null;
     }
 
