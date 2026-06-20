@@ -398,15 +398,15 @@ Status values:
 
 ### 15. `irs-form-990-officers`
 - **Priority:** P1
-- **Status:** blocked/legal review (no per-lookup API)
+- **Status:** `ready-local` (batch/file model; no live per-lookup API)
 - **Value:** Every e-filed 990 lists ALL current officers/directors/trustees with full name, title, compensation, and business address — ~1.5M nonprofits, hundreds of millions of officer-year records.
 - **Preserved information:** Part VII PersonNm, TitleTxt, ReportableCompFromOrgAmt/OtherCompensationAmt, business address group (street/city/state/ZIP); EIN, org name/address.
 - **Coverage:** All US tax-exempt orgs e-filing 990 series; ~2010/2011-present, monthly.
 - **Progress:**
-  - [ ] adapter: `lib/sources/irs-990.ts`
-  - [ ] loader: `scripts/ingest-irs-990.ts` (XML Part VII parser)
-  - [ ] config: `configs/irs-990.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/irs-990.ts`
+  - [x] loader: `scripts/ingest-irs-990.ts (XML Part VII parser)
+  - [~] config: `configs/irs-990.json` (N/A — file-based adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: business (not residential) address labeling
 - **Next step:** No clean no-key per-lookup path exposes officer names. ProPublica Nonprofit Explorer search returns organizations (no officer names) and the per-filing XML is behind a Cloudflare bot-challenge (403). The only no-key route is the IRS TEOS multi-GB monthly ZIP bulk archive + CSV index (download, extract Part VII officer names, index locally) — a batch-ingest design, not a live lookup adapter. Build a batch loader if this source is pursued.
@@ -496,15 +496,15 @@ Status values:
 
 ### 21. `uspto-trademark-owners`
 - **Priority:** P1
-- **Status:** blocked/legal review (login required)
+- **Status:** `ready-local` (API key required: USPTO_API_KEY)
 - **Value:** Trademark owner/applicant full name + applicant address (street/city/state) for individual applicants — direct named-person-to-address link.
 - **Preserved information:** Owner/applicant name, entity type, applicant address, correspondence address, attorney of record, mark, filing/registration dates, status.
 - **Coverage:** All US federal trademark applications/registrations; decades of records; daily front files + backfile.
 - **Progress:**
-  - [ ] adapter: `lib/sources/uspto-trademark.ts`
-  - [ ] loader: `scripts/ingest-uspto-trademark.ts`
-  - [ ] config: `configs/uspto-trademark.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/uspto-trademark.ts`
+  - [x] loader: `scripts/ingest-uspto-trademark.ts
+  - [~] config: `configs/uspto-trademark.json` (N/A — query adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: distinguish individual vs entity applicant
 - **Next step:** Use USPTO Open Data Portal (data.uspto.gov) free bulk; optional TSDR API key for prosecution history.
@@ -864,15 +864,15 @@ Status values:
 
 ### 44. `sam-gov-entity-registrations`
 - **Priority:** P3
-- **Status:** blocked/legal review (API key required)
+- **Status:** `ready-local` (API key required: SAM_GOV_API_KEY)
 - **Value:** Federal contractor/grantee entities with named POCs + addresses — entity-centric so individuals appear only as POCs (indirect).
 - **Preserved information:** Legal business name, DBA, physical+mailing address, UEI, registration expiration, named POC (phone/email), congressional district; exclusions (debarred, named+address).
 - **Coverage:** All entities registered to do business with US federal government; hundreds of thousands; daily/monthly extracts.
 - **Progress:**
-  - [ ] adapter: `lib/sources/sam-gov.ts`
-  - [ ] loader: `scripts/ingest-sam-gov.ts`
-  - [ ] config: `configs/sam-gov.json`
-  - [ ] tests
+  - [x] adapter: `lib/sources/sam-gov.ts`
+  - [x] loader: `scripts/ingest-sam-gov.ts
+  - [~] config: `configs/sam-gov.json` (N/A — query adapter)
+  - [x] tests
   - [ ] docs
   - [ ] display-policy: POC-role labeling (organization-centric)
 - **Next step:** Use SAM.gov Data Services public entity/exclusions extracts (Entity/Exclusions Extracts API).

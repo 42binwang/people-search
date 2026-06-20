@@ -51,6 +51,9 @@
     "ingest:official-json": "tsx scripts/ingest-official-json.ts",
     "ingest:official-delimited": "tsx scripts/ingest-official-delimited.ts",
     "ingest:official-xml": "tsx scripts/ingest-official-xml.ts",
+    "ingest:uspto-trademark": "tsx scripts/ingest-uspto-trademark.ts",
+    "ingest:irs-990": "tsx scripts/ingest-irs-990.ts",
+    "ingest:sam-gov": "tsx scripts/ingest-sam-gov.ts",
     "collect:source": "tsx scripts/collect-approved-source.ts",
     "sources:validate-property": "tsx scripts/validate-property-source-configs.ts"
   },
