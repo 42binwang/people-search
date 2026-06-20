@@ -11,7 +11,7 @@ Adapter: `lib/sources/census-acs-race-origin.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-race-origin -- --config=configs/social-sources/census-acs-race-origin-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-race-origin.ts -- --config=configs/social-sources/census-acs-race-origin-2024-bay-area.json
 ```
 
 Current configs:
@@ -62,7 +62,7 @@ Adapter: `lib/sources/census-acs-age-sex.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-age-sex -- --config=configs/social-sources/census-acs-age-sex-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-age-sex.ts -- --config=configs/social-sources/census-acs-age-sex-2024-bay-area.json
 ```
 
 Current configs:
@@ -119,7 +119,7 @@ Adapter: `lib/sources/census-acs-internet-access.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-internet-access -- --config=configs/social-sources/census-acs-internet-access-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-internet-access.ts -- --config=configs/social-sources/census-acs-internet-access-2024-bay-area.json
 ```
 
 Current configs:
@@ -161,7 +161,7 @@ Adapter: `lib/sources/census-acs-language-proficiency.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-language-proficiency -- --config=configs/social-sources/census-acs-language-proficiency-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-language-proficiency.ts -- --config=configs/social-sources/census-acs-language-proficiency-2024-bay-area.json
 ```
 
 Current configs:

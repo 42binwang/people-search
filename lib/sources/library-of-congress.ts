@@ -1,9 +1,12 @@
 import {
+  isPersonLikeSearchName,
+  tokenizeName,
+} from "@/lib/name-search";
+import {
   upsertApprovedSource,
   upsertProfile,
   type UpsertProfileInput,
 } from "@/lib/db";
-import { normalizeName } from "@/lib/normalization";
 import { applyImportLimit, clampLimit } from "@/lib/sources/limits";
 
 export type LibraryOfCongressIngestInput = {
@@ -81,13 +84,18 @@ export function mapLibraryOfCongressEntryToProfileInput(
   query: string,
   entry: LibraryOfCongressEntry,
 ): UpsertProfileInput | null {
-  if (!entry.id || !entry.title || !titleMatchesQuery(entry.title, query)) {
+  if (!entry.id || !entry.title || !isNameAuthorityEntry(entry)) {
+    return null;
+  }
+
+  const displayName = extractDisplayName(entry.title, query);
+  if (!displayName) {
     return null;
   }
 
   return {
     id: `p_loc_${hashStable(entry.id)}`,
-    fullName: extractDisplayName(entry.title, query),
+    fullName: displayName,
     ageRange: "Unknown",
     confidence: "Low",
     aliases: [
@@ -171,16 +179,44 @@ function isLocAttributes(value: unknown): value is { href?: string; rel?: string
 }
 
 function titleMatchesQuery(title: string, query: string) {
-  const titleNorm = normalizeName(title);
-  const tokens = normalizeName(query).split(" ").filter(Boolean);
-  return tokens.length > 0 && tokens.every((token) => titleNorm.includes(token));
+  return isPersonLikeSearchName(title, tokenizeName(query));
 }
 
 function extractDisplayName(title: string, query: string) {
-  const beforePeriod = title.split(".")[0]?.trim();
-  return beforePeriod && titleMatchesQuery(beforePeriod, query)
-    ? beforePeriod
-    : query;
+  const queryTokens = tokenizeName(query);
+  const authorityHeading = title.split(".")[0]?.trim() ?? "";
+  const invertedName = extractInvertedName(authorityHeading);
+
+  if (invertedName && isPersonLikeSearchName(invertedName, queryTokens)) {
+    return invertedName;
+  }
+
+  return titleMatchesQuery(authorityHeading, query) ? authorityHeading : "";
+}
+
+function isNameAuthorityEntry(entry: LibraryOfCongressEntry) {
+  return [entry.id, entry.href].some((value) =>
+    Boolean(value && /\/authorities\/names\//.test(value)),
+  );
+}
+
+function extractInvertedName(value: string) {
+  const parts = value
+    .split(",")
+    .map((part) => stripDateFragments(part).trim())
+    .filter(Boolean);
+  if (parts.length < 2) {
+    return value.trim();
+  }
+
+  const [familyName, ...givenParts] = parts;
+  return [...givenParts, familyName].join(" ").replace(/\s+/g, " ").trim();
+}
+
+function stripDateFragments(value: string) {
+  return value
+    .replace(/\b\d{3,4}\??(?:\s*-\s*\d{0,4}\??)?/g, " ")
+    .replace(/\s+-\s*/g, " ");
 }
 
 function hashStable(value: string) {

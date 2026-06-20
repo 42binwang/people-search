@@ -3,6 +3,7 @@ import {
   upsertProfile,
   type UpsertProfileInput,
 } from "@/lib/db";
+import { isPersonLikeSearchName, tokenizeName } from "@/lib/name-search";
 import { normalizeName } from "@/lib/normalization";
 import { applyImportLimit, clampLimit } from "@/lib/sources/limits";
 
@@ -129,9 +130,7 @@ function buildOpenLibraryAuthorUrl(input: { query: string; limit: number | undef
 }
 
 function nameMatchesQuery(name: string, query: string) {
-  const nameNorm = normalizeName(name);
-  const tokens = normalizeName(query).split(" ").filter(Boolean);
-  return tokens.length > 0 && tokens.every((token) => nameNorm.includes(token));
+  return isPersonLikeSearchName(name, tokenizeName(query));
 }
 
 function slugify(value: string) {

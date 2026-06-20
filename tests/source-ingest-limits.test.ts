@@ -643,7 +643,7 @@ function locEntry(id: string, title: string) {
     "atom:entry",
     {},
     ["atom:title", {}, title],
-    ["atom:id", {}, `info:lc/resources/works/${id}`],
+    ["atom:id", {}, `http://id.loc.gov/authorities/names/${id}`],
   ];
 }
 

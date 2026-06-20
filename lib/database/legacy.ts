@@ -12,6 +12,7 @@ import {
 } from "@/lib/normalization";
 import {
   getNameSearchTokens,
+  isPersonLikeSearchName,
   nameTokenLikePattern,
 } from "@/lib/name-search";
 import {
@@ -31,6 +32,70 @@ const dbPath =
   );
 const schemaVersion = 40;
 
+const streetSuffixVariants: Record<string, string[]> = {
+  alley: ["alley", "aly"],
+  aly: ["aly", "alley"],
+  avenue: ["avenue", "ave"],
+  ave: ["ave", "avenue"],
+  boulevard: ["boulevard", "blvd"],
+  blvd: ["blvd", "boulevard"],
+  circle: ["circle", "cir"],
+  cir: ["cir", "circle"],
+  court: ["court", "ct"],
+  ct: ["ct", "court"],
+  drive: ["drive", "dr"],
+  dr: ["dr", "drive"],
+  highway: ["highway", "hwy"],
+  hwy: ["hwy", "highway"],
+  lane: ["lane", "ln"],
+  ln: ["ln", "lane"],
+  parkway: ["parkway", "pkwy"],
+  pkwy: ["pkwy", "parkway"],
+  place: ["place", "pl"],
+  pl: ["pl", "place"],
+  road: ["road", "rd"],
+  rd: ["rd", "road"],
+  square: ["square", "sq"],
+  sq: ["sq", "square"],
+  street: ["street", "st"],
+  st: ["st", "street"],
+  terrace: ["terrace", "ter"],
+  ter: ["ter", "terrace"],
+  trail: ["trail", "trl"],
+  trl: ["trl", "trail"],
+  way: ["way"],
+};
+
+// Non-residential, source-context locations that must never surface as address
+// matches. Shared by isGenericLocation() and the address-search WHERE clause.
+const genericLocationCities = [
+  "federal register",
+  "library of congress",
+  "openalex",
+  "wikidata",
+  "crossref",
+  "pubmed",
+  "clinicaltrials gov",
+  "internet archive",
+  "open library",
+  "github",
+  "stack exchange",
+  "orcid",
+  "semantic scholar",
+  "google books",
+  "europe pmc",
+  "socrata",
+  "arcgis",
+  "ckan",
+  "opendatasoft",
+  "musicbrainz",
+  "viaf",
+  "datacite",
+  "arxiv",
+];
+
+const genericLocationStates = ["GLOBAL", "USER-ENTERED", "US"];
+
 export type SearchResult = {
   id: string;
   name: string;
@@ -45,6 +110,18 @@ export type Profile = SearchResult & {
   phones: string[];
   emails: string[];
   addresses: string[];
+  addressHistory: AddressHistoryEntry[];
+  sourceCategories: string[];
+};
+
+export type AddressHistoryEntry = {
+  address: string;
+  street: string | null;
+  city: string;
+  state: string;
+  zip: string | null;
+  kinds: string[];
+  sources: string[];
   sourceCategories: string[];
 };
 
@@ -2350,7 +2427,9 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
         cityLike: `%${escapeSqlLike(city)}%`,
       }) as DbProfileRow[];
 
-    return rows.map(toSearchResult);
+    return rows
+      .filter((row) => isPersonLikeSearchName(row.full_name, nameTokens))
+      .map(toSearchResult);
   }
 
   if (payload.mode === "phone") {
@@ -2372,23 +2451,117 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
     return rows.map(toSearchResult);
   }
 
+  if (payload.mode === "email") {
+    const email = normalizeEmail(payload.email);
+    if (!email) {
+      return [];
+    }
+
+    const rows = db
+      .prepare(
+        `
+        SELECT DISTINCT p.*
+        FROM profiles p
+        JOIN profile_contacts c ON c.profile_id = p.id
+        WHERE p.suppressed_at IS NULL
+          AND c.type = 'email'
+          AND c.normalized_value = @email
+        LIMIT 25
+      `,
+      )
+      .all({ email }) as DbProfileRow[];
+
+    return rows.map(toSearchResult);
+  }
+
+  // Fuzzy / partial address lookup: a search works with any meaningful subset
+  // of street / city+state / ZIP — not all fields at once. Street matching is
+  // token-subset (match if at least one token hits), ranked by how many tokens
+  // hit, with exact and prefix matches ranked above partial ones.
+  const streetTokens = addressSearchTokens(payload.street);
+  const state = payload.state.trim().toUpperCase();
+  const city = normalizeText(payload.city);
+  const zip = payload.zip.trim();
+
+  const hasStreet = streetTokens.length > 0;
+  const hasZip = zip.length > 0;
+  const hasCityState = city.length > 0 && state.length > 0;
+  if (!hasStreet && !hasZip && !hasCityState) {
+    return [];
+  }
+
   const normalizedAddress = normalizeAddress(payload);
+
+  const where: string[] = [
+    "p.suppressed_at IS NULL",
+    `lower(l.city) NOT IN (${genericLocationCities
+      .map((_, index) => `@genericCity${index}`)
+      .join(", ")})`,
+    "l.state NOT IN ('GLOBAL', 'USER-ENTERED', 'US')",
+  ];
+  const params: Record<string, string> = {};
+  genericLocationCities.forEach((genericCity, index) => {
+    params[`genericCity${index}`] = genericCity;
+  });
+
+  if (state) {
+    where.push("l.state = @state");
+    params.state = state;
+  }
+  if (city) {
+    where.push("lower(l.city) LIKE @cityLike ESCAPE '\\'");
+    params.cityLike = `%${escapeSqlLike(city)}%`;
+  }
+  if (zip) {
+    where.push(
+      "(l.zip = @zip OR l.normalized_address LIKE @zipLike ESCAPE '\\')",
+    );
+    params.zip = zip;
+    params.zipLike = `%${escapeSqlLike(zip)}%`;
+  }
+
+  const tokenGroups = addressTokenGroups(
+    "l.normalized_address",
+    streetTokens,
+    "streetToken",
+  );
+  Object.assign(params, tokenGroups.params);
+  let tokenScoreExpr = "0";
+  if (tokenGroups.groups.length > 0) {
+    where.push(
+      `(${tokenGroups.groups.map((group) => `(${group.condition})`).join(" OR ")})`,
+    );
+    tokenScoreExpr = tokenGroups.groups
+      .map((group) => `CASE WHEN (${group.condition}) THEN 1 ELSE 0 END`)
+      .join(" + ");
+  }
+
+  params.normalizedAddress = normalizedAddress;
+  params.prefixLike = `${escapeSqlLike(normalizedAddress)}%`;
+
   const rows = db
     .prepare(
       `
-      SELECT DISTINCT p.*
+      SELECT p.*
       FROM profiles p
       JOIN profile_locations l ON l.profile_id = p.id
-      WHERE p.suppressed_at IS NULL
-        AND l.normalized_address LIKE @addressLike ESCAPE '\\'
-        AND l.state = @state
+      WHERE ${where.join("\n        AND ")}
+      GROUP BY p.id
+      ORDER BY
+        MIN(
+          CASE
+            WHEN l.normalized_address = @normalizedAddress THEN 0
+            WHEN l.normalized_address LIKE @prefixLike ESCAPE '\\' THEN 1
+            ELSE 2
+          END
+        ),
+        MAX(${tokenScoreExpr}) DESC,
+        CASE p.confidence WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END,
+        p.full_name
       LIMIT 25
     `,
     )
-    .all({
-      addressLike: `%${escapeSqlLike(normalizedAddress)}%`,
-      state: payload.state.trim().toUpperCase(),
-    }) as DbProfileRow[];
+    .all(params) as DbProfileRow[];
 
   return rows.map(toSearchResult);
 }
@@ -2413,6 +2586,48 @@ function nameTokenParams(tokens: string[], paramPrefix: string) {
       nameTokenLikePattern(token),
     ]),
   );
+}
+
+function addressSearchTokens(value: string) {
+  return normalizeText(value)
+    .split(" ")
+    .filter((token) => token.length > 0);
+}
+
+function addressTokenGroups(
+  column: string,
+  tokens: string[],
+  paramPrefix: string,
+): {
+  groups: Array<{ condition: string }>;
+  params: Record<string, string>;
+} {
+  const groups = tokens.map((token, tokenIndex) => {
+    const variants = addressTokenVariants(token);
+    const condition = variants
+      .map(
+        (_variant, variantIndex) =>
+          `(' ' || ${column} || ' ') LIKE @${paramPrefix}${tokenIndex}_${variantIndex} ESCAPE '\\'`,
+      )
+      .join(" OR ");
+    return { condition };
+  });
+
+  const params = Object.fromEntries(
+    tokens.flatMap((token, tokenIndex) =>
+      addressTokenVariants(token).map((variant, variantIndex) => [
+        `${paramPrefix}${tokenIndex}_${variantIndex}`,
+        `% ${escapeSqlLike(variant)} %`,
+      ]),
+    ),
+  );
+
+  return { groups, params };
+}
+
+function addressTokenVariants(token: string) {
+  const variants = streetSuffixVariants[token] ?? [token];
+  return Array.from(new Set(variants));
 }
 
 export function getCachedSearchResults(
@@ -2583,12 +2798,15 @@ export function getProfile(id: string): Profile | null {
     return null;
   }
 
+  const addressHistory = getAddressHistory(row.id);
+
   return {
     ...toSearchResult(row),
     aliases: getAliases(row.id),
     phones: getContacts(row.id, "phone"),
     emails: getContacts(row.id, "email"),
-    addresses: getAddressHistory(row.id),
+    addresses: addressHistory.map((address) => address.address),
+    addressHistory,
     sourceCategories: getSourceCategories(row.id),
   };
 }
@@ -2815,6 +3033,90 @@ function findProfileIdForUpsert(
     }
   }
 
+  // Location-aware and generic source merge for profiles with no age/birth date and no contact info
+  // Merge if:
+  // 1. Locations overlap (same city + state), OR
+  // 2. At least one profile has a generic/source-specific location (e.g., "Federal Register, US")
+  if (!normalizedBirthDate && !input.contacts?.length && input.locations?.length) {
+    const incomingLocations = new Set(
+      input.locations.map((loc) => ({
+        city: normalizeText(loc.city),
+        state: loc.state.trim().toUpperCase(),
+        fullKey: `${normalizeText(loc.city)},${loc.state.trim().toUpperCase()}`
+      }))
+    );
+
+    // Check for overlapping locations
+    for (const location of incomingLocations) {
+      const row = db
+        .prepare(
+          `
+          SELECT DISTINCT p.id, p.birth_date, p.normalized_birth_date,
+                 COUNT(DISTINCT c.id) as contact_count
+          FROM profiles p
+          LEFT JOIN profile_locations l ON l.profile_id = p.id
+          LEFT JOIN profile_contacts c ON c.profile_id = p.id
+          WHERE p.suppressed_at IS NULL
+            AND p.normalized_name = @name
+            AND lower(l.city) = lower(@city)
+            AND l.state = @state
+            AND p.birth_date IS NULL
+            AND p.normalized_birth_date IS NULL
+          GROUP BY p.id
+          HAVING contact_count = 0
+          ORDER BY p.created_at, p.id
+          LIMIT 1
+        `,
+        )
+        .get({
+          name: normalizedName,
+          city: location.city,
+          state: location.state,
+        }) as { id: string } | undefined;
+      if (row?.id) {
+        return row.id;
+      }
+    }
+
+    // Check for generic/source locations - merge if either profile has one
+    // Generic locations are: non-geographic locations like "Federal Register", "Library of Congress", etc.
+    const hasGenericLocation = Array.from(incomingLocations).some(
+      loc => isGenericLocation(loc.city, loc.state)
+    );
+
+    if (hasGenericLocation) {
+      // Find any profile with same name, no birth date, no contacts, and any generic location
+      const row = db
+        .prepare(
+          `
+          SELECT DISTINCT p.id
+          FROM profiles p
+          LEFT JOIN profile_locations l ON l.profile_id = p.id
+          LEFT JOIN profile_contacts c ON c.profile_id = p.id
+          WHERE p.suppressed_at IS NULL
+            AND p.normalized_name = @name
+            AND p.birth_date IS NULL
+            AND p.normalized_birth_date IS NULL
+          GROUP BY p.id
+          HAVING COUNT(DISTINCT c.id) = 0
+            AND SUM(CASE
+              WHEN lower(l.city) IN ('federal register', 'library of congress', 'openalex', 'wikidata', 'crossref', 'pubmed', 'clinicaltrials gov', 'internet archive', 'open library', 'github', 'stack exchange', 'orcid', 'semantic scholar', 'google books', 'europe pmc', 'socrata', 'arcgis', 'ckan', 'opendatasoft', 'musicbrainz', 'viaf', 'datacite', 'arxiv')
+                 OR l.state IN ('USER-ENTERED', 'US')
+              THEN 1 ELSE 0
+            END) > 0
+          ORDER BY p.created_at, p.id
+          LIMIT 1
+        `,
+        )
+        .get({
+          name: normalizedName,
+        }) as { id: string } | undefined;
+      if (row?.id) {
+        return row.id;
+      }
+    }
+  }
+
   return null;
 }
 
@@ -2982,6 +3284,13 @@ function normalizeContactValue(
   return contact.type === "phone"
     ? normalizePhone(contact.value)
     : normalizeEmail(contact.value);
+}
+
+function isGenericLocation(city: string, state: string): boolean {
+  return (
+    genericLocationCities.includes(city) ||
+    genericLocationStates.includes(state)
+  );
 }
 
 function normalizeBirthDate(value: string | undefined) {
@@ -6306,21 +6615,35 @@ function getLocations(profileId: string) {
       FROM profile_locations
       WHERE profile_id = ?
       ORDER BY display_order, id
-      LIMIT 4
     `,
     )
     .all(profileId) as Array<{ city: string; state: string }>;
-  return rows.map((row) => `${row.city}, ${row.state}`);
+  return uniqueValues(
+    rows
+      .filter((row) => isGeographicLocationRow(row))
+      .map((row) => `${row.city}, ${row.state}`),
+  ).slice(0, 4);
 }
 
-function getAddressHistory(profileId: string) {
+function getAddressHistory(profileId: string): AddressHistoryEntry[] {
   const rows = getDb()
     .prepare(
       `
-      SELECT street, city, state, zip
-      FROM profile_locations
-      WHERE profile_id = ?
-      ORDER BY display_order, id
+      SELECT
+        MIN(street) AS street,
+        city,
+        state,
+        MIN(zip) AS zip,
+        GROUP_CONCAT(DISTINCT kind) AS kinds,
+        GROUP_CONCAT(DISTINCT s.name) AS sources,
+        GROUP_CONCAT(DISTINCT s.category) AS sourceCategories,
+        MIN(display_order) AS firstDisplayOrder,
+        MIN(l.id) AS firstId
+      FROM profile_locations l
+      LEFT JOIN approved_sources s ON s.id = l.source_id
+      WHERE l.profile_id = ?
+      GROUP BY l.normalized_address, city, state
+      ORDER BY firstDisplayOrder, firstId
     `,
     )
     .all(profileId) as Array<{
@@ -6328,11 +6651,43 @@ function getAddressHistory(profileId: string) {
     city: string;
     state: string;
     zip: string | null;
+    kinds: string | null;
+    sources: string | null;
+    sourceCategories: string | null;
   }>;
 
-  return rows.map((row) =>
-    [row.street, row.city, row.state, row.zip].filter(Boolean).join(", "),
-  );
+  return rows.map((row) => ({
+    address: [row.street, row.city, row.state, row.zip].filter(Boolean).join(", "),
+    street: row.street,
+    city: row.city,
+    state: row.state,
+    zip: row.zip,
+    kinds: splitSqlList(row.kinds),
+    sources: splitSqlList(row.sources),
+    sourceCategories: splitSqlList(row.sourceCategories),
+  })).filter(isGeographicAddressHistoryEntry);
+}
+
+function splitSqlList(value: string | null) {
+  return value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
+}
+
+function isGeographicAddressHistoryEntry(entry: AddressHistoryEntry) {
+  if (entry.street || entry.zip) {
+    return true;
+  }
+
+  return isGeographicLocationRow(entry);
+}
+
+function isGeographicLocationRow(row: { city: string; state: string }) {
+  const city = normalizeText(row.city);
+  const state = row.state.trim().toUpperCase();
+  return !isGenericLocation(city, state);
+}
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values));
 }
 
 function getRelationships(profileId: string) {

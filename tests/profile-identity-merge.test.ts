@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   getDb,
   getProfile,
+  searchProfiles,
   upsertApprovedSource,
   upsertProfile,
 } from "@/lib/db";
@@ -15,6 +16,9 @@ const profileIds = [
   "p_test_merge_phone_b",
   "p_test_merge_distinct_a",
   "p_test_merge_distinct_b",
+  "p_test_source_context_location",
+  "p_test_email_search",
+  "p_test_address_fuzzy",
 ];
 const sourceIds = [
   "test_merge_birth_a",
@@ -25,6 +29,9 @@ const sourceIds = [
   "test_merge_phone_b",
   "test_merge_distinct_a",
   "test_merge_distinct_b",
+  "test_source_context_location",
+  "test_email_search",
+  "test_address_fuzzy",
 ];
 
 describe("profile identity merge", () => {
@@ -76,6 +83,22 @@ describe("profile identity merge", () => {
     expect(merged?.addresses).toEqual([
       "1 First St, San Francisco, CA",
       "2 Second St, Oakland, CA",
+    ]);
+    expect(merged?.addressHistory).toMatchObject([
+      {
+        address: "1 First St, San Francisco, CA",
+        street: "1 First St",
+        city: "San Francisco",
+        state: "CA",
+        kinds: ["possible"],
+      },
+      {
+        address: "2 Second St, Oakland, CA",
+        street: "2 Second St",
+        city: "Oakland",
+        state: "CA",
+        kinds: ["possible"],
+      },
     ]);
     expect(getProfile("p_test_merge_birth_b")).toBeNull();
     expect(getSourceRecordProfileId("test_merge_birth_b", "b")).toBe(
@@ -156,6 +179,100 @@ describe("profile identity merge", () => {
 
     expect(getProfile("p_test_merge_distinct_a")).not.toBeNull();
     expect(getProfile("p_test_merge_distinct_b")).not.toBeNull();
+  });
+
+  it("excludes source-context locations from geographic movement history", () => {
+    upsertProfile({
+      id: "p_test_source_context_location",
+      fullName: "Mai Ren",
+      locations: [
+        {
+          city: "arXiv",
+          state: "GLOBAL",
+          kind: "source metadata",
+          sourceId: "test_source_context_location",
+        },
+        {
+          city: "Internet Archive",
+          state: "GLOBAL",
+          kind: "source metadata",
+          sourceId: "test_source_context_location",
+        },
+        {
+          city: "San Mateo",
+          state: "CA",
+          kind: "possible residence",
+          sourceId: "test_source_context_location",
+        },
+      ],
+      sourceRecord: {
+        sourceId: "test_source_context_location",
+        sourceRecordId: "source-context",
+        raw: { record: "source-context" },
+      },
+    });
+
+    const profile = getProfile("p_test_source_context_location");
+    expect(profile?.locations).toEqual(["San Mateo, CA"]);
+    expect(profile?.addressHistory).toMatchObject([
+      {
+        address: "San Mateo, CA",
+        city: "San Mateo",
+        state: "CA",
+        kinds: ["possible residence"],
+      },
+    ]);
+  });
+
+  it("searches profiles by normalized email", () => {
+    upsertProfile({
+      id: "p_test_email_search",
+      fullName: "Taylor Email",
+      contacts: [{ type: "email", value: "Taylor.Email@Example.com" }],
+      sourceRecord: {
+        sourceId: "test_email_search",
+        sourceRecordId: "email-search",
+        raw: { record: "email-search" },
+      },
+    });
+
+    const results = searchProfiles({
+      mode: "email",
+      email: " taylor.email@example.com ",
+    });
+
+    expect(results.map((result) => result.id)).toContain("p_test_email_search");
+  });
+
+  it("searches addresses with street suffix variants and optional city", () => {
+    upsertProfile({
+      id: "p_test_address_fuzzy",
+      fullName: "Taylor Address",
+      locations: [
+        {
+          street: "123 Main Street",
+          city: "San Mateo",
+          state: "CA",
+          zip: "94401",
+          sourceId: "test_address_fuzzy",
+        },
+      ],
+      sourceRecord: {
+        sourceId: "test_address_fuzzy",
+        sourceRecordId: "address-fuzzy",
+        raw: { record: "address-fuzzy" },
+      },
+    });
+
+    const results = searchProfiles({
+      mode: "address",
+      street: "123 main st",
+      city: "",
+      state: "CA",
+      zip: "",
+    });
+
+    expect(results.map((result) => result.id)).toContain("p_test_address_fuzzy");
   });
 });
 

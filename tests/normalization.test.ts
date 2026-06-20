@@ -3,6 +3,7 @@ import {
   escapeSqlLike,
   maskEmail,
   normalizeAddress,
+  normalizeEmail,
   normalizeName,
   normalizePhone,
 } from "@/lib/normalization";
@@ -16,6 +17,12 @@ describe("normalization helpers", () => {
     expect(normalizePhone("(512) 555-0148")).toBe("+15125550148");
     expect(normalizePhone("1-972-555-2291")).toBe("+19725552291");
     expect(normalizePhone("555")).toBe("");
+  });
+
+  it("normalizes email addresses", () => {
+    expect(normalizeEmail(" Taylor.Email@Example.com ")).toBe(
+      "taylor.email@example.com",
+    );
   });
 
   it("normalizes address parts", () => {

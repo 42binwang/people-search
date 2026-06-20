@@ -34,5 +34,32 @@ describe("GitHub source mapping", () => {
       }),
     ).toBeNull();
   });
+
+  it("captures a user-published public email as a low-confidence contact", () => {
+    const profile = mapGitHubUserToProfileInput("Jane Smith", {
+      login: "janesmith",
+      name: "Jane Smith",
+      email: "jane@example.dev",
+    });
+
+    expect(profile?.contacts).toEqual([
+      {
+        type: "email",
+        value: "jane@example.dev",
+        confidence: "Low",
+        sourceId: "github_users",
+      },
+    ]);
+  });
+
+  it("omits contacts when the user has no public email", () => {
+    const profile = mapGitHubUserToProfileInput("Jane Smith", {
+      login: "janesmith",
+      name: "Jane Smith",
+      email: null,
+    });
+
+    expect(profile?.contacts).toEqual([]);
+  });
 });
 

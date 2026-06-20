@@ -108,7 +108,16 @@ export function mapGitHubUserToProfileInput(
         sourceId,
       },
     ],
-    contacts: [],
+    contacts: user.email
+      ? [
+          {
+            type: "email" as const,
+            value: user.email,
+            confidence: "Low",
+            sourceId,
+          },
+        ]
+      : [],
     relationships: [],
     sourceRecord: {
       sourceId,
@@ -175,6 +184,7 @@ export type GitHubUser = {
   company?: string | null;
   blog?: string | null;
   location?: string | null;
+  email?: string | null;
   public_repos?: number;
   followers?: number;
 };

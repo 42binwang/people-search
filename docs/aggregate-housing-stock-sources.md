@@ -11,9 +11,9 @@ Adapter: `lib/sources/census-acs-housing.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing -- --config=configs/housing-stock-sources/census-acs-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing -- --config=configs/housing-stock-sources/census-acs-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing -- --config=configs/housing-stock-sources/census-acs-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts -- --config=configs/housing-stock-sources/census-acs-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts -- --config=configs/housing-stock-sources/census-acs-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts -- --config=configs/housing-stock-sources/census-acs-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -70,7 +70,7 @@ Adapter: `lib/sources/census-acs-housing-structure.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-structure -- --config=configs/housing-stock-sources/census-acs-housing-structure-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-structure -- --config=configs/housing-stock-sources/census-acs-housing-structure-2024-bay-area.json
 ```
 
 Current configs:
@@ -127,7 +127,7 @@ Adapter: `lib/sources/census-acs-household-composition.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-household-composition -- --config=configs/housing-stock-sources/census-acs-household-composition-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-household-composition.ts -- --config=configs/housing-stock-sources/census-acs-household-composition-2024-bay-area.json
 ```
 
 Current configs:
@@ -189,9 +189,9 @@ Adapter: `lib/sources/census-acs-housing-cost-burden.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -250,9 +250,9 @@ Adapter: `lib/sources/census-acs-housing-crowding.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -305,7 +305,7 @@ Adapter: `lib/sources/census-acs-value-rent.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-value-rent -- --config=configs/housing-stock-sources/census-acs-value-rent-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-value-rent.ts -- --config=configs/housing-stock-sources/census-acs-value-rent-2024-bay-area.json
 ```
 
 Current configs:
@@ -372,9 +372,9 @@ Adapter: `lib/sources/census-acs-vacancy-status.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-vacancy-status -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-vacancy-status -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-vacancy-status -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-vacancy-status.ts -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-vacancy-status.ts -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-vacancy-status.ts -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-greater-seattle.json
 ```
 
 Current configs:

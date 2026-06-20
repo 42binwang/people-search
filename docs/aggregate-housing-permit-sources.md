@@ -13,12 +13,12 @@ Adapter: `lib/sources/hud-residential-construction-permits.ts`
 CLI:
 
 ```bash
-npm run ingest:socrata-housing-permits -- --config=configs/housing-permit-sources/sf-building-permits.json
-npm run ingest:socrata-housing-permits -- --config=configs/housing-permit-sources/nyc-dob-permit-issuance.json
-npm run ingest:socrata-housing-permits -- --config=configs/housing-permit-sources/seattle-issued-building-permits.json
-npm run ingest:hud-residential-construction-permits -- --config=configs/housing-permit-sources/hud-bps-2022-bay-area.json
-npm run ingest:hud-residential-construction-permits -- --config=configs/housing-permit-sources/hud-bps-2022-nyc.json
-npm run ingest:hud-residential-construction-permits -- --config=configs/housing-permit-sources/hud-bps-2022-greater-seattle.json
+npx tsx scripts/ingest-socrata-housing-permits.ts -- --config=configs/housing-permit-sources/sf-building-permits.json
+npx tsx scripts/ingest-socrata-housing-permits.ts -- --config=configs/housing-permit-sources/nyc-dob-permit-issuance.json
+npx tsx scripts/ingest-socrata-housing-permits.ts -- --config=configs/housing-permit-sources/seattle-issued-building-permits.json
+npx tsx scripts/ingest-hud-residential-construction-permits.ts -- --config=configs/housing-permit-sources/hud-bps-2022-bay-area.json
+npx tsx scripts/ingest-hud-residential-construction-permits.ts -- --config=configs/housing-permit-sources/hud-bps-2022-nyc.json
+npx tsx scripts/ingest-hud-residential-construction-permits.ts -- --config=configs/housing-permit-sources/hud-bps-2022-greater-seattle.json
 ```
 
 Current configs:

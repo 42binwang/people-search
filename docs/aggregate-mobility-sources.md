@@ -11,9 +11,9 @@ Adapter: `lib/sources/census-acs-mobility.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-mobility -- --config=configs/mobility-sources/census-acs-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-mobility -- --config=configs/mobility-sources/census-acs-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-mobility -- --config=configs/mobility-sources/census-acs-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-mobility.ts -- --config=configs/mobility-sources/census-acs-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-mobility.ts -- --config=configs/mobility-sources/census-acs-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-mobility.ts -- --config=configs/mobility-sources/census-acs-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -70,9 +70,9 @@ Adapter: `lib/sources/census-acs-residential-tenure.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-residential-tenure -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-residential-tenure -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-residential-tenure -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-residential-tenure.ts -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-residential-tenure.ts -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-residential-tenure.ts -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -126,9 +126,9 @@ Adapter: `lib/sources/census-acs-commuting.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-commuting -- --config=configs/mobility-sources/census-acs-commuting-2024-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-commuting -- --config=configs/mobility-sources/census-acs-commuting-2024-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-commuting -- --config=configs/mobility-sources/census-acs-commuting-2024-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-commuting.ts -- --config=configs/mobility-sources/census-acs-commuting-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-commuting.ts -- --config=configs/mobility-sources/census-acs-commuting-2024-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-commuting.ts -- --config=configs/mobility-sources/census-acs-commuting-2024-greater-seattle.json
 ```
 
 Current configs:
@@ -183,9 +183,9 @@ Adapter: `lib/sources/irs-soi-migration.ts`
 CLI:
 
 ```bash
-npm run ingest:irs-soi-migration -- --config=configs/mobility-sources/irs-soi-2022-2023-bay-area.json
-npm run ingest:irs-soi-migration -- --config=configs/mobility-sources/irs-soi-2022-2023-nyc.json
-npm run ingest:irs-soi-migration -- --config=configs/mobility-sources/irs-soi-2022-2023-greater-seattle.json
+npx tsx scripts/ingest-irs-soi-migration.ts -- --config=configs/mobility-sources/irs-soi-2022-2023-bay-area.json
+npx tsx scripts/ingest-irs-soi-migration.ts -- --config=configs/mobility-sources/irs-soi-2022-2023-nyc.json
+npx tsx scripts/ingest-irs-soi-migration.ts -- --config=configs/mobility-sources/irs-soi-2022-2023-greater-seattle.json
 ```
 
 Current configs:
@@ -240,9 +240,9 @@ Adapter: `lib/sources/census-acs-migration-flows.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-migration-flows -- --config=configs/mobility-sources/census-acs-flows-2022-bay-area.json
-CENSUS_API_KEY=... npm run ingest:census-acs-migration-flows -- --config=configs/mobility-sources/census-acs-flows-2022-nyc.json
-CENSUS_API_KEY=... npm run ingest:census-acs-migration-flows -- --config=configs/mobility-sources/census-acs-flows-2022-greater-seattle.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-migration-flows.ts -- --config=configs/mobility-sources/census-acs-flows-2022-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-migration-flows.ts -- --config=configs/mobility-sources/census-acs-flows-2022-nyc.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-migration-flows.ts -- --config=configs/mobility-sources/census-acs-flows-2022-greater-seattle.json
 ```
 
 Current configs:
@@ -295,9 +295,9 @@ Adapter: `lib/sources/census-lehd-lodes.ts`
 CLI:
 
 ```bash
-npm run ingest:census-lehd-lodes -- --config=configs/mobility-sources/census-lehd-lodes-2023-bay-area.json
-npm run ingest:census-lehd-lodes -- --config=configs/mobility-sources/census-lehd-lodes-2023-nyc.json
-npm run ingest:census-lehd-lodes -- --config=configs/mobility-sources/census-lehd-lodes-2023-greater-seattle.json
+npx tsx scripts/ingest-census-lehd-lodes.ts -- --config=configs/mobility-sources/census-lehd-lodes-2023-bay-area.json
+npx tsx scripts/ingest-census-lehd-lodes.ts -- --config=configs/mobility-sources/census-lehd-lodes-2023-nyc.json
+npx tsx scripts/ingest-census-lehd-lodes.ts -- --config=configs/mobility-sources/census-lehd-lodes-2023-greater-seattle.json
 ```
 
 Current configs:
@@ -351,9 +351,9 @@ Adapter: `lib/sources/census-pep-components.ts`
 CLI:
 
 ```bash
-npm run ingest:census-pep-components -- --config=configs/mobility-sources/census-pep-2025-bay-area.json
-npm run ingest:census-pep-components -- --config=configs/mobility-sources/census-pep-2025-nyc.json
-npm run ingest:census-pep-components -- --config=configs/mobility-sources/census-pep-2025-greater-seattle.json
+npx tsx scripts/ingest-census-pep-components.ts -- --config=configs/mobility-sources/census-pep-2025-bay-area.json
+npx tsx scripts/ingest-census-pep-components.ts -- --config=configs/mobility-sources/census-pep-2025-nyc.json
+npx tsx scripts/ingest-census-pep-components.ts -- --config=configs/mobility-sources/census-pep-2025-greater-seattle.json
 ```
 
 Current configs:

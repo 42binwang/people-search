@@ -32,5 +32,13 @@ describe("Open Library source mapping", () => {
       }),
     ).toBeNull();
   });
-});
 
+  it("skips long title-like author strings for ambiguous names", () => {
+    expect(
+      mapOpenLibraryAuthorToProfileInput("Mai Ren", {
+        key: "OL888A",
+        name: "Bai, Shan Ren mai sheng yu neng li 人脉胜于能力 Beijing Shi",
+      }),
+    ).toBeNull();
+  });
+});

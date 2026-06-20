@@ -80,14 +80,25 @@ export async function ingestPubMedAuthors(
   }
 
   const summaryPayload = (await summaryResponse.json()) as PubMedSummaryResponse;
+  const uids = summaryPayload.result?.uids ?? [];
+  const authorEmailsByPmid = await fetchPubMedAuthorEmails({
+    ids: uids,
+    email: input.email || process.env.NCBI_EMAIL,
+    apiKey: input.apiKey || process.env.NCBI_API_KEY,
+  });
+
   let imported = 0;
 
-  for (const id of summaryPayload.result?.uids ?? []) {
+  for (const id of uids) {
     const article = summaryPayload.result?.[id];
     if (!isPubMedSummaryArticle(article)) {
       continue;
     }
-    const profiles = mapPubMedArticleToProfileInputs(input.query, article);
+    const profiles = mapPubMedArticleToProfileInputs(
+      input.query,
+      article,
+      authorEmailsByPmid.get(article.uid),
+    );
     for (const profile of profiles) {
       upsertProfile(profile);
       imported += 1;
@@ -128,6 +139,7 @@ export function registerPubMedSource() {
 export function mapPubMedArticleToProfileInputs(
   query: string,
   article: PubMedSummaryArticle,
+  authorEmails?: Map<string, string>,
 ): UpsertProfileInput[] {
   if (!article.uid || !article.authors?.length) {
     return [];
@@ -140,37 +152,49 @@ export function mapPubMedArticleToProfileInputs(
   return article.authors
     .map((author, index) => ({ author, index }))
     .filter(({ author }) => pubMedAuthorMatchesQuery(author.name, query))
-    .map(({ author, index }) => ({
-      id: `p_pubmed_${slugify(author.name)}_${article.uid}_${index}`,
-      fullName: author.name,
-      ageRange: "Unknown",
-      confidence: "Low",
-      aliases: [
-        `PubMed article: ${title}`,
-        `PMID: ${article.uid}`,
-        doi ? `DOI: ${doi}` : "",
-        source ? `Journal: ${source}` : "",
-        article.pubdate ? `Published: ${article.pubdate}` : "",
-      ].filter(Boolean),
-      locations: [
-        {
-          city: "PubMed",
-          state: "Global",
-          kind: "biomedical literature author mention",
+    .map(({ author, index }) => {
+      const email = authorEmails?.get(normalizeName(author.name));
+      return {
+        id: `p_pubmed_${slugify(author.name)}_${article.uid}_${index}`,
+        fullName: author.name,
+        ageRange: "Unknown",
+        confidence: "Low",
+        aliases: [
+          `PubMed article: ${title}`,
+          `PMID: ${article.uid}`,
+          doi ? `DOI: ${doi}` : "",
+          source ? `Journal: ${source}` : "",
+          article.pubdate ? `Published: ${article.pubdate}` : "",
+        ].filter(Boolean),
+        locations: [
+          {
+            city: "PubMed",
+            state: "Global",
+            kind: "biomedical literature author mention",
+            sourceId,
+          },
+        ],
+        contacts: email
+          ? [
+              {
+                type: "email" as const,
+                value: email,
+                confidence: "Low",
+                sourceId,
+              },
+            ]
+          : [],
+        relationships: [],
+        sourceRecord: {
           sourceId,
+          sourceRecordId: `${article.uid}:${index}`,
+          raw: {
+            article,
+            matchedAuthor: author,
+          },
         },
-      ],
-      contacts: [],
-      relationships: [],
-      sourceRecord: {
-        sourceId,
-        sourceRecordId: `${article.uid}:${index}`,
-        raw: {
-          article,
-          matchedAuthor: author,
-        },
-      },
-    }));
+      };
+    });
 }
 
 function buildPubMedSearchUrl(input: {
@@ -213,6 +237,110 @@ function buildPubMedSummaryUrl(input: {
     url.searchParams.set("api_key", input.apiKey);
   }
   return url.toString();
+}
+
+function buildPubMedEfetchUrl(input: {
+  ids: string[];
+  email?: string;
+  apiKey?: string;
+}) {
+  const url = new URL("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi");
+  url.searchParams.set("db", "pubmed");
+  url.searchParams.set("id", input.ids.join(","));
+  url.searchParams.set("rettype", "xml");
+  url.searchParams.set("tool", "people-search-local");
+  if (input.email) {
+    url.searchParams.set("email", input.email);
+  }
+  if (input.apiKey) {
+    url.searchParams.set("api_key", input.apiKey);
+  }
+  return url.toString();
+}
+
+// Enrich matched authors with their public correspondence email. Best-effort:
+// never blocks name ingest on failure.
+async function fetchPubMedAuthorEmails(input: {
+  ids: string[];
+  email?: string;
+  apiKey?: string;
+}): Promise<Map<string, Map<string, string>>> {
+  if (input.ids.length === 0) {
+    return new Map();
+  }
+
+  try {
+    const response = await fetch(buildPubMedEfetchUrl(input), {
+      headers: {
+        accept: "application/xml, text/xml",
+        "user-agent": "PeopleSearchPubMedIngest/0.1 local-development",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return new Map();
+    }
+    return parsePubMedAuthorEmailsFromXml(await response.text());
+  } catch {
+    return new Map();
+  }
+}
+
+// Extract ONLY the dedicated structured <Email> child of each <Author>, keyed by
+// normalized author name. Emails embedded inside free-text <Affiliation> are
+// deliberately ignored, per AGENTS.md Non-Negotiable #24 (do not infer emails
+// from affiliation or publication text).
+export function parsePubMedAuthorEmailsFromXml(
+  xml: string,
+): Map<string, Map<string, string>> {
+  const byPmid = new Map<string, Map<string, string>>();
+  for (const articleMatch of xml.matchAll(/<PubmedArticle>([\s\S]*?)<\/PubmedArticle>/g)) {
+    const articleXml = articleMatch[1];
+    const pmid = firstXmlTagText(articleXml, "PMID");
+    if (!pmid) {
+      continue;
+    }
+    const emails = new Map<string, string>();
+    for (const authorMatch of articleXml.matchAll(/<Author[ >][\s\S]*?<\/Author>/g)) {
+      const authorXml = authorMatch[0];
+      const email = firstXmlTagText(authorXml, "Email");
+      if (!email) {
+        continue;
+      }
+      const normalized = normalizeName(authorNameFromXml(authorXml));
+      if (normalized && !emails.has(normalized)) {
+        emails.set(normalized, email.trim());
+      }
+    }
+    if (emails.size > 0) {
+      byPmid.set(pmid, emails);
+    }
+  }
+  return byPmid;
+}
+
+function authorNameFromXml(authorXml: string) {
+  const lastName = firstXmlTagText(authorXml, "LastName");
+  const foreName = firstXmlTagText(authorXml, "ForeName");
+  const collective = firstXmlTagText(authorXml, "CollectiveName");
+  if (lastName || foreName) {
+    return [foreName, lastName].filter(Boolean).join(" ");
+  }
+  return collective;
+}
+
+function firstXmlTagText(xml: string, tagName: string) {
+  const match = xml.match(new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`));
+  return match ? decodeXmlText(match[1]).trim() : "";
+}
+
+function decodeXmlText(value: string) {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
 }
 
 function pubMedAuthorMatchesQuery(authorName: string, query: string) {

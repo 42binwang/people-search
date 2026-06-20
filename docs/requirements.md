@@ -4,7 +4,7 @@ Last updated: 2026-06-18
 
 ## 1. Product Summary
 
-Build a free, ad-supported public lookup website similar in broad search experience to TruePeopleSearch. Users can search by name, phone number, or address and view possible public-record profile matches.
+Build a free, ad-supported public lookup website similar in broad search experience to TruePeopleSearch. Users can search by name, phone number, email address, or address and view possible public-record profile matches.
 
 The product must be designed as a privacy-conscious public lookup service, not as a background-check, eligibility-screening, tenant-screening, employment-screening, credit, insurance, or investigative decision product.
 
@@ -33,6 +33,7 @@ The product must be designed as a privacy-conscious public lookup service, not a
 - Public homepage.
 - Name search.
 - Reverse phone lookup.
+- Reverse email lookup.
 - Reverse address lookup.
 - Search results pages.
 - Person profile pages.
@@ -70,7 +71,7 @@ The product must be designed as a privacy-conscious public lookup service, not a
 
 Requirements:
 
-- Search mode tabs: `Name`, `Phone`, `Address`.
+- Search mode tabs: `Name`, `Phone`, `Email`, `Address`.
 - Mobile-first search form.
 - Clear value proposition without implying guaranteed accuracy.
 - Footer links:
@@ -130,29 +131,56 @@ Acceptance criteria:
 - Invalid numbers are rejected with useful feedback.
 - Matching profiles appear with uncertainty where appropriate.
 
-### 5.4 Reverse Address Search
+### 5.4 Reverse Email Search
 
 Inputs:
 
-- Street address.
-- City.
-- State.
+- Email address.
+
+Requirements:
+
+- Normalize email casing and surrounding whitespace before searching.
+- Validate email format before creating a search token.
+- Match current and historical email associations where allowed.
+- Source adapters that expose public email fields must store them as email contacts with source provenance and must not infer emails from unrelated metadata.
+- Do not put the email address in the URL, page title, analytics event name, or ad targeting data.
+
+Acceptance criteria:
+
+- User can search a valid email address.
+- Invalid email addresses are rejected with useful feedback.
+- Matching profiles appear with uncertainty where appropriate.
+
+### 5.5 Reverse Address Search
+
+Inputs:
+
+- Street address (optional; partial input accepted).
+- City optional.
+- State optional.
 - ZIP optional.
+
+A search requires at least one of: a street, a ZIP, or a city together with a state.
 
 Requirements:
 
 - Normalize addresses with a reliable parser or address-normalization service.
+- Support fuzzy address matching for partial street inputs and common street suffix variants such as `St`/`Street` and `Ave`/`Avenue`.
+- Match on any meaningful subset of fields; street and state are not both required.
+- Rank exact address matches above partial street-token matches, then by number of matched tokens.
+- Exclude non-residential source-context locations (for example `arXiv, GLOBAL` or self-reported `User-entered` locations) from address results.
 - Return possible residents, past residents, or property-associated people where allowed.
 - Avoid exposing sensitive facilities, shelters, or protected addresses.
 - Suppress exact address display where legal or safety review requires it.
 
 Acceptance criteria:
 
-- User can search a valid US address.
+- User can search a valid US address with any combination of street, city, state, or ZIP.
+- City, state, and ZIP each narrow the fuzzy match when provided.
 - Results distinguish current, historical, and uncertain associations.
 - Suppressed addresses never appear publicly.
 
-### 5.5 Search Results
+### 5.6 Search Results
 
 Requirements:
 
@@ -181,7 +209,7 @@ Acceptance criteria:
 - Cache entries expire automatically and do not bypass opt-out or suppression controls.
 - Repeated identical name searches refresh stale sources and skip only sources that are still inside the one-hour source refresh TTL.
 
-### 5.6 Profile Page
+### 5.7 Profile Page
 
 Potential public fields:
 
@@ -805,7 +833,7 @@ Key design rule:
 - [ ] Create search index schema.
 - [ ] Implement name search.
 - [ ] Implement reverse phone search.
-- [ ] Implement reverse address search.
+- [x] Implement reverse address search.
 - [ ] Add ranked matching.
 - [ ] Add pagination.
 - [ ] Add rate limiting.

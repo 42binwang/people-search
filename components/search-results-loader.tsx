@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { RecordFeedbackButtons } from "@/components/record-feedback-buttons";
 import type { SearchResult } from "@/lib/db";
@@ -21,6 +21,18 @@ const AI_THINKING_STATUS_WORDS = [
   "Synthesizing",
 ] as const;
 const AI_THINKING_STATUS_ROTATION_MS = 1400;
+
+const AGE_BUCKETS = [
+  { value: "under-30", label: "Under 30", min: 0, max: 29 },
+  { value: "30-39", label: "30-39", min: 30, max: 39 },
+  { value: "40-49", label: "40-49", min: 40, max: 49 },
+  { value: "50-59", label: "50-59", min: 50, max: 59 },
+  { value: "60-69", label: "60-69", min: 60, max: 69 },
+  { value: "70-plus", label: "70+", min: 70, max: 130 },
+] as const;
+
+type AgeFilter = (typeof AGE_BUCKETS)[number]["value"] | "unknown" | "";
+type ParsedLocation = NonNullable<ReturnType<typeof parseLocation>>;
 
 export function SearchResultsLoader({
   mode,
@@ -175,6 +187,32 @@ function SearchResults({
   results: SearchResult[];
   token: string;
 }>) {
+  const [ageFilter, setAgeFilter] = useState<AgeFilter>("");
+  const [stateFilter, setStateFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const filterOptions = useMemo(() => buildFilterOptions(results), [results]);
+  const filteredResults = useMemo(
+    () =>
+      results.filter((result) =>
+        matchesFilters(result, {
+          age: ageFilter,
+          cityKey: cityFilter,
+          state: stateFilter,
+        }),
+      ),
+    [ageFilter, cityFilter, results, stateFilter],
+  );
+  const cityOptions = stateFilter
+    ? filterOptions.cities.filter((city) => city.state === stateFilter)
+    : filterOptions.cities;
+  const hasActiveFilters = Boolean(ageFilter || stateFilter || cityFilter);
+
+  function clearFilters() {
+    setAgeFilter("");
+    setStateFilter("");
+    setCityFilter("");
+  }
+
   return (
     <>
       {(refreshNotice || cacheNotice) && (
@@ -185,6 +223,75 @@ function SearchResults({
       )}
       <div className="results-grid">
         <div className="result-list" aria-label="Search results">
+          {results.length > 0 && (
+            <section className="result-filters" aria-label="Filter results">
+              <div>
+                <label htmlFor="age-filter">Age range</label>
+                <select
+                  id="age-filter"
+                  onChange={(event) =>
+                    setAgeFilter(event.target.value as AgeFilter)
+                  }
+                  value={ageFilter}
+                >
+                  <option value="">Any age</option>
+                  {filterOptions.ageBuckets.map((bucket) => (
+                    <option key={bucket.value} value={bucket.value}>
+                      {bucket.label}
+                    </option>
+                  ))}
+                  {filterOptions.hasUnknownAge && (
+                    <option value="unknown">Unknown age</option>
+                  )}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="state-filter">State</label>
+                <select
+                  id="state-filter"
+                  onChange={(event) => {
+                    setStateFilter(event.target.value);
+                    setCityFilter("");
+                  }}
+                  value={stateFilter}
+                >
+                  <option value="">Any state</option>
+                  {filterOptions.states.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="city-filter">City</label>
+                <select
+                  id="city-filter"
+                  onChange={(event) => setCityFilter(event.target.value)}
+                  value={cityFilter}
+                >
+                  <option value="">Any city</option>
+                  {cityOptions.map((city) => (
+                    <option key={city.key} value={city.key}>
+                      {stateFilter ? city.city : `${city.city}, ${city.state}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-summary">
+                <span>
+                  Showing {filteredResults.length} of {results.length}
+                </span>
+                <button
+                  disabled={!hasActiveFilters}
+                  onClick={clearFilters}
+                  type="button"
+                >
+                  Clear
+                </button>
+              </div>
+            </section>
+          )}
           {results.length === 0 && (
             <section className="legal-panel">
               <h2>No matches found</h2>
@@ -194,7 +301,16 @@ function SearchResults({
               </p>
             </section>
           )}
-          {results.map((result) => (
+          {results.length > 0 && filteredResults.length === 0 && (
+            <section className="legal-panel">
+              <h2>No results match these filters</h2>
+              <p>
+                Adjust the age range, state, or city filter to show more
+                profiles.
+              </p>
+            </section>
+          )}
+          {filteredResults.map((result) => (
             <ResultCard key={result.id} result={result} token={token} />
           ))}
         </div>
@@ -253,4 +369,122 @@ function ResultControls() {
       </p>
     </aside>
   );
+}
+
+function buildFilterOptions(results: SearchResult[]) {
+  const stateSet = new Set<string>();
+  const cityMap = new Map<string, { city: string; key: string; state: string }>();
+  const hasUnknownAge = results.some(
+    (result) => parseAgeRange(result.ageRange) === null,
+  );
+  const ageBuckets = AGE_BUCKETS.filter((bucket) =>
+    results.some((result) => {
+      const range = parseAgeRange(result.ageRange);
+      return range ? rangesOverlap(range, bucket) : false;
+    }),
+  );
+
+  for (const result of results) {
+    for (const location of result.locations) {
+      const parsed = parseLocation(location);
+      if (!parsed) {
+        continue;
+      }
+
+      stateSet.add(parsed.state);
+      cityMap.set(parsed.key, parsed);
+    }
+  }
+
+  return {
+    ageBuckets,
+    cities: Array.from(cityMap.values()).sort((a, b) =>
+      `${a.city}, ${a.state}`.localeCompare(`${b.city}, ${b.state}`),
+    ),
+    hasUnknownAge,
+    states: Array.from(stateSet).sort(),
+  };
+}
+
+function matchesFilters(
+  result: SearchResult,
+  filters: { age: AgeFilter; cityKey: string; state: string },
+) {
+  if (filters.age && !matchesAgeFilter(result.ageRange, filters.age)) {
+    return false;
+  }
+
+  if (!filters.cityKey && !filters.state) {
+    return true;
+  }
+
+  const locations = result.locations
+    .map(parseLocation)
+    .filter((location): location is ParsedLocation => Boolean(location));
+  return locations.some(
+    (location) =>
+      (!filters.state || location.state === filters.state) &&
+      (!filters.cityKey || location.key === filters.cityKey),
+  );
+}
+
+function matchesAgeFilter(ageRange: string, filter: AgeFilter) {
+  const range = parseAgeRange(ageRange);
+  if (filter === "unknown") {
+    return range === null;
+  }
+
+  const bucket = AGE_BUCKETS.find((item) => item.value === filter);
+  return Boolean(range && bucket && rangesOverlap(range, bucket));
+}
+
+function parseAgeRange(ageRange: string) {
+  const normalized = ageRange.trim();
+  if (!normalized || normalized.toLowerCase() === "unknown") {
+    return null;
+  }
+
+  const bornMatch = normalized.match(/\bBorn\s+(\d{4})\b/i);
+  if (bornMatch) {
+    const age = new Date().getFullYear() - Number(bornMatch[1]);
+    return { min: age, max: age };
+  }
+
+  const rangeMatch = normalized.match(/\b(\d{1,3})\s*[-–]\s*(\d{1,3})\b/);
+  if (rangeMatch) {
+    return {
+      min: Number(rangeMatch[1]),
+      max: Number(rangeMatch[2]),
+    };
+  }
+
+  const ageMatch = normalized.match(/\b(?:Age\s*)?(\d{1,3})\b/i);
+  if (ageMatch) {
+    const age = Number(ageMatch[1]);
+    return { min: age, max: age };
+  }
+
+  return null;
+}
+
+function rangesOverlap(
+  left: { min: number; max: number },
+  right: { min: number; max: number },
+) {
+  return left.min <= right.max && right.min <= left.max;
+}
+
+function parseLocation(location: string) {
+  const parts = location.split(",").map((part) => part.trim());
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const state = parts.at(-1)?.toUpperCase();
+  const city = parts.slice(0, -1).join(", ");
+  if (!city || !state || state.length !== 2) {
+    return null;
+  }
+
+  return { city, key: `${city}|${state}`, state };
 }

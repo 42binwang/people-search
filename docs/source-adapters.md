@@ -31,7 +31,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-mobility -- --config=configs/mobility-sources/census-acs-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-mobility.ts -- --config=configs/mobility-sources/census-acs-2024-bay-area.json
 ```
 
 Important constraints:
@@ -52,7 +52,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-npm run ingest:irs-soi-migration -- --config=configs/mobility-sources/irs-soi-2022-2023-bay-area.json
+npx tsx scripts/ingest-irs-soi-migration.ts -- --config=configs/mobility-sources/irs-soi-2022-2023-bay-area.json
 ```
 
 Important constraints:
@@ -73,7 +73,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-migration-flows -- --config=configs/mobility-sources/census-acs-flows-2022-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-migration-flows.ts -- --config=configs/mobility-sources/census-acs-flows-2022-bay-area.json
 ```
 
 Important constraints:
@@ -94,7 +94,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-residential-tenure -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-residential-tenure.ts -- --config=configs/mobility-sources/census-acs-residential-tenure-2024-bay-area.json
 ```
 
 Important constraints:
@@ -115,7 +115,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-commuting -- --config=configs/mobility-sources/census-acs-commuting-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-commuting.ts -- --config=configs/mobility-sources/census-acs-commuting-2024-bay-area.json
 ```
 
 Important constraints:
@@ -136,7 +136,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-household-income -- --config=configs/economic-sources/census-acs-household-income-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-household-income.ts -- --config=configs/economic-sources/census-acs-household-income-2024-bay-area.json
 ```
 
 Important constraints:
@@ -157,7 +157,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-educational-attainment -- --config=configs/economic-sources/census-acs-educational-attainment-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-educational-attainment.ts -- --config=configs/economic-sources/census-acs-educational-attainment-2024-bay-area.json
 ```
 
 Important constraints:
@@ -178,7 +178,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-npm run ingest:bls-laus-county-labor -- --config=configs/economic-sources/bls-laus-county-labor-2024-2026-bay-area.json
+npx tsx scripts/ingest-bls-laus-county-labor.ts -- --config=configs/economic-sources/bls-laus-county-labor-2024-2026-bay-area.json
 ```
 
 Important constraints:
@@ -199,7 +199,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-cbp-county-business -- --config=configs/economic-sources/census-cbp-county-business-2023-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-cbp-county-business.ts -- --config=configs/economic-sources/census-cbp-county-business-2023-bay-area.json
 ```
 
 Important constraints:
@@ -220,7 +220,7 @@ Configs live in `configs/social-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-age-sex -- --config=configs/social-sources/census-acs-age-sex-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-age-sex.ts -- --config=configs/social-sources/census-acs-age-sex-2024-bay-area.json
 ```
 
 Important constraints:
@@ -241,7 +241,7 @@ Configs live in `configs/social-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-race-origin -- --config=configs/social-sources/census-acs-race-origin-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-race-origin.ts -- --config=configs/social-sources/census-acs-race-origin-2024-bay-area.json
 ```
 
 Important constraints:
@@ -262,7 +262,7 @@ Configs live in `configs/social-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-internet-access -- --config=configs/social-sources/census-acs-internet-access-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-internet-access.ts -- --config=configs/social-sources/census-acs-internet-access-2024-bay-area.json
 ```
 
 Important constraints:
@@ -283,7 +283,7 @@ Configs live in `configs/social-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-language-proficiency -- --config=configs/social-sources/census-acs-language-proficiency-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-language-proficiency.ts -- --config=configs/social-sources/census-acs-language-proficiency-2024-bay-area.json
 ```
 
 Important constraints:
@@ -304,7 +304,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-employment-status -- --config=configs/economic-sources/census-acs-employment-status-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-employment-status.ts -- --config=configs/economic-sources/census-acs-employment-status-2024-bay-area.json
 ```
 
 Important constraints:
@@ -325,7 +325,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-health-insurance -- --config=configs/economic-sources/census-acs-health-insurance-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-health-insurance.ts -- --config=configs/economic-sources/census-acs-health-insurance-2024-bay-area.json
 ```
 
 Important constraints:
@@ -346,7 +346,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-poverty-assistance -- --config=configs/economic-sources/census-acs-poverty-assistance-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-poverty-assistance.ts -- --config=configs/economic-sources/census-acs-poverty-assistance-2024-bay-area.json
 ```
 
 Important constraints:
@@ -367,7 +367,7 @@ Configs live in `configs/economic-sources/`.
 Run:
 
 ```bash
-npm run ingest:hud-low-moderate-income-block-groups -- --config=configs/economic-sources/hud-low-mod-income-bg-2020-bay-area.json
+npx tsx scripts/ingest-hud-low-moderate-income-block-groups.ts -- --config=configs/economic-sources/hud-low-mod-income-bg-2020-bay-area.json
 ```
 
 Important constraints:
@@ -390,13 +390,13 @@ Configs live in `configs/housing-assistance-sources/`.
 Run:
 
 ```bash
-npm run ingest:hud-housing-choice-vouchers -- --config=configs/housing-assistance-sources/hud-hcv-2025-bay-area.json
-npm run ingest:hud-public-housing-buildings -- --config=configs/housing-assistance-sources/hud-public-housing-buildings-2025-bay-area.json
-npm run ingest:hud-lihtc-properties -- --config=configs/housing-assistance-sources/hud-lihtc-properties-bay-area.json
-npm run ingest:hud-qualified-census-tracts -- --config=configs/housing-assistance-sources/hud-qct-2026-bay-area.json
-npm run ingest:hud-difficult-development-areas -- --config=configs/housing-assistance-sources/hud-dda-2026-bay-area.json
-npm run ingest:hud-small-area-fair-market-rents -- --config=configs/housing-assistance-sources/hud-safmr-2026-bay-area.json
-npm run ingest:hud-fair-market-rents -- --config=configs/housing-assistance-sources/hud-fmr-2026-bay-area.json
+npx tsx scripts/ingest-hud-housing-choice-vouchers.ts -- --config=configs/housing-assistance-sources/hud-hcv-2025-bay-area.json
+npx tsx scripts/ingest-hud-public-housing-buildings.ts -- --config=configs/housing-assistance-sources/hud-public-housing-buildings-2025-bay-area.json
+npx tsx scripts/ingest-hud-lihtc-properties.ts -- --config=configs/housing-assistance-sources/hud-lihtc-properties-bay-area.json
+npx tsx scripts/ingest-hud-qualified-census-tracts.ts -- --config=configs/housing-assistance-sources/hud-qct-2026-bay-area.json
+npx tsx scripts/ingest-hud-difficult-development-areas.ts -- --config=configs/housing-assistance-sources/hud-dda-2026-bay-area.json
+npx tsx scripts/ingest-hud-small-area-fair-market-rents.ts -- --config=configs/housing-assistance-sources/hud-safmr-2026-bay-area.json
+npx tsx scripts/ingest-hud-fair-market-rents.ts -- --config=configs/housing-assistance-sources/hud-fmr-2026-bay-area.json
 ```
 
 Important constraints:
@@ -436,7 +436,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-npm run ingest:census-lehd-lodes -- --config=configs/mobility-sources/census-lehd-lodes-2023-bay-area.json
+npx tsx scripts/ingest-census-lehd-lodes.ts -- --config=configs/mobility-sources/census-lehd-lodes-2023-bay-area.json
 ```
 
 Important constraints:
@@ -457,7 +457,7 @@ Configs live in `configs/mobility-sources/`.
 Run:
 
 ```bash
-npm run ingest:census-pep-components -- --config=configs/mobility-sources/census-pep-2025-bay-area.json
+npx tsx scripts/ingest-census-pep-components.ts -- --config=configs/mobility-sources/census-pep-2025-bay-area.json
 ```
 
 Important constraints:
@@ -478,7 +478,7 @@ Configs live in `configs/housing-permit-sources/`.
 Run:
 
 ```bash
-npm run ingest:socrata-housing-permits -- --config=configs/housing-permit-sources/seattle-issued-building-permits.json
+npx tsx scripts/ingest-socrata-housing-permits.ts -- --config=configs/housing-permit-sources/seattle-issued-building-permits.json
 ```
 
 Important constraints:
@@ -499,7 +499,7 @@ Configs live in `configs/housing-permit-sources/`.
 Run:
 
 ```bash
-npm run ingest:hud-residential-construction-permits -- --config=configs/housing-permit-sources/hud-bps-2022-bay-area.json
+npx tsx scripts/ingest-hud-residential-construction-permits.ts -- --config=configs/housing-permit-sources/hud-bps-2022-bay-area.json
 ```
 
 Important constraints:
@@ -520,7 +520,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing -- --config=configs/housing-stock-sources/census-acs-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts -- --config=configs/housing-stock-sources/census-acs-2024-bay-area.json
 ```
 
 Important constraints:
@@ -541,7 +541,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-structure -- --config=configs/housing-stock-sources/census-acs-housing-structure-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-structure -- --config=configs/housing-stock-sources/census-acs-housing-structure-2024-bay-area.json
 ```
 
 Important constraints:
@@ -562,7 +562,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-household-composition -- --config=configs/housing-stock-sources/census-acs-household-composition-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-household-composition.ts -- --config=configs/housing-stock-sources/census-acs-household-composition-2024-bay-area.json
 ```
 
 Important constraints:
@@ -583,7 +583,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-value-rent -- --config=configs/housing-stock-sources/census-acs-value-rent-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-value-rent.ts -- --config=configs/housing-stock-sources/census-acs-value-rent-2024-bay-area.json
 ```
 
 Important constraints:
@@ -604,7 +604,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-crowding -- --config=configs/housing-stock-sources/census-acs-crowding-2024-bay-area.json
 ```
 
 Important constraints:
@@ -625,7 +625,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-vacancy-status -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-vacancy-status.ts -- --config=configs/housing-stock-sources/census-acs-vacancy-status-2024-bay-area.json
 ```
 
 Important constraints:
@@ -646,7 +646,7 @@ Configs live in `configs/housing-stock-sources/`.
 Run:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-housing-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-housing.ts-cost-burden -- --config=configs/housing-stock-sources/census-acs-cost-burden-2024-bay-area.json
 ```
 
 Important constraints:

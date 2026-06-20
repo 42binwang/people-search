@@ -18,13 +18,13 @@ Adapters:
 CLI:
 
 ```bash
-npm run ingest:hud-housing-choice-vouchers -- --config=configs/housing-assistance-sources/hud-hcv-2025-bay-area.json
-npm run ingest:hud-public-housing-buildings -- --config=configs/housing-assistance-sources/hud-public-housing-buildings-2025-bay-area.json
-npm run ingest:hud-lihtc-properties -- --config=configs/housing-assistance-sources/hud-lihtc-properties-bay-area.json
-npm run ingest:hud-qualified-census-tracts -- --config=configs/housing-assistance-sources/hud-qct-2026-bay-area.json
-npm run ingest:hud-difficult-development-areas -- --config=configs/housing-assistance-sources/hud-dda-2026-bay-area.json
-npm run ingest:hud-small-area-fair-market-rents -- --config=configs/housing-assistance-sources/hud-safmr-2026-bay-area.json
-npm run ingest:hud-fair-market-rents -- --config=configs/housing-assistance-sources/hud-fmr-2026-bay-area.json
+npx tsx scripts/ingest-hud-housing-choice-vouchers.ts -- --config=configs/housing-assistance-sources/hud-hcv-2025-bay-area.json
+npx tsx scripts/ingest-hud-public-housing-buildings.ts -- --config=configs/housing-assistance-sources/hud-public-housing-buildings-2025-bay-area.json
+npx tsx scripts/ingest-hud-lihtc-properties.ts -- --config=configs/housing-assistance-sources/hud-lihtc-properties-bay-area.json
+npx tsx scripts/ingest-hud-qualified-census-tracts.ts -- --config=configs/housing-assistance-sources/hud-qct-2026-bay-area.json
+npx tsx scripts/ingest-hud-difficult-development-areas.ts -- --config=configs/housing-assistance-sources/hud-dda-2026-bay-area.json
+npx tsx scripts/ingest-hud-small-area-fair-market-rents.ts -- --config=configs/housing-assistance-sources/hud-safmr-2026-bay-area.json
+npx tsx scripts/ingest-hud-fair-market-rents.ts -- --config=configs/housing-assistance-sources/hud-fmr-2026-bay-area.json
 ```
 
 Current configs:

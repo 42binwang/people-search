@@ -21,7 +21,26 @@ export function normalizedNameMatchesTokens(value: string, tokens: string[]) {
   return tokens.every((token) => candidateTokens.has(token));
 }
 
-function tokenizeName(value: string) {
+export function isPersonLikeSearchName(value: string, requiredTokens: string[]) {
+  const tokens = tokenizeName(value);
+  const alphaTokens = tokens.filter((token) => /[a-z]/.test(token));
+
+  if (tokens.length < 2 || tokens.length > 6 || alphaTokens.length < 2) {
+    return false;
+  }
+
+  if (tokens.some((token) => /\d/.test(token))) {
+    return false;
+  }
+
+  if (!requiredTokens.every((token) => tokens.includes(token))) {
+    return false;
+  }
+
+  return true;
+}
+
+export function tokenizeName(value: string) {
   return normalizeName(value).split(" ").filter(Boolean);
 }
 

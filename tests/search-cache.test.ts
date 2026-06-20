@@ -43,6 +43,20 @@ describe("search result cache helpers", () => {
     );
   });
 
+  it("builds stable keys from normalized email searches", () => {
+    expect(
+      createSearchCacheKey({
+        mode: "email",
+        email: "Taylor.Email@Example.com",
+      }),
+    ).toBe(
+      createSearchCacheKey({
+        mode: "email",
+        email: " taylor.email@example.com ",
+      }),
+    );
+  });
+
   it("uses default ttl unless a positive seconds value is configured", () => {
     expect(getSearchResultCacheTtlMs()).toBe(DEFAULT_SEARCH_RESULT_CACHE_TTL_MS);
     expect(getSearchResultCacheTtlMs("90")).toBe(90000);

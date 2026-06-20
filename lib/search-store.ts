@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 
-export type SearchMode = "name" | "phone" | "address";
+export type SearchMode = "name" | "phone" | "email" | "address";
 
 export type SearchPayload =
   | {
@@ -13,6 +13,10 @@ export type SearchPayload =
   | {
       mode: "phone";
       phone: string;
+    }
+  | {
+      mode: "email";
+      email: string;
     }
   | {
       mode: "address";
@@ -79,4 +83,12 @@ export function normalizePhone(value: string) {
     return `+${digits}`;
   }
   return "";
+}
+
+export function normalizeEmail(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    return "";
+  }
+  return normalized;
 }

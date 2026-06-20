@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   cleanText,
   createStoredSearch,
+  normalizeEmail,
   normalizePhone,
   type SearchPayload,
 } from "@/lib/search-store";
@@ -67,13 +68,30 @@ function createPayload(mode: string, form: FormData): SearchPayload | null {
     };
   }
 
+  if (mode === "email") {
+    const email = normalizeEmail(cleanText(form.get("email")));
+    if (!email) {
+      return null;
+    }
+
+    return {
+      mode,
+      email,
+    };
+  }
+
   if (mode === "address") {
     const street = cleanText(form.get("street"));
     const city = cleanText(form.get("city"));
     const state = cleanText(form.get("state"));
     const zip = cleanText(form.get("zip"));
 
-    if (!street || !city || !state) {
+    // Fuzzy/partial address lookup: any meaningful subset is searchable. We do
+    // not require street + city + state all at once.
+    const hasStreet = street.length >= 3;
+    const hasZip = zip.length > 0;
+    const hasCityState = city.length > 0 && state.length > 0;
+    if (!hasStreet && !hasZip && !hasCityState) {
       return null;
     }
 

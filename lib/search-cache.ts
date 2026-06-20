@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import {
   normalizeAddress,
+  normalizeEmail,
   normalizeName,
   normalizePhone,
   normalizeText,
@@ -65,6 +66,14 @@ function canonicalizeSearchPayload(payload: SearchPayload) {
       version: searchResultCacheKeyVersion,
       mode: payload.mode,
       phone: normalizePhone(payload.phone),
+    };
+  }
+
+  if (payload.mode === "email") {
+    return {
+      version: searchResultCacheKeyVersion,
+      mode: payload.mode,
+      email: normalizeEmail(payload.email),
     };
   }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getNameSearchTokens,
+  isPersonLikeSearchName,
   nameTokenLikePattern,
   normalizedNameMatchesTokens,
 } from "@/lib/name-search";
@@ -37,5 +38,29 @@ describe("name search token matching", () => {
 
   it("escapes SQL LIKE wildcard characters in token patterns", () => {
     expect(nameTokenLikePattern("a%b_c\\d")).toBe("% a\\%b\\_c\\\\d %");
+  });
+
+  it("rejects title-like catalog strings as display names", () => {
+    const tokens = getNameSearchTokens({
+      mode: "name",
+      firstName: "Mai",
+      lastName: "Ren",
+      city: "",
+      state: "",
+    });
+
+    expect(isPersonLikeSearchName("Mai Ren", tokens)).toBe(true);
+    expect(
+      isPersonLikeSearchName(
+        '"Mai xiang zheng chang guo jia" guo zheng yan tao hui',
+        tokens,
+      ),
+    ).toBe(false);
+    expect(
+      isPersonLikeSearchName("Bai, Shan Ren mai sheng yu neng li", tokens),
+    ).toBe(false);
+    expect(
+      isPersonLikeSearchName("Cong ren kou da guo mai xiang ren li zi yuan", tokens),
+    ).toBe(false);
   });
 });

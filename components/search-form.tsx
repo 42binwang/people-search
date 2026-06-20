@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Home, Phone, Search, UserRound } from "lucide-react";
+import { Home, Mail, Phone, Search, UserRound } from "lucide-react";
 
-type SearchMode = "name" | "phone" | "address";
+type SearchMode = "name" | "phone" | "email" | "address";
 
 const modes: Array<{
   value: SearchMode;
@@ -13,6 +13,7 @@ const modes: Array<{
 }> = [
   { value: "name", label: "Name", icon: UserRound },
   { value: "phone", label: "Phone", icon: Phone },
+  { value: "email", label: "Email", icon: Mail },
   { value: "address", label: "Address", icon: Home },
 ];
 
@@ -82,34 +83,57 @@ export function SearchForm() {
         </div>
       )}
 
-      {mode === "address" && (
+      {mode === "email" && (
         <div className="form-grid">
           <label className="field full">
-            Street address
-            <input name="street" autoComplete="address-line1" required />
-          </label>
-          <label className="field">
-            City
-            <input name="city" autoComplete="address-level2" required />
-          </label>
-          <label className="field">
-            State
-            <select name="state" defaultValue="" required>
-              <option value="" disabled>
-                Select state
-              </option>
-              {stateOptions.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            ZIP
-            <input name="zip" inputMode="numeric" autoComplete="postal-code" />
+            Email address
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              required
+            />
           </label>
         </div>
+      )}
+
+      {mode === "address" && (
+        <>
+          <p className="fine-print">
+            Enter any combination of street, city, state, or ZIP — you do not
+            need to fill in every field.
+          </p>
+          <div className="form-grid">
+            <label className="field full">
+              Street address
+              <input
+                name="street"
+                autoComplete="address-line1"
+                placeholder="e.g. 123 Main St"
+              />
+            </label>
+            <label className="field">
+              City
+              <input name="city" autoComplete="address-level2" />
+            </label>
+            <label className="field">
+              State
+              <select name="state" defaultValue="">
+                <option value="">Any state</option>
+                {stateOptions.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              ZIP
+              <input name="zip" inputMode="numeric" autoComplete="postal-code" />
+            </label>
+          </div>
+        </>
       )}
 
       <div className="button-row">

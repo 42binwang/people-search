@@ -6,6 +6,7 @@ export {
 } from "@/lib/database/legacy";
 
 export type {
+  AddressHistoryEntry,
   Profile,
   SearchResult,
   UpsertProfileInput,

@@ -11,7 +11,7 @@ Adapter: `lib/sources/census-cbp-county-business.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-cbp-county-business -- --config=configs/economic-sources/census-cbp-county-business-2023-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-cbp-county-business.ts -- --config=configs/economic-sources/census-cbp-county-business-2023-bay-area.json
 ```
 
 Current configs:
@@ -64,7 +64,7 @@ Adapter: `lib/sources/bls-laus-county-labor.ts`
 CLI:
 
 ```bash
-npm run ingest:bls-laus-county-labor -- --config=configs/economic-sources/bls-laus-county-labor-2024-2026-bay-area.json
+npx tsx scripts/ingest-bls-laus-county-labor.ts -- --config=configs/economic-sources/bls-laus-county-labor-2024-2026-bay-area.json
 ```
 
 Current configs:
@@ -114,7 +114,7 @@ Adapter: `lib/sources/census-acs-household-income.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-household-income -- --config=configs/economic-sources/census-acs-household-income-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-household-income.ts -- --config=configs/economic-sources/census-acs-household-income-2024-bay-area.json
 ```
 
 Current configs:
@@ -175,7 +175,7 @@ Adapter: `lib/sources/census-acs-employment-status.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-employment-status -- --config=configs/economic-sources/census-acs-employment-status-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-employment-status.ts -- --config=configs/economic-sources/census-acs-employment-status-2024-bay-area.json
 ```
 
 Current configs:
@@ -228,7 +228,7 @@ Adapter: `lib/sources/census-acs-educational-attainment.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-educational-attainment -- --config=configs/economic-sources/census-acs-educational-attainment-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-educational-attainment.ts -- --config=configs/economic-sources/census-acs-educational-attainment-2024-bay-area.json
 ```
 
 Current configs:
@@ -283,7 +283,7 @@ Adapter: `lib/sources/census-acs-health-insurance.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-health-insurance -- --config=configs/economic-sources/census-acs-health-insurance-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-health-insurance.ts -- --config=configs/economic-sources/census-acs-health-insurance-2024-bay-area.json
 ```
 
 Current configs:
@@ -339,7 +339,7 @@ Adapter: `lib/sources/census-acs-poverty-assistance.ts`
 CLI:
 
 ```bash
-CENSUS_API_KEY=... npm run ingest:census-acs-poverty-assistance -- --config=configs/economic-sources/census-acs-poverty-assistance-2024-bay-area.json
+CENSUS_API_KEY=... npx tsx scripts/ingest-census-acs-poverty-assistance.ts -- --config=configs/economic-sources/census-acs-poverty-assistance-2024-bay-area.json
 ```
 
 Current configs:
@@ -394,7 +394,7 @@ Adapter: `lib/sources/hud-low-moderate-income-block-groups.ts`
 CLI:
 
 ```bash
-npm run ingest:hud-low-moderate-income-block-groups -- --config=configs/economic-sources/hud-low-mod-income-bg-2020-bay-area.json
+npx tsx scripts/ingest-hud-low-moderate-income-block-groups.ts -- --config=configs/economic-sources/hud-low-mod-income-bg-2020-bay-area.json
 ```
 
 Current configs:
