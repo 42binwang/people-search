@@ -61,7 +61,7 @@ Keep the tracker readable by both humans and coding agents:
 
 ## Search And Data Behavior
 
-- Name searches refresh every built-in approved source unless that source/query pair was refreshed within `NAME_SOURCE_REFRESH_TTL_SECONDS` or the default one-hour TTL.
+- Name searches refresh every built-in approved source unless that source/query pair was refreshed within `NAME_SOURCE_REFRESH_TTL_SECONDS` or the default one-day TTL. A source is re-fetched for a query only when it has not been fetched in the last day (e.g. a newly added source that has never been fetched for that query); already-fetched sources are not re-fetched repeatedly.
 - Search result caches use hashed, normalized query keys. Do not store raw search terms in cache tables.
 - Search cache TTL is controlled by `SEARCH_RESULT_CACHE_TTL_SECONDS`.
 - Local SQLite data may exist on the developer machine while remote git manages code. Do not commit local raw data or generated SQLite databases.

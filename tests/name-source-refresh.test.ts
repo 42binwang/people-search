@@ -9,9 +9,9 @@ import {
 } from "@/lib/name-source-refresh";
 
 describe("name source refresh helpers", () => {
-  it("defaults source refresh ttl to one hour", () => {
+  it("defaults source refresh ttl to one day", () => {
     expect(getNameSourceRefreshTtlMs()).toBe(DEFAULT_NAME_SOURCE_REFRESH_TTL_MS);
-    expect(getNameSourceRefreshTtlMs("3600")).toBe(1000 * 60 * 60);
+    expect(getNameSourceRefreshTtlMs("86400")).toBe(1000 * 60 * 60 * 24);
     expect(getNameSourceRefreshTtlMs("0")).toBe(DEFAULT_NAME_SOURCE_REFRESH_TTL_MS);
     expect(getNameSourceRefreshTtlMs("not-a-number")).toBe(
       DEFAULT_NAME_SOURCE_REFRESH_TTL_MS,

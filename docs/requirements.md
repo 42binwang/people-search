@@ -207,7 +207,7 @@ Acceptance criteria:
 - Ad code does not receive PII through URLs or ad targeting keys.
 - Repeated identical searches within the TTL use cached local result IDs instead of refreshing approved sources.
 - Cache entries expire automatically and do not bypass opt-out or suppression controls.
-- Repeated identical name searches refresh stale sources and skip only sources that are still inside the one-hour source refresh TTL.
+- Repeated identical name searches refresh stale sources and skip only sources that are still inside the one-day source refresh TTL. A source is fetched for a query only when it has not been fetched in the last day (including a newly added source that has never been fetched for that query); already-fetched sources are not re-fetched repeatedly.
 
 ### 5.7 Profile Page
 

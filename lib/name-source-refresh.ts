@@ -38,7 +38,7 @@ import { ingestStackExchangeUsers } from "@/lib/sources/stack-exchange";
 import { ingestViafAuthorityRecords } from "@/lib/sources/viaf";
 import { ingestWikidataEntities } from "@/lib/sources/wikidata";
 
-export const DEFAULT_NAME_SOURCE_REFRESH_TTL_MS = 1000 * 60 * 60;
+export const DEFAULT_NAME_SOURCE_REFRESH_TTL_MS = 1000 * 60 * 60 * 24;
 export const DEFAULT_NAME_SOURCE_REFRESH_TIMEOUT_MS = 15000;
 
 type NameSearchPayload = Extract<SearchPayload, { mode: "name" }>;
