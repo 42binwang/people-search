@@ -7,7 +7,13 @@ import {
 } from "@/lib/db";
 
 const sourceId = "test_name_ranking";
-const profileIds = ["p_test_rank_substantive", "p_test_rank_bare"];
+const profileIds = [
+  "p_test_rank_substantive",
+  "p_test_rank_bare",
+  "p_test_rank_exact",
+  "p_test_rank_partial",
+  "p_test_rank_affil",
+];
 
 describe("name search ranking", () => {
   beforeEach(() => {
@@ -38,6 +44,29 @@ describe("name search ranking", () => {
       fullName: "Beta Rank",
       locations: [{ city: "arXiv", state: "GLOBAL", sourceId }],
       sourceRecord: { sourceId, sourceRecordId: "bare", raw: {} },
+    });
+
+    // Exact vs partial token match (both substantive).
+    upsertProfile({
+      id: "p_test_rank_exact",
+      fullName: "Exact Rank",
+      locations: [{ city: "Austin", state: "TX", sourceId }],
+      sourceRecord: { sourceId, sourceRecordId: "exact", raw: {} },
+    });
+    upsertProfile({
+      id: "p_test_rank_partial",
+      fullName: "Exact Rank Jr",
+      locations: [{ city: "Austin", state: "TX", sourceId }],
+      sourceRecord: { sourceId, sourceRecordId: "partial", raw: {} },
+    });
+
+    // Carries an affiliated institution as a source note.
+    upsertProfile({
+      id: "p_test_rank_affil",
+      fullName: "Gamma Rank",
+      aliases: ["Institution: Test University"],
+      locations: [{ city: "arXiv", state: "GLOBAL", sourceId }],
+      sourceRecord: { sourceId, sourceRecordId: "affil", raw: {} },
     });
   });
 
@@ -70,6 +99,34 @@ describe("name search ranking", () => {
       state: "",
     });
     expect(result.sourceCategories).toEqual(["Test source"]);
+  });
+
+  it("ranks an exact name match above a partial token match", () => {
+    const ids = searchProfiles({
+      mode: "name",
+      firstName: "Exact",
+      lastName: "Rank",
+      city: "",
+      state: "",
+    }).map((result) => result.id);
+
+    expect(ids).toContain("p_test_rank_exact");
+    expect(ids).toContain("p_test_rank_partial");
+    expect(ids.indexOf("p_test_rank_exact")).toBeLessThan(
+      ids.indexOf("p_test_rank_partial"),
+    );
+  });
+
+  it("surfaces the affiliated institution on a search result", () => {
+    const results = searchProfiles({
+      mode: "name",
+      firstName: "Gamma",
+      lastName: "Rank",
+      city: "",
+      state: "",
+    });
+    const affil = results.find((result) => result.id === "p_test_rank_affil");
+    expect(affil?.affiliation).toBe("Test University");
   });
 });
 

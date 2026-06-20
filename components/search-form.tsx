@@ -21,7 +21,7 @@ export function SearchForm() {
   const [mode, setMode] = useState<SearchMode>("name");
 
   return (
-    <form action="/search" method="post">
+    <form action="/search" method="post" autoComplete="off">
       <input type="hidden" name="mode" value={mode} />
       <div className="mode-tabs" role="tablist" aria-label="Search mode">
         {modes.map(({ value, label, icon: Icon }) => (
@@ -44,15 +44,15 @@ export function SearchForm() {
         <div className="form-grid">
           <label className="field">
             First name
-            <input name="firstName" autoComplete="given-name" />
+            <input name="firstName" autoComplete="off" />
           </label>
           <label className="field">
             Last name
-            <input name="lastName" autoComplete="family-name" />
+            <input name="lastName" autoComplete="off" />
           </label>
           <label className="field">
             City
-            <input name="city" autoComplete="address-level2" />
+            <input name="city" autoComplete="off" />
           </label>
           <label className="field">
             State
@@ -75,7 +75,7 @@ export function SearchForm() {
             <input
               name="phone"
               inputMode="tel"
-              autoComplete="tel"
+              autoComplete="off"
               placeholder="(555) 123-4567"
               required
             />
@@ -90,7 +90,7 @@ export function SearchForm() {
             <input
               name="email"
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               placeholder="name@example.com"
               required
             />
@@ -109,13 +109,13 @@ export function SearchForm() {
               Street address
               <input
                 name="street"
-                autoComplete="address-line1"
+                autoComplete="off"
                 placeholder="e.g. 123 Main St"
               />
             </label>
             <label className="field">
               City
-              <input name="city" autoComplete="address-level2" />
+              <input name="city" autoComplete="off" />
             </label>
             <label className="field">
               State
@@ -130,7 +130,7 @@ export function SearchForm() {
             </label>
             <label className="field">
               ZIP
-              <input name="zip" inputMode="numeric" autoComplete="postal-code" />
+              <input name="zip" inputMode="numeric" autoComplete="off" />
             </label>
           </div>
         </>

@@ -104,6 +104,7 @@ export type SearchResult = {
   relatives: string[];
   confidence: string;
   sourceCategories: string[];
+  affiliation: string | null;
 };
 
 export type Profile = SearchResult & {
@@ -2410,6 +2411,10 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
     const genericCityList = genericLocationCities
       .map((_, index) => `@nameGCity${index}`)
       .join(", ");
+    // Exact normalized name match ranks above everything else.
+    const exactName = normalizeName(
+      [payload.firstName, payload.lastName].filter(Boolean).join(" "),
+    );
     const rows = db
       .prepare(
         `
@@ -2429,6 +2434,7 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
           AND (@state = '' OR l.state = @state)
           AND (@city = '' OR lower(l.city) LIKE @cityLike ESCAPE '\\')
         ORDER BY
+          CASE WHEN p.normalized_name = @exactName THEN 0 ELSE 1 END,
           CASE WHEN
             EXISTS (SELECT 1 FROM profile_contacts c WHERE c.profile_id = p.id)
             OR EXISTS (
@@ -2448,6 +2454,7 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
         ...nameTokenParams(nameTokens, "profileNameToken"),
         ...nameTokenParams(nameTokens, "aliasNameToken"),
         ...genericCityParams,
+        exactName,
         state,
         city,
         cityLike: `%${escapeSqlLike(city)}%`,
@@ -6712,6 +6719,7 @@ function toSearchResult(row: DbProfileRow): SearchResult {
     locations: getLocations(row.id),
     relatives: getRelationships(row.id),
     sourceCategories: getSourceCategories(row.id),
+    affiliation: getAffiliation(row.id),
   };
 }
 
@@ -6915,6 +6923,69 @@ function getSourceCategoriesForProfiles(
   return byProfile;
 }
 
+// Affiliated institution (academic/research profiles) is stored as a source
+// note (alias). Surface it as a first-class field so it can show on the result
+// card instead of being buried in the source notes.
+const AFFILIATION_ALIAS_LIKE = [
+  "Institution:%",
+  "Last known institution:%",
+  "Awardee institution:%",
+  "Public institution metadata:%",
+];
+
+function getAffiliationsForProfiles(
+  profileIds: string[],
+): Map<string, string> {
+  const byProfile = new Map<string, string>();
+  if (profileIds.length === 0) {
+    return byProfile;
+  }
+  const placeholders = profileIds.map(() => "?").join(",");
+  const likeClause = AFFILIATION_ALIAS_LIKE.map(() => "alias LIKE ?").join(" OR ");
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT profile_id AS profileId, alias
+      FROM profile_aliases
+      WHERE profile_id IN (${placeholders})
+        AND (${likeClause})
+      ORDER BY profile_id, id
+    `,
+    )
+    .all(...profileIds, ...AFFILIATION_ALIAS_LIKE) as Array<{
+    profileId: string;
+    alias: string;
+  }>;
+  for (const row of rows) {
+    if (!byProfile.has(row.profileId)) {
+      const affiliation = institutionFromAlias(row.alias);
+      if (affiliation) {
+        byProfile.set(row.profileId, affiliation);
+      }
+    }
+  }
+  return byProfile;
+}
+
+function institutionFromAlias(alias: string): string | null {
+  const colon = alias.indexOf(":");
+  if (colon < 0) {
+    return null;
+  }
+  const value = alias.slice(colon + 1).trim();
+  return value || null;
+}
+
+function getAffiliation(profileId: string): string | null {
+  const likeClause = AFFILIATION_ALIAS_LIKE.map(() => "alias LIKE ?").join(" OR ");
+  const rows = getDb()
+    .prepare(
+      `SELECT alias FROM profile_aliases WHERE profile_id = ? AND (${likeClause}) ORDER BY id LIMIT 1`,
+    )
+    .all(profileId, ...AFFILIATION_ALIAS_LIKE) as Array<{ alias: string }>;
+  return rows[0] ? institutionFromAlias(rows[0].alias) : null;
+}
+
 function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
   if (rows.length === 0) {
     return [];
@@ -6923,6 +6994,7 @@ function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
   const locationsById = getLocationsForProfiles(ids);
   const relativesById = getRelationshipsForProfiles(ids);
   const categoriesById = getSourceCategoriesForProfiles(ids);
+  const affiliationById = getAffiliationsForProfiles(ids);
   return rows.map((row) => ({
     id: row.id,
     name: row.full_name,
@@ -6931,6 +7003,7 @@ function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
     locations: locationsById.get(row.id) ?? [],
     relatives: relativesById.get(row.id) ?? [],
     sourceCategories: categoriesById.get(row.id) ?? [],
+    affiliation: affiliationById.get(row.id) ?? null,
   }));
 }
 

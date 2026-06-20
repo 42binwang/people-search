@@ -338,6 +338,9 @@ function ResultCard({
             .filter(Boolean)
             .join(" · ")}
         </p>
+        {result.affiliation && (
+          <p className="meta">{result.affiliation}</p>
+        )}
         {result.sourceCategories.length > 0 && (
           <p className="meta source-context">
             {result.sourceCategories.join(" · ")}
