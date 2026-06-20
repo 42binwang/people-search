@@ -59,6 +59,38 @@ describe("name source refresh helpers", () => {
       "Checked approved sources: 1 source(s) refreshed, 1 still fresh; imported 2 profile(s).",
     );
   });
+
+  it("suppresses the notice when no source changed (fully cached repeat)", () => {
+    const cached: NameSourceRefreshSummary = {
+      refreshed: [],
+      skipped: [
+        {
+          sourceId: "openalex_authors",
+          label: "OpenAlex",
+          status: "skipped",
+          fetched: 1,
+          imported: 1,
+        },
+      ],
+      failed: [],
+      totalImported: 0,
+    };
+
+    expect(formatNameSourceRefreshNotice(cached)).toBeNull();
+  });
+
+  it("still shows the notice when only a failure occurred", () => {
+    expect(
+      formatNameSourceRefreshNotice({
+        refreshed: [],
+        skipped: [],
+        failed: [
+          { sourceId: "x", label: "X", status: "failed", fetched: 0, imported: 0 },
+        ],
+        totalImported: 0,
+      }),
+    ).toContain("1 unavailable");
+  });
 });
 
 describe("refreshNameSearchSources cache behavior", () => {

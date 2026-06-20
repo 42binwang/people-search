@@ -115,7 +115,15 @@ export async function refreshNameSearchSources(
   };
 }
 
-export function formatNameSourceRefreshNotice(summary: NameSourceRefreshSummary) {
+export function formatNameSourceRefreshNotice(
+  summary: NameSourceRefreshSummary,
+): string | null {
+  // Nothing changed (every source was already fresh, none failed): the notice
+  // is noise on a cached repeat search, so suppress it.
+  if (summary.refreshed.length === 0 && summary.failed.length === 0) {
+    return null;
+  }
+
   const pieces = [
     `${summary.refreshed.length} source(s) refreshed`,
     `${summary.skipped.length} still fresh`,

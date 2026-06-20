@@ -2427,9 +2427,9 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
         cityLike: `%${escapeSqlLike(city)}%`,
       }) as DbProfileRow[];
 
-    return rows
-      .filter((row) => isPersonLikeSearchName(row.full_name, nameTokens))
-      .map(toSearchResult);
+    return toSearchResults(
+      rows.filter((row) => isPersonLikeSearchName(row.full_name, nameTokens)),
+    );
   }
 
   if (payload.mode === "phone") {
@@ -2448,7 +2448,7 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
       )
       .all({ phone }) as DbProfileRow[];
 
-    return rows.map(toSearchResult);
+    return toSearchResults(rows);
   }
 
   if (payload.mode === "email") {
@@ -2471,7 +2471,7 @@ export function searchProfiles(payload: SearchPayload): SearchResult[] {
       )
       .all({ email }) as DbProfileRow[];
 
-    return rows.map(toSearchResult);
+    return toSearchResults(rows);
   }
 
   // Fuzzy / partial address lookup: a search works with any meaningful subset
@@ -6660,10 +6660,10 @@ function getSearchResultsByIds(ids: string[]) {
     .all(...ids) as DbProfileRow[];
   const rowsById = new Map(rows.map((row) => [row.id, row]));
 
-  return ids
+  const orderedRows = ids
     .map((id) => rowsById.get(id))
-    .filter((row): row is DbProfileRow => Boolean(row))
-    .map(toSearchResult);
+    .filter((row): row is DbProfileRow => Boolean(row));
+  return toSearchResults(orderedRows);
 }
 
 function parseCachedProfileIds(value: string) {
@@ -6784,6 +6784,96 @@ function getRelationships(profileId: string) {
     )
     .all(profileId) as Array<{ related_name: string }>;
   return rows.map((row) => row.related_name);
+}
+
+// Batched versions of getLocations/getRelationships for a set of profile ids,
+// so building a page of search results is 2 queries instead of 2-per-result.
+
+function getLocationsForProfiles(profileIds: string[]): Map<string, string[]> {
+  const byProfile = new Map<string, string[]>();
+  if (profileIds.length === 0) {
+    return byProfile;
+  }
+  const placeholders = profileIds.map(() => "?").join(",");
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT profile_id AS profileId, city, state
+      FROM profile_locations
+      WHERE profile_id IN (${placeholders})
+      ORDER BY profile_id, display_order, id
+    `,
+    )
+    .all(...profileIds) as Array<{
+    profileId: string;
+    city: string;
+    state: string;
+  }>;
+
+  for (const row of rows) {
+    if (!isGeographicLocationRow(row)) {
+      continue;
+    }
+    const formatted = `${row.city}, ${row.state}`;
+    const list = byProfile.get(row.profileId) ?? [];
+    if (!list.includes(formatted)) {
+      list.push(formatted);
+    }
+    byProfile.set(row.profileId, list);
+  }
+  for (const [id, list] of byProfile) {
+    byProfile.set(id, list.slice(0, 4));
+  }
+  return byProfile;
+}
+
+function getRelationshipsForProfiles(
+  profileIds: string[],
+): Map<string, string[]> {
+  const byProfile = new Map<string, string[]>();
+  if (profileIds.length === 0) {
+    return byProfile;
+  }
+  const placeholders = profileIds.map(() => "?").join(",");
+  const rows = getDb()
+    .prepare(
+      `
+      SELECT profile_id AS profileId, related_name
+      FROM relationships
+      WHERE profile_id IN (${placeholders})
+      ORDER BY profile_id, id
+    `,
+    )
+    .all(...profileIds) as Array<{
+    profileId: string;
+    related_name: string;
+  }>;
+
+  for (const row of rows) {
+    const list = byProfile.get(row.profileId) ?? [];
+    if (list.length < 4) {
+      list.push(row.related_name);
+    }
+    byProfile.set(row.profileId, list);
+  }
+  return byProfile;
+}
+
+function toSearchResults(rows: DbProfileRow[]): SearchResult[] {
+  if (rows.length === 0) {
+    return [];
+  }
+  const ids = rows.map((row) => row.id);
+  const locationsById = getLocationsForProfiles(ids);
+  const relativesById = getRelationshipsForProfiles(ids);
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.full_name,
+    ageRange: row.age_range,
+    confidence: row.confidence,
+    locations: locationsById.get(row.id) ?? [],
+    relatives: relativesById.get(row.id) ?? [],
+  }));
 }
 
 function getAliases(profileId: string) {
