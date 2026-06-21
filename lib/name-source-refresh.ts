@@ -38,8 +38,6 @@ import { ingestOrcidPublicRecords } from "@/lib/sources/orcid";
 import { ingestPubMedAuthors } from "@/lib/sources/pubmed";
 import { ingestSemanticScholarAuthors } from "@/lib/sources/semantic-scholar";
 import { ingestStackExchangeUsers } from "@/lib/sources/stack-exchange";
-import { ingestUsptoTrademarkOwners } from "@/lib/sources/uspto-trademark";
-import { ingestUsptoPatentInventors } from "@/lib/sources/uspto-patent";
 import { ingestViafAuthorityRecords } from "@/lib/sources/viaf";
 import { ingestWikidataEntities } from "@/lib/sources/wikidata";
 
@@ -465,16 +463,6 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     sourceId: "europe_pmc_articles",
     label: "Europe PMC",
     run: (_payload, query) => ingestEuropePmcAuthors({ query }),
-  },
-  {
-    sourceId: "uspto_trademark_owners",
-    label: "USPTO Trademarks",
-    run: (_payload, query) => ingestUsptoTrademarkOwners({ query }),
-  },
-  {
-    sourceId: "uspto_patent_inventors",
-    label: "USPTO Patents",
-    run: (_payload, query) => ingestUsptoPatentInventors({ query }),
   },
   {
     sourceId: "buffalo_ny_building_permits",

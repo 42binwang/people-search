@@ -26,6 +26,8 @@ Approved collection paths:
 
 Do not add arbitrary broker scraping, breached/leaked datasets, private social media, children data, sensitive-location data, or regulated screening data.
 
+**API-key-required sources are excluded for now.** Adapters that no-op without an operator-provided key — `uspto-trademark` (`USPTO_API_KEY`), `uspto-patent` (`PATENTSVIEW_API_KEY`), `sam-gov` (`SAM_GOV_API_KEY`) — are de-activated: removed from name-search auto-refresh and the `ingest:*` scripts, and marked `excluded` in the tracker. Their adapter/loader/test files are retained on disk for potential re-enablement if keys are obtained and the policy changes.
+
 ## Existing Person/Profile Sources
 
 These adapters can create or enrich profile records. Many are identity/context sources, not residential sources.
@@ -498,7 +500,7 @@ Status values:
 
 ### 21. `uspto-trademark-owners`
 - **Priority:** P1
-- **Status:** `ready-local` (API key required: USPTO_API_KEY)
+- **Status:** `excluded` (API-key-required; excluded under the no-key policy — see Collection Rules. Adapter/loader/tests retained on disk, de-activated from auto-refresh and ingest scripts.)
 - **Value:** Trademark owner/applicant full name + applicant address (street/city/state) for individual applicants — direct named-person-to-address link.
 - **Preserved information:** Owner/applicant name, entity type, applicant address, correspondence address, attorney of record, mark, filing/registration dates, status.
 - **Coverage:** All US federal trademark applications/registrations; decades of records; daily front files + backfile.
@@ -514,7 +516,7 @@ Status values:
 
 ### 22. `uspto-patent-inventors`
 - **Priority:** P2
-- **Status:** `ready-local` (API key required: PATENTSVIEW_API_KEY)
+- **Status:** `excluded` (API-key-required; excluded under the no-key policy — see Collection Rules. Adapter/loader/tests retained on disk, de-activated from auto-refresh and ingest scripts.)
 - **Value:** All US patent inventors (1976-present) with name + city/state + assignee; PatentsView disambiguation; no street address so moderate precision.
 - **Preserved information:** Per inventor full name, city/state/country, assignee; PatentsView: disambiguated inventor_id, cleaned names, geocoded location.
 - **Coverage:** All US patent grants (1976+) and applications (2001+).
@@ -866,7 +868,7 @@ Status values:
 
 ### 44. `sam-gov-entity-registrations`
 - **Priority:** P3
-- **Status:** `ready-local` (API key required: SAM_GOV_API_KEY)
+- **Status:** `excluded` (API-key-required; excluded under the no-key policy — see Collection Rules. Adapter/loader/tests retained on disk, de-activated from auto-refresh and ingest scripts.)
 - **Value:** Federal contractor/grantee entities with named POCs + addresses — entity-centric so individuals appear only as POCs (indirect).
 - **Preserved information:** Legal business name, DBA, physical+mailing address, UEI, registration expiration, named POC (phone/email), congressional district; exclusions (debarred, named+address).
 - **Coverage:** All entities registered to do business with US federal government; hundreds of thousands; daily/monthly extracts.
