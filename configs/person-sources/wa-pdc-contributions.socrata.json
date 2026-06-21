@@ -1,0 +1,26 @@
+{
+  "adapter": "socrata",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "wa_pdc_campaign_contributions",
+  "sourceName": "Washington PDC Campaign Contributions (Individual Donors)",
+  "category": "State campaign finance contribution (individual donor)",
+  "jurisdiction": "Washington State",
+  "domain": "data.wa.gov",
+  "datasetId": "kv7h-kjye",
+  "licenseUrl": "https://data.wa.gov/",
+  "notes": "Washington Public Disclosure Commission campaign-finance contributions (Socrata, keyless). Filtered to individual donors and recent receipts (2025+) per the recency priority. Washington public record; reuse permitted. Local ingestion approved; PUBLIC DISPLAY of donor data is gated pending the same display-policy review as FEC Schedule A — do not surface on the public site until that review is complete.",
+  "where": "contributor_category='Individual' AND receipt_date>'2025-01-01'",
+  "limit": 2000,
+  "locationKind": "campaign contribution address",
+  "confidence": "Medium",
+  "fields": {
+    "recordId": "id",
+    "name": "contributor_name",
+    "street": "contributor_address",
+    "city": "contributor_city",
+    "state": "contributor_state",
+    "zip": "contributor_zip",
+    "updatedAt": "receipt_date"
+  }
+}

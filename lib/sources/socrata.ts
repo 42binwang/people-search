@@ -29,6 +29,10 @@ export type SocrataIngestInput = {
   query?: string;
   where?: string;
   limit?: number;
+  /** Location `kind` label for mapped records (default "public property record"). */
+  locationKind?: string;
+  /** Profile confidence (default "Medium"). */
+  confidence?: string;
 };
 
 export type SocrataIngestResult = {
@@ -94,7 +98,7 @@ export function registerSocrataSource(input: SocrataIngestInput) {
 
 export function mapSocrataRowToProfileInput(
   row: SocrataRow,
-  input: Pick<SocrataIngestInput, "sourceId" | "fields">,
+  input: Pick<SocrataIngestInput, "sourceId" | "fields" | "locationKind" | "confidence">,
 ): UpsertProfileInput | null {
   const fields = input.fields;
   const fullName = clean(row[fields.name]);
@@ -110,7 +114,7 @@ export function mapSocrataRowToProfileInput(
     id: `p_${slugify(input.sourceId)}_${slugify(recordId)}`,
     fullName: titleCaseName(fullName),
     ageRange: "Unknown",
-    confidence: "Medium",
+    confidence: input.confidence ?? "Medium",
     aliases: [
       fields.updatedAt && clean(row[fields.updatedAt])
         ? `Source updated: ${clean(row[fields.updatedAt])}`
@@ -122,7 +126,7 @@ export function mapSocrataRowToProfileInput(
         city: titleCaseName(city),
         state,
         zip: fields.zip ? clean(row[fields.zip]) : undefined,
-        kind: "public property record",
+        kind: input.locationKind ?? "public property record",
         sourceId: input.sourceId,
       },
     ],

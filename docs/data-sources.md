@@ -987,6 +987,24 @@ Status values:
 - **Next step:** Unblocking requires a separately negotiated ATTOM **Order Form** that explicitly grants (a) commercial/ad-supported use, (b) database ingestion, (c) public redistribution/display, and (d) >24h persistent storage — rights the default terms expressly withhold. ATTOM markets to real estate/insurance/marketing, not public people-search, and may decline people-lookup use; even if granted, cost is high and the underlying data duplicates official parcel sources already in use. Recommend NOT pursuing unless a confirmed license is in hand.
 - **Notes:** Audited 2026-06-20 as part of the Incogni broker-list review (ATTOM was the only licensed-aggregator candidate on that list). The ATTOM path is license-blocked, not technology-blocked. The property data ATTOM aggregates is already sourced directly from official county/state APIs (#2), so ATTOM offers no unique lawful value at materially higher cost and legal risk.
 
+### 51. `wa-pdc-campaign-contributions`
+
+- **Priority:** P3
+- **Status:** `ready-local` (local ingest via config; public display gated pending campaign-finance display-policy review)
+- **Value:** Washington State individual campaign-finance donors — complements federal FEC Schedule A (#6) at the state level.
+- **Preserved information:** Individual donor name, contribution address (street/city/state/ZIP), receipt date, amount/committee context.
+- **Coverage:** Washington State individual contributors, 2025+ (recency filter).
+- **Progress:**
+  - [x] Approval/terms: Washington public record; Socrata keyless open data; reuse permitted. Local ingest approved; public display gated (same review as FEC Schedule A).
+  - N/A Adapter: reuses generic `lib/sources/socrata.ts` (enhanced to support per-config `locationKind`/`confidence`).
+  - [x] Loader/CLI: `npm run ingest:socrata -- --config=configs/person-sources/wa-pdc-contributions.socrata.json`.
+  - [x] Config: `configs/person-sources/wa-pdc-contributions.socrata.json` (validated; 7 fields verified live).
+  - N/A Tests: covered by generic socrata adapter tests.
+  - [x] Docs: tracked here.
+  - [ ] Display policy: do NOT surface donor data on the public site until the campaign-finance display-policy review is complete.
+- **Next step:** Live-verified (50-row sample → 47 imported; e.g., "Killin Selena", Edmonds WA). Raise the limit / schedule periodic re-ingest for fresher data; keep public display gated.
+- **Notes:** Bulk config source (not in name-search auto-refresh). `contributor_category='Individual'` filters out organizational donors; `receipt_date>'2025-01-01'` enforces the recency priority ("value recent data").
+
 ## Immediate Recommended Backlog
 
 Highest-leverage new sources (public record, free bulk/API, no scraping, no license negotiation) discovered 2026-06-19 — full quality ranking in `docs/data-source-quality-ranking.md`:
