@@ -148,10 +148,19 @@ function validateLocalShape(
   }
 
   if (adapter === "arcgis" || adapter === "socrata") {
-    for (const field of ["recordId", "name", "city", "state"] as const) {
+    for (const field of ["recordId", "city", "state"] as const) {
       if (!config.fields?.[field]) {
         missing.push(`Missing required fields.${field}.`);
       }
+    }
+    // Name may be a single `name` field OR a composite `nameFields` array
+    // (e.g. first/last split across two columns).
+    const fields = config.fields as Record<string, unknown> | undefined;
+    const hasName =
+      Boolean(fields?.name) ||
+      (Array.isArray(fields?.nameFields) && fields.nameFields.length > 0);
+    if (!hasName) {
+      missing.push("Missing required fields.name or fields.nameFields.");
     }
   }
 

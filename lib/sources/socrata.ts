@@ -8,7 +8,10 @@ import { applyImportLimit, clampLimit } from "@/lib/sources/limits";
 
 export type SocrataFieldMap = {
   recordId: string;
-  name: string;
+  /** Single field holding the full name. */
+  name?: string;
+  /** Alternative: two+ fields (e.g. first/last) joined into the full name. */
+  nameFields?: string[];
   street?: string;
   city: string;
   state: string;
@@ -101,7 +104,9 @@ export function mapSocrataRowToProfileInput(
   input: Pick<SocrataIngestInput, "sourceId" | "fields" | "locationKind" | "confidence">,
 ): UpsertProfileInput | null {
   const fields = input.fields;
-  const fullName = clean(row[fields.name]);
+  const fullName = fields.nameFields
+    ? fields.nameFields.map((field) => clean(row[field])).filter(Boolean).join(" ")
+    : clean(row[fields.name ?? ""]);
   const city = clean(row[fields.city]);
   const state = clean(row[fields.state]).toUpperCase();
   const recordId = clean(row[fields.recordId]);
@@ -146,6 +151,7 @@ function buildSocrataUrl(input: SocrataIngestInput, limit: number | undefined) {
   const selectFields = unique([
     input.fields.recordId,
     input.fields.name,
+    ...(input.fields.nameFields ?? []),
     input.fields.street,
     input.fields.city,
     input.fields.state,

@@ -1,0 +1,25 @@
+{
+  "adapter": "socrata",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "sf_campaign_finance_contributions",
+  "sourceName": "San Francisco Ethics Commission Campaign Contributions (Schedule A)",
+  "category": "Local campaign finance contribution (individual donor)",
+  "jurisdiction": "San Francisco, CA",
+  "domain": "data.sfgov.org",
+  "datasetId": "pitq-e56w",
+  "licenseUrl": "https://data.sfgov.org/",
+  "notes": "SF Ethics Commission campaign-finance transactions (Socrata, keyless), filtered to Form 460 Schedule A (monetary contributions received) where a first name is present (individual donors) and dated 2025+. San Francisco public record; reuse permitted. Local ingestion approved; PUBLIC DISPLAY of donor data is gated pending the same campaign-finance display-policy review as FEC Schedule A. No street-level address in this schedule (city/state/zip only).",
+  "where": "form_type='A' AND transaction_first_name IS NOT NULL AND transaction_date>'2025-01-01'",
+  "limit": 2000,
+  "locationKind": "campaign contribution address",
+  "confidence": "Medium",
+  "fields": {
+    "recordId": "transaction_id",
+    "nameFields": ["transaction_first_name", "transaction_last_name"],
+    "city": "transaction_city",
+    "state": "transaction_state",
+    "zip": "transaction_zip",
+    "updatedAt": "transaction_date"
+  }
+}

@@ -1024,6 +1024,24 @@ Status values:
 - **Next step:** Live-verified (Smith→9 imported). Wired into name-search auto-refresh. Dataset is the current employee snapshot, so no historical recency filter is needed.
 - **Notes:** Public payroll record; workplace affiliation only. No address/DOB/phone.
 
+### 53. `sf-campaign-finance-contributions`
+
+- **Priority:** P3
+- **Status:** `ready-local` (local ingest via config; public display gated pending campaign-finance display-policy review)
+- **Value:** San Francisco individual campaign-finance donors — local complement to federal FEC Schedule A (#6) and WA PDC (#51).
+- **Preserved information:** Individual donor first/last name, contribution city/state/zip, employer/occupation, amount, date. (No street-level address in Schedule A.)
+- **Coverage:** SF Ethics Commission Form 460 Schedule A monetary contributions, 2025+ (recency filter).
+- **Progress:**
+  - [x] Approval/terms: SF public record; Socrata keyless open data; reuse permitted. Local ingest approved; public display gated (same review as FEC Schedule A).
+  - N/A Adapter: reuses generic `lib/sources/socrata.ts` (now supports `nameFields` composite + per-config `locationKind`/`confidence`).
+  - [x] Loader/CLI: `npm run ingest:socrata -- --config=configs/person-sources/sf-campaign-finance-contributions.socrata.json`.
+  - [x] Config: `configs/person-sources/sf-campaign-finance-contributions.socrata.json` (validated).
+  - N/A Tests: covered by generic socrata adapter tests.
+  - [x] Docs: tracked here.
+  - [ ] Display policy: do NOT surface donor data on the public site until the campaign-finance display-policy review is complete.
+- **Next step:** Live-verified (100-row sample → 100 imported; e.g., "Grace Fan Lai", "Hilary Shirazi"). Schedule periodic re-ingest for fresher data; keep public display gated.
+- **Notes:** Bulk config source (not in auto-refresh). Filtered via `form_type='A'` (Form 460 Schedule A, monetary contributions received) AND `transaction_first_name IS NOT NULL` (individuals only — drops committee/org donors) AND `transaction_date>'2025-01-01'` (recency). Uses composite `nameFields=[transaction_first_name, transaction_last_name]`; the property validator was updated to accept `name` OR `nameFields`.
+
 ## Immediate Recommended Backlog
 
 Highest-leverage new sources (public record, free bulk/API, no scraping, no license negotiation) discovered 2026-06-19 — full quality ranking in `docs/data-source-quality-ranking.md`:
