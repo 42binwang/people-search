@@ -153,8 +153,8 @@ Status values:
 ### 1. `licensed-california-property-feed`
 
 - Priority: P0
-- Status: `candidate`
-- Value: Very high
+- Status: `blocked/legal-review` (contract-gated; free CA data redacts owner names)
+- Value: Very high (if a compliant license is obtained)
 - Preserved information: Owner names, situs/property address, mailing address, APN, transfer/tax context depending on provider schema.
 - Coverage: California statewide if contract allows; this is the most likely path for all nine Bay Area counties.
 - Progress:
@@ -166,7 +166,7 @@ Status values:
   - [x] Docs: tracked here and in `docs/bay-area-property-sources.md`.
   - [ ] Display policy: address roles, protected-address suppression, and provenance labels still needed.
 - Next step: evaluate provider terms/pricing and obtain a sample schema before writing code.
-- Notes: Do not scrape county pages as a substitute for a license.
+- Notes: Do not scrape county pages as a substitute for a license. ATTOM was evaluated as a candidate provider on 2026-06-20 and is license-blocked — see #50.
 
 ### 2. `official-open-parcel-sources`
 
@@ -201,8 +201,8 @@ Status values:
   - [ ] Tests: planned `tests/recorder-deed-index.test.ts`.
   - [ ] Docs: add source-specific docs when first pilot is chosen.
   - [ ] Display policy: deed roles and stale records need clear labels.
-- Next step: identify one official export/API or records-request file for a Bay Area county and document its schema.
-- Notes: Avoid criminal/court-style records in this adapter.
+- Next step: BLOCKED 2026-06-20. Grantor/grantee indexes are published only as HTML search portals (San Mateo, Alameda, Orange, Charleston, Salt Lake, LA/Netronline) — no Socrata/API/JSON export found across the counties surveyed. NYC ACRIS deeds are already built separately (name-search adapter). Unblocks only if a county with a clean deed export/API is found.
+- Notes: Avoid criminal/court-style records in this adapter. The formal grantor/grantee index is almost never exposed as a clean dataset.
 
 ### 4. `professional-licensing-boards`
 
@@ -219,8 +219,8 @@ Status values:
   - [ ] Tests: planned `tests/professional-license.test.ts`.
   - [ ] Docs: add board registry when first source is selected.
   - [ ] Display policy: distinguish business/practice address from residence.
-- Next step: prioritize California professional rosters with official bulk/API access and clear reuse terms.
-- Notes: Do not display disciplinary context without separate policy review.
+- Next step: BLOCKED 2026-06-20. Every clean official endpoint requires credentials — the MA Professional Licensing API and IN PLA Verification API both need API keys; the CA State Bar QuickSearch redirects to a login (no public JSON API). NPPES already covers healthcare providers. Unblocks only with a licensed/keyed endpoint; do not scrape HTML board sites.
+- Notes: Do not display disciplinary context without separate policy review. Third-party "scraper" APIs (StateLicense.io, Apify actors, etc.) are not official sources and must not be used.
 
 ### 5. `business-entity-registrations`
 
@@ -237,7 +237,7 @@ Status values:
   - [ ] Tests: planned `tests/business-entity.test.ts`.
   - [ ] Docs: add registry when first source is selected.
   - [ ] Display policy: registered-agent and business addresses are not residences.
-- Next step: choose one state with official API/bulk access and permissive reuse terms.
+- Next step: Ohio built (entry #28, HTTP CSV). Florida researched 2026-06-20: free official bulk via SFTP (`sftp.floridados.gov`, user `Public` / `PubAccess1845!`, reached via `lftp` with host-key auto-confirm — `sshpass`+`sftp` batch auth is rejected). Data is a fixed-width corp master (`doc/cor/YYYYMMDDc.txt`) with embedded officer/manager/registered-agent name + address — confirmed person-bearing (record shows manager "SUMELIA WADDELL" @ 4367 COCONUT RD). Buildable pending a dedicated fixed-width parser; the exact field-offset layout lives in FL's "Data Usage Guide" and is not bundled in the SFTP files. Georgia and Washington SoS remain blocked (Cloudflare/Turnstile + paid FTP).
 - Notes: Good for identity resolution and business affiliations, not residential proof.
 
 ### 6. `fec-schedule-a-individual-contributions`
@@ -261,20 +261,20 @@ Status values:
 ### 7. `local-person-bearing-permits`
 
 - Priority: P2
-- Status: `candidate`
+- Status: `ready-local` (Buffalo, NY instance built + live-verified 2026-06-20)
 - Value: Medium
-- Preserved information: Applicant/owner/contractor names, permit addresses, dates, permit type.
-- Coverage: City/county datasets, often Socrata or ArcGIS.
+- Preserved information: Applicant name, permit/work-site address, dates, permit type, contractor-license context.
+- Coverage: City of Buffalo, NY building permits (Socrata `9p2d-f3yt`, ~274k rows, key-free SoQL API). Extensible to other municipal permit datasets.
 - Progress:
-  - [ ] Approval/terms: per dataset.
-  - [x] Adapter: existing generic `lib/sources/socrata.ts`, `lib/sources/arcgis.ts`, `lib/sources/official-json.ts`, `lib/sources/official-delimited.ts`, and `lib/sources/official-xml.ts` may be reused.
-  - [x] Loader/CLI: existing generic loaders may be reused.
-  - [ ] Config: needs approved person-bearing permit configs; aggregate permit configs already exist but do not create profiles.
-  - [x] Tests: generic adapter tests exist; add dataset-specific tests when field mapping is complex.
-  - [ ] Docs: add registry when first person-bearing permit source is selected.
-  - [ ] Display policy: label as permit/applicant context, not residence.
-- Next step: find one approved permit dataset with person fields and clear reuse terms, then add config.
-- Notes: Current housing-permit sources are aggregate and should not be confused with person-bearing permits.
+  - [x] Approval/terms: official City of Buffalo open data (Socrata); commercial/public republication remains operator responsibility.
+  - [x] Adapter: `lib/sources/buffalo-permits.ts` — dedicated name-search adapter. Queries `starts_with(applicant,'<LAST>')` (uppercased, since the field is stored in caps), filters contractor/business applicants, and reorders surname-first names ("SMITH CLARA L" → "Clara L Smith").
+  - [x] Loader/CLI: `scripts/ingest-buffalo-permits.ts` — `npm run ingest:buffalo-permits -- --last-name=Smith [--first-name=Clara] [--limit=n]`.
+  - N/A Config: dedicated adapter (not config-driven).
+  - [x] Tests: `tests/buffalo-permits.test.ts` (4 tests — mapping, first-name filter, business-name filter, short-name skip).
+  - [x] Docs: tracked here.
+  - [x] Display policy: location kind = "building permit applicant (permit/work site; not confirmed residence)"; confidence `Low`.
+- Next step: optionally add more municipal permit datasets. Screened and rejected: Chicago (names are contractor *businesses*), SF (no applicant/owner field).
+- Notes: Buffalo's `applicant` is genuinely person-bearing (homeowner or licensed individual). Wired into name-search auto-refresh in `lib/name-source-refresh.ts`. Live-verified: Smith→8, Garcia→1 imported.
 
 ### 8. `court-civil-probate-lien-indexes`
 
@@ -960,6 +960,29 @@ Status values:
 - **Next step:** If this remains useful, design an opt-out/broker-registry data model that stores broker names, categories, legal basis, opt-out endpoints, and suppression workflow status only; seed it from official state data broker registries or licensed/permissioned directories, not Incogni scraping.
 - **Notes:** This is not an approved public, official, records-request, or licensed profile source. Do not add an Incogni-covered people-search site as a source unless that individual site independently passes the approval workflow and has explicit automated-access/reuse rights.
 
+### 50. `attom-licensed-property-provider`
+
+- **Priority:** P3
+- **Status:** `blocked/legal-review` (license — not technology)
+- **Value:** National property/owner-data aggregator (158M+ properties: owner name, situs/mailing address, APN, tax/assessment, deed/mortgage). One candidate provider for the generic `licensed-california-property-feed` (#1) and its national equivalent.
+- **Preserved information:** None under the available license. The data ATTOM *offers* (owner name, property/mailing address) is the same county recorder/assessor data already sourced lawfully from official ArcGIS/Socrata parcel APIs (#2).
+- **Coverage:** United States (national). API key required; free 30-day trial then transaction-based custom enterprise pricing (~$10k+/mo for full nationwide per third-party reports).
+- **Progress:**
+  - [ ] Approval/terms: BLOCKED. ATTOM Developer Platform Terms (V07052018, updated 2024-11-21) prohibit every element of this product's use under the available license:
+    - §1.2 — license is "internal evaluation only" and expressly excludes "any form of commercial exploitation or revenue generation whatsoever" (rules out ad-supported public display).
+    - §1.3(iii) — prohibits "using the ATTOM Products to create, enhance or structure any database in any form" (rules out ingestion into our store).
+    - §1.3(iv) — prohibits "publishing… or creating any product or service for… distribution to any third party" (rules out serving on a public website).
+    - §1.3(vi) — prohibits caching/storing ATTOM Content "for a period of greater than twenty-four (24) hours" (rules out persistent storage).
+    - §4.1 — 90-day initial term; on termination customer must purge/delete and certify destruction.
+  - [ ] Adapter: blocked; no `lib/sources/attom-*.ts` (building it would facilitate a terms breach).
+  - [ ] Loader/CLI: blocked; no `scripts/ingest-attom-*.ts`.
+  - [x] Config: reference-only metadata at `configs/reference-sources/attom-property-data.reference.json`.
+  - N/A Tests: no adapter or loader exists.
+  - [x] Docs: tracked here; cross-references `licensed-california-property-feed` (#1).
+  - [ ] Display policy: blocked; no display.
+- **Next step:** Unblocking requires a separately negotiated ATTOM **Order Form** that explicitly grants (a) commercial/ad-supported use, (b) database ingestion, (c) public redistribution/display, and (d) >24h persistent storage — rights the default terms expressly withhold. ATTOM markets to real estate/insurance/marketing, not public people-search, and may decline people-lookup use; even if granted, cost is high and the underlying data duplicates official parcel sources already in use. Recommend NOT pursuing unless a confirmed license is in hand.
+- **Notes:** Audited 2026-06-20 as part of the Incogni broker-list review (ATTOM was the only licensed-aggregator candidate on that list). The ATTOM path is license-blocked, not technology-blocked. The property data ATTOM aggregates is already sourced directly from official county/state APIs (#2), so ATTOM offers no unique lawful value at materially higher cost and legal risk.
+
 ## Immediate Recommended Backlog
 
 Highest-leverage new sources (public record, free bulk/API, no scraping, no license negotiation) discovered 2026-06-19 — full quality ranking in `docs/data-source-quality-ranking.md`:
@@ -973,7 +996,7 @@ Highest-leverage new sources (public record, free bulk/API, no scraping, no lice
 Existing priorities:
 
 6. Decide display/legal policy for `fec-schedule-a-individual-contributions`.
-7. Evaluate `licensed-california-property-feed` terms and sample schema.
+7. Evaluate `licensed-california-property-feed` terms and sample schema. (ATTOM ruled out — license-blocked, see #50.)
 8. Add one more `official-open-parcel-sources` config with owner and situs fields.
 9. Choose one `professional-licensing-boards` pilot source.
 10. Choose one `county-recorder-deed-index` pilot export or API.

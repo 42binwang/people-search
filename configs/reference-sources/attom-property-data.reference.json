@@ -1,0 +1,35 @@
+{
+  "adapter": "reference",
+  "approved": false,
+  "approvalStatus": "blocked_legal_review_license",
+  "sourceId": "attom_property_data",
+  "sourceName": "ATTOM Data Solutions (Property Data API)",
+  "category": "Licensed property-data aggregator",
+  "jurisdiction": "United States (national; 158M+ properties)",
+  "url": "https://api.developer.attomdata.com/home",
+  "termsUrl": "https://api.developer.attomdata.com/legal",
+  "reviewDate": "2026-06-20",
+  "refreshCadence": "N/A — not ingested. ATTOM offers real-time on-demand API access; the standard license caps local caching at 24 hours.",
+  "collectionMethod": "Licensed provider (Order Form) — NOT public/official. API key required (free 30-day trial, then transaction-based custom enterprise pricing reported around $10k+/month for full nationwide). No key issued for this project.",
+  "fieldsAvailable": [
+    "owner_name",
+    "situs_or_property_address",
+    "mailing_address",
+    "apn_parcel_id",
+    "tax_and_assessment",
+    "deed_and_mortgage_records",
+    "avm_valuation_estimate"
+  ],
+  "fieldsImported": [],
+  "personProfileData": false,
+  "licenseBlockers": [
+    "Section 1.2: license is 'internal evaluation only' and excludes 'any form of commercial exploitation or revenue generation whatsoever' (rules out ad-supported public display).",
+    "Section 1.3(iii): prohibits 'using the ATTOM Products to create, enhance or structure any database in any form' (rules out ingestion into our store).",
+    "Section 1.3(iv): prohibits 'publishing ... or creating any product or service for sale or distribution to any third party' (rules out serving on a public website).",
+    "Section 1.3(vi): prohibits caching/storing ATTOM Content 'for a period of greater than twenty-four (24) hours' (rules out persistent storage).",
+    "Section 4.1: 90-day initial term; on termination customer must purge/delete and certify destruction."
+  ],
+  "protectedAddressHandling": "No data imported. ATTOM offers property-owner name + situs/mailing address — the same county recorder/assessor data already sourced lawfully from official ArcGIS/Socrata parcel APIs.",
+  "nextStepToUnblock": "A separately negotiated ATTOM Order Form must explicitly grant (a) commercial/ad-supported use, (b) database ingestion, (c) public redistribution/display, and (d) >24h persistent storage — rights the default terms expressly withhold. ATTOM markets to real estate/insurance/marketing, not public people-search, and may decline people-lookup use. Not worth pursuing unless a confirmed license is in hand; the underlying data duplicates official parcel sources already in use.",
+  "notes": "Reference-only evaluation, recorded 2026-06-20 as part of the Incogni broker-list audit (ATTOM was the only licensed-aggregator candidate on that list). The ATTOM path is LICENSE-BLOCKED, not technology-blocked: the available ATTOM Developer Platform Terms (V07052018, updated 2024-11-21) prohibit every element of this product's use under the available license. Do not build an ATTOM adapter or call the ATTOM API under a trial/developer key for ingestion — doing so would breach Sections 1.2, 1.3(iii), 1.3(iv), and 1.3(vi)."
+}
