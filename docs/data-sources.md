@@ -225,19 +225,19 @@ Status values:
 ### 5. `business-entity-registrations`
 
 - Priority: P1
-- Status: `candidate`
+- Status: `ready-local` (Ohio built, entry #28; Florida blocked — Cloudflare-gated layout)
 - Value: Medium/high
 - Preserved information: Officers, registered agents, business/mailing addresses, company names, filing dates.
 - Coverage: Statewide business owners/officers.
 - Progress:
-  - [ ] Approval/terms: Secretary of State terms vary by state.
-  - [ ] Adapter: planned `lib/sources/business-entity.ts`.
-  - [ ] Loader/CLI: planned `scripts/ingest-business-entity.ts`.
-  - [ ] Config: planned `configs/business-entity-sources/<state>.json`.
-  - [ ] Tests: planned `tests/business-entity.test.ts`.
-  - [ ] Docs: add registry when first source is selected.
+  - [~] Approval/terms: Ohio approved (HTTP CSV). FL/other states vary.
+  - [x] Adapter: Ohio (`lib/sources/ohio-sos-business.ts`); a generic multi-state adapter remains planned.
+  - [x] Loader/CLI: Ohio (`scripts/ingest-ohio-sos-business.ts`).
+  - [ ] Config: per-state configs planned; Ohio is file-based (no config).
+  - [x] Tests: Ohio tests exist.
+  - [x] Docs: Ohio tracked (#28); FL researched here.
   - [ ] Display policy: registered-agent and business addresses are not residences.
-- Next step: Ohio built (entry #28, HTTP CSV). Florida researched 2026-06-20: free official bulk via SFTP (`sftp.floridados.gov`, user `Public` / `PubAccess1845!`, reached via `lftp` with host-key auto-confirm — `sshpass`+`sftp` batch auth is rejected). Data is a fixed-width corp master (`doc/cor/YYYYMMDDc.txt`) with embedded officer/manager/registered-agent name + address — confirmed person-bearing (record shows manager "SUMELIA WADDELL" @ 4367 COCONUT RD). Buildable pending a dedicated fixed-width parser; the exact field-offset layout lives in FL's "Data Usage Guide" and is not bundled in the SFTP files. Georgia and Washington SoS remain blocked (Cloudflare/Turnstile + paid FTP).
+- Next step: Ohio is built (#28). Florida BLOCKED 2026-06-20: the bulk data is SFTP-accessible (`sftp.floridados.gov`, user `Public` / `PubAccess1845!`, via `lftp` with host-key auto-confirm — `sshpass`+`sftp` batch auth is rejected) and is a person-bearing fixed-width corp master (`doc/cor/YYYYMMDDc.txt`, 1436-char rows, embedded officer/manager/registered-agent name + address — record shows manager "SUMELIA WADDELL" @ 4367 COCONUT RD). BUT the authoritative field-offset layout (the "Corporate File Definitions" page) is behind a Cloudflare managed-challenge (curl and headless reader both blocked; reader 500s), is NOT bundled in the SFTP files (only a file index, `corindex.txt`), and the Wayback snapshot is rate-limited/unavailable. FL's own guide warns against deriving offsets by eye. Do NOT ship a guessed-offset parser (it would silently misparse person data). Unblocks only if the layout is obtained — e.g. a manual browser download of the page, or a records request. Georgia and Washington SoS remain blocked (Cloudflare/Turnstile + paid FTP).
 - Notes: Good for identity resolution and business affiliations, not residential proof.
 
 ### 6. `fec-schedule-a-individual-contributions`
