@@ -27,6 +27,7 @@ import { ingestFloridaSalaries } from "@/lib/sources/florida-salaries";
 import { ingestFlSunbiz } from "@/lib/sources/fl-sunbiz";
 import { ingestNycPayroll } from "@/lib/sources/nyc-payroll";
 import { ingestSeeThroughNyPayrolls } from "@/lib/sources/seethroughny-payrolls";
+import { ingestSeattleWages } from "@/lib/sources/seattle-wages";
 import { ingestUcAnnualWage } from "@/lib/sources/uc-annual-wage";
 import { ingestNycAcrisDeeds } from "@/lib/sources/nyc-acris-deeds";
 import { ingestChroniclingAmerica } from "@/lib/sources/chronicling-america";
@@ -478,6 +479,15 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     label: "FL Sunbiz",
     run: (payload) =>
       ingestFlSunbiz({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "seattle_employee_wages",
+    label: "Seattle Wages",
+    run: (payload) =>
+      ingestSeattleWages({
         firstName: payload.firstName,
         lastName: payload.lastName,
       }),

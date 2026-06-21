@@ -69,6 +69,7 @@ These adapters can create or enrich profile records. Many are identity/context s
 | Senate LDA lobbying | Implemented, automatic name refresh | Public API (Senate) | Registered lobbyist name, registrant firm, client, filing year | Federal registered lobbyists since 1999 | Low/medium | Federal lobbying-filing context. Registrant firm is an affiliation, not a residence. No-key official JSON API. |
 | Buffalo building permits | Implemented, automatic name refresh | Public API (Socrata SoQL) | Permit applicant name, permit/work-site address, permit type, contractor-license context, issue date | City of Buffalo, NY permit applicants | Low/medium | Person-bearing via the `applicant` field (homeowner or licensed individual); contractor/business applicants are filtered out. The permit address is a work site or owner-occupied residence, not a confirmed residence. |
 | Florida Sunbiz officers | Implemented, automatic name refresh | Official bulk (SFTP via lftp) | Officer/manager/registered-agent name, title, entity name/type/status, filing type/date | Florida corporation/LLC/LP officers | Medium | Public business-registry context only; entity affiliation is not a residence. Officer street addresses are deliberately not imported. Downloads the daily corp file per query (refresh-cached 1 day). |
+| Seattle employee wages | Implemented, automatic name refresh | Public API (Socrata SODA) | Employee name, department, job title, hourly wage | City of Seattle employees (~14k) | Medium | Public payroll record. Department/job-title is a workplace affiliation, not a residence. Current snapshot (no address/DOB/phone). |
 
 Automatic name refresh sources are listed in `lib/name-source-refresh.ts`.
 
@@ -1004,6 +1005,24 @@ Status values:
   - [ ] Display policy: do NOT surface donor data on the public site until the campaign-finance display-policy review is complete.
 - **Next step:** Live-verified (50-row sample → 47 imported; e.g., "Killin Selena", Edmonds WA). Raise the limit / schedule periodic re-ingest for fresher data; keep public display gated.
 - **Notes:** Bulk config source (not in name-search auto-refresh). `contributor_category='Individual'` filters out organizational donors; `receipt_date>'2025-01-01'` enforces the recency priority ("value recent data").
+
+### 52. `seattle-employee-wages`
+
+- **Priority:** P3
+- **Status:** `ready-local` (built + live-verified 2026-06-20)
+- **Value:** City of Seattle employee wages — public-payroll employment context (department/job-title affiliation). Extends the payroll family to Seattle.
+- **Preserved information:** Employee first/last name, department, job title, hourly wage.
+- **Coverage:** ~14,000 City of Seattle employees (current snapshot).
+- **Progress:**
+  - [x] Approval/terms: official City of Seattle open data (Socrata SODA), keyless; reuse permitted.
+  - [x] Adapter: `lib/sources/seattle-wages.ts` (dedicated name-search payroll adapter mirroring chicago-salaries; separate first_name/last_name fields).
+  - [x] Loader/CLI: `scripts/ingest-seattle-wages.ts` (`npm run ingest:seattle-wages`).
+  - N/A Config: dedicated adapter.
+  - [x] Tests: `tests/seattle-wages.test.ts` (3 tests).
+  - [x] Docs: tracked here + registry table.
+  - [x] Display policy: department/job-title = workplace affiliation, not a residence.
+- **Next step:** Live-verified (Smith→9 imported). Wired into name-search auto-refresh. Dataset is the current employee snapshot, so no historical recency filter is needed.
+- **Notes:** Public payroll record; workplace affiliation only. No address/DOB/phone.
 
 ## Immediate Recommended Backlog
 
