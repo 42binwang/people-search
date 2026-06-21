@@ -224,7 +224,7 @@ describe("NSF award ingest", () => {
           ],
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNsfAwards({
       firstName: "Jane",
@@ -247,7 +247,7 @@ describe("NSF award ingest", () => {
     // The matching PI was upserted with a correctly mapped profile.
     expect(upsertProfile).toHaveBeenCalledTimes(1);
     const profile = (
-      upsertProfile as unknown as { mock: { calls: any[][] } }
+      vi.mocked(upsertProfile)
     ).mock.calls[0][0];
     expect(profile.id).toBe("p_nsf_jane_smith");
     expect(profile.fullName).toBe("Jane Smith");
@@ -299,7 +299,7 @@ describe("NSF award ingest", () => {
           ],
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNsfAwards({
       firstName: "Jane",
@@ -310,7 +310,7 @@ describe("NSF award ingest", () => {
     expect(result.imported).toBe(1);
     expect(upsertProfile).toHaveBeenCalledTimes(1);
     expect(
-      (upsertProfile as unknown as { mock: { calls: any[][] } }).mock.calls[0][0]
+      (vi.mocked(upsertProfile)).mock.calls[0][0]
         .id,
     ).toBe("p_nsf_jane_smith");
 
@@ -335,7 +335,7 @@ describe("NSF award ingest", () => {
           ],
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNsfAwards({ query: "Jane Smith" });
 
@@ -354,7 +354,7 @@ describe("NSF award ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ response: { award: [] } }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNsfAwards({
       firstName: "Jane",
@@ -373,7 +373,7 @@ describe("NSF award ingest", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestNsfAwards({ firstName: "Jane", lastName: "Smith" }),

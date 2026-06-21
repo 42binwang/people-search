@@ -192,7 +192,7 @@ describe("USPTO trademark ingest", () => {
         ok: true,
         status: 200,
         json: async () => buildPayload([matchingRecord]),
-      } as any);
+      } as unknown as Response);
 
     const result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
@@ -242,7 +242,7 @@ describe("USPTO trademark ingest", () => {
         ok: true,
         status: 200,
         json: async () => buildPayload([matchingRecord]),
-      } as any);
+      } as unknown as Response);
 
     const result = await ingestUsptoTrademarkOwners({ query: "Jane Smith" });
 
@@ -270,7 +270,7 @@ describe("USPTO trademark ingest", () => {
       ok: false,
       status: 503,
       statusText: "Service Unavailable",
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestUsptoTrademarkOwners({ query: "Jane Smith", apiKey: "test-key" }),
@@ -301,7 +301,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload(records),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
@@ -323,7 +323,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload(records),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
@@ -341,7 +341,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload([]),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
@@ -359,7 +359,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => [matchingRecord],
-    } as any);
+    } as unknown as Response);
     let result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
       apiKey: "test-key",
@@ -371,7 +371,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ results: [matchingRecord] }),
-    } as any);
+    } as unknown as Response);
     result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
       apiKey: "test-key",
@@ -383,7 +383,7 @@ describe("USPTO trademark ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ trademarks: [matchingRecord] }),
-    } as any);
+    } as unknown as Response);
     result = await ingestUsptoTrademarkOwners({
       query: "Jane Smith",
       apiKey: "test-key",

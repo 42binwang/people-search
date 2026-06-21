@@ -162,7 +162,7 @@ describe("NYC payroll ingest", () => {
           title_description: "TEACHER",
         },
       ],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycPayroll({
       firstName: "Jane",
@@ -249,7 +249,7 @@ describe("NYC payroll ingest", () => {
           title_description: "ANALYST",
         },
       ],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycPayroll({
       firstName: "Jane",
@@ -286,7 +286,7 @@ describe("NYC payroll ingest", () => {
           title_description: "TEACHER",
         },
       ],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycPayroll({ firstName: "Jane", lastName: "Smith" });
 
@@ -310,7 +310,7 @@ describe("NYC payroll ingest", () => {
       status: 200,
       statusText: "OK",
       json: async () => rows,
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycPayroll({
       firstName: "Jane",
@@ -355,7 +355,7 @@ describe("NYC payroll ingest", () => {
           first_name: "JANE",
         },
       ],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycPayroll({ query: "Jane Smith" });
 
@@ -371,7 +371,7 @@ describe("NYC payroll ingest", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestNycPayroll({ firstName: "Jane", lastName: "Smith" }),

@@ -242,7 +242,7 @@ function jsonResponse(overrides: Partial<{
       result_id: "abc123",
       ...overrides,
     }),
-  } as any;
+  } as unknown as Response;
 }
 
 describe("SeeThroughNY payroll ingest", () => {
@@ -341,7 +341,7 @@ describe("SeeThroughNY payroll ingest", () => {
       status: 500,
       statusText: "Internal Server Error",
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestSeeThroughNyPayrolls({ firstName: "Jane", lastName: "Smith" }),

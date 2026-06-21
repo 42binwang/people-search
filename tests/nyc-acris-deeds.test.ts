@@ -285,12 +285,12 @@ describe("NYC ACRIS deeds ingest", () => {
       ok: true,
       status: 200,
       json: async () => parties,
-    } as any);
+    } as unknown as Response);
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => legals,
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycAcrisDeeds({
       firstName: "Jane",
@@ -353,7 +353,7 @@ describe("NYC ACRIS deeds ingest", () => {
       ok: true,
       status: 200,
       json: async () => parties,
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycAcrisDeeds({
       firstName: "Jane",
@@ -375,7 +375,7 @@ describe("NYC ACRIS deeds ingest", () => {
       status: 500,
       statusText: "Internal Server Error",
       json: async () => [],
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestNycAcrisDeeds({ firstName: "Jane", lastName: "Smith" }),
@@ -400,13 +400,13 @@ describe("NYC ACRIS deeds ingest", () => {
       ok: true,
       status: 200,
       json: async () => parties,
-    } as any);
+    } as unknown as Response);
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 502,
       statusText: "Bad Gateway",
       json: async () => [],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycAcrisDeeds({
       firstName: "Jane",
@@ -438,7 +438,7 @@ describe("NYC ACRIS deeds ingest", () => {
       ok: true,
       status: 200,
       json: async () => [] as AcrisParty[],
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNycAcrisDeeds({ query: "Jane Smith" });
 

@@ -134,7 +134,7 @@ describe("NIH RePORTer ingest", () => {
           },
         ],
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNihReporterProjects({ query: "Maike Krenz" });
 
@@ -183,7 +183,7 @@ describe("NIH RePORTer ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ results: [] }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNihReporterProjects({
       query: "Jane Smith",
@@ -212,7 +212,7 @@ describe("NIH RePORTer ingest", () => {
       status: 500,
       statusText: "Internal Server Error",
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     await expect(ingestNihReporterProjects({ query: "Jane Smith" })).rejects.toThrow(
       /NIH RePORTER search failed: 500/,
@@ -232,7 +232,7 @@ describe("NIH RePORTer ingest", () => {
           },
         ],
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestNihReporterProjects({ query: "Jane Smith" });
 

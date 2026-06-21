@@ -192,7 +192,7 @@ describe("SEC EDGAR insiders ingest", () => {
     // reporting-owner relationship. We branch on URL.
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
-      .mockImplementation(async (input: any) => {
+      .mockImplementation(async (input: RequestInfo | URL) => {
         const url =
           typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
         if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
@@ -222,7 +222,7 @@ describe("SEC EDGAR insiders ingest", () => {
                 ],
               },
             }),
-          } as any;
+          } as unknown as Response;
         }
         // Archives Form 4 XML — role resolution path.
         return {
@@ -238,7 +238,7 @@ describe("SEC EDGAR insiders ingest", () => {
             "<officerTitle>Chief Financial Officer</officerTitle>" +
             "</reportingOwnerRelationship>" +
             "</ownershipDocument>",
-        } as any;
+        } as unknown as Response;
       });
 
     const result = await ingestSecEdgarInsiders({
@@ -267,7 +267,7 @@ describe("SEC EDGAR insiders ingest", () => {
 
     // upsertProfile got the mapped profile with the resolved CFO role.
     expect(upsertProfile).toHaveBeenCalledTimes(1);
-    const profile = (upsertProfile as any).mock.calls[0][0];
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
     expect(profile.id).toBe("p_secedgar_jane_a_smith_acme_corporation");
     expect(profile.fullName).toBe("JANE A SMITH");
     expect(profile.ageRange).toBe("Unknown");
@@ -302,7 +302,7 @@ describe("SEC EDGAR insiders ingest", () => {
   it("imports a profile with the generic role when the per-filing XML fetch fails", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
-      .mockImplementation(async (input: any) => {
+      .mockImplementation(async (input: RequestInfo | URL) => {
         const url =
           typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
         if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
@@ -329,17 +329,17 @@ describe("SEC EDGAR insiders ingest", () => {
                 ],
               },
             }),
-          } as any;
+          } as unknown as Response;
         }
         // Archives fetch fails — ingest must fall back to generic role, not throw.
-        return { ok: false, status: 404, statusText: "Not Found" } as any;
+        return { ok: false, status: 404, statusText: "Not Found" } as unknown as Response;
       });
 
     const result = await ingestSecEdgarInsiders({ query: "Robert Lee" });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.imported).toBe(1);
-    const profile = (upsertProfile as any).mock.calls[0][0];
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
     expect(profile.fullName).toBe("ROBERT LEE");
     expect(profile.aliases).toContain(
       "Role: Securities filing insider (Form 3/4/5 reporting owner)",
@@ -371,7 +371,7 @@ describe("SEC EDGAR insiders ingest", () => {
           ],
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestSecEdgarInsiders({
       firstName: "Jane",
@@ -387,7 +387,7 @@ describe("SEC EDGAR insiders ingest", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       status: 200,
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestSecEdgarInsiders({});
 
@@ -402,7 +402,7 @@ describe("SEC EDGAR insiders ingest", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestSecEdgarInsiders({ firstName: "Jane", lastName: "Smith" }),
@@ -441,7 +441,7 @@ describe("SEC EDGAR insiders ingest", () => {
       },
     ];
 
-    vi.spyOn(globalThis, "fetch").mockImplementation(async (input: any) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
       const url =
         typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
       if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
@@ -450,9 +450,9 @@ describe("SEC EDGAR insiders ingest", () => {
           status: 200,
           statusText: "OK",
           json: async () => ({ hits: { hits } }),
-        } as any;
+        } as unknown as Response;
       }
-      return { ok: false, status: 404, statusText: "Not Found" } as any;
+      return { ok: false, status: 404, statusText: "Not Found" } as unknown as Response;
     });
 
     const result = await ingestSecEdgarInsiders({
@@ -465,7 +465,7 @@ describe("SEC EDGAR insiders ingest", () => {
     expect(result.fetched).toBe(1);
     expect(result.imported).toBe(1);
     expect(upsertProfile).toHaveBeenCalledTimes(1);
-    const profile = (upsertProfile as any).mock.calls[0][0];
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
     // First hit's issuer is ACME CORPORATION.
     expect(profile.id).toBe("p_secedgar_jane_smith_acme_corporation");
   });

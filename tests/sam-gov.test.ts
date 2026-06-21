@@ -91,7 +91,7 @@ describe("SAM.gov ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ entityData: [entity] }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestSamGovEntities({
       query: "Example LLC",
@@ -158,7 +158,7 @@ describe("SAM.gov ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestSamGovEntities({
       query: "No Such Company",
@@ -177,7 +177,7 @@ describe("SAM.gov ingest", () => {
       status: 500,
       statusText: "Internal Server Error",
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestSamGovEntities({ query: "Example LLC", apiKey: "test-key" }),
@@ -192,7 +192,7 @@ describe("SAM.gov ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ entityData: [] }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestSamGovEntities({ query: "Example LLC" });
 

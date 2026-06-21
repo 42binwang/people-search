@@ -67,7 +67,7 @@ describe("VIAF ingest", () => {
           },
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestViafAuthorityRecords({ query: "Jane Smith" });
 
@@ -115,7 +115,7 @@ describe("VIAF ingest", () => {
           },
         },
       }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestViafAuthorityRecords({ query: "Jane Smith" });
 
@@ -133,7 +133,7 @@ describe("VIAF ingest", () => {
       status: 500,
       statusText: "Internal Server Error",
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestViafAuthorityRecords({ query: "Jane Smith" }),
@@ -149,7 +149,7 @@ describe("VIAF ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({ searchRetrieveResponse: { records: {} } }),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestViafAuthorityRecords({ query: "Jane Smith" });
 

@@ -16,10 +16,10 @@ export default defineConfig({
       // Ratchet: set just below the current level so the build fails on any
       // regression, and is bumped up as tests are added. Goal is 90%.
       thresholds: {
-        statements: 80,
-        branches: 70,
-        functions: 86,
-        lines: 80,
+        statements: 85,
+        branches: 73,
+        functions: 89,
+        lines: 85,
       },
     },
   },

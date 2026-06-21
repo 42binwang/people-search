@@ -112,7 +112,7 @@ describe("USPTO patent ingest", () => {
         ok: true,
         status: 200,
         json: async () => buildPayload([matchingPatent]),
-      } as any);
+      } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({
       query: "Jane Smith",
@@ -186,7 +186,7 @@ describe("USPTO patent ingest", () => {
         ok: true,
         status: 200,
         json: async () => buildPayload([matchingPatent]),
-      } as any);
+      } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({ query: "Jane Smith" });
 
@@ -207,7 +207,7 @@ describe("USPTO patent ingest", () => {
         ok: true,
         status: 200,
         json: async () => buildPayload([]),
-      } as any);
+      } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({ query: "Jane Smith" });
 
@@ -244,7 +244,7 @@ describe("USPTO patent ingest", () => {
       ok: false,
       status: 503,
       statusText: "Service Unavailable",
-    } as any);
+    } as unknown as Response);
 
     await expect(
       ingestUsptoPatentInventors({ query: "Jane Smith", apiKey: "test-key" }),
@@ -287,7 +287,7 @@ describe("USPTO patent ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload(patents),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({
       query: "Jane Smith",
@@ -310,7 +310,7 @@ describe("USPTO patent ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload(patents),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({
       query: "Jane Smith",
@@ -334,7 +334,7 @@ describe("USPTO patent ingest", () => {
       ok: true,
       status: 200,
       json: async () => buildPayload([]),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({
       query: "Jane Smith",
@@ -351,7 +351,7 @@ describe("USPTO patent ingest", () => {
       ok: true,
       status: 200,
       json: async () => ({}),
-    } as any);
+    } as unknown as Response);
 
     const result = await ingestUsptoPatentInventors({
       query: "Jane Smith",
