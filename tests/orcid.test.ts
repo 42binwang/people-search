@@ -31,4 +31,22 @@ describe("ORCID source mapping", () => {
       }),
     ).toBeNull();
   });
+
+  it("preserves researcher-declared URLs in the stored raw payload", () => {
+    // The ingest loop attaches researcher-urls (fetched from the ORCID
+    // researcher-urls endpoint) to the record AFTER mapping; because raw is a
+    // reference to the same record, the enrichment lands in stored source data
+    // where the profile normalizer can surface it as an outbound link.
+    const record: Parameters<typeof mapOrcidRecordToProfileInput>[1] = {
+      "orcid-id": "0000-0002-1825-0097",
+      "given-names": "Jane",
+      "family-names": "Smith",
+    };
+    const profile = mapOrcidRecordToProfileInput("Jane Smith", record);
+    record["researcher-urls"] = [
+      { url: "https://www.linkedin.com/in/janesmith" },
+    ];
+
+    expect(profile?.sourceRecord?.raw).toBe(record);
+  });
 });

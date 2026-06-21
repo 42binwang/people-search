@@ -45,11 +45,25 @@ export async function ingestOrcidPublicRecords(
   const payload = (await response.json()) as OrcidExpandedSearchResponse;
   const records = applyImportLimit(payload["expanded-result"] ?? [], limit);
   let imported = 0;
+  let enrichedCount = 0;
 
   for (const record of records) {
     const profile = mapOrcidRecordToProfileInput(input.query, record);
     if (!profile) {
       continue;
+    }
+
+    // Enrich a bounded subset of matched records with the researcher-declared
+    // website/social links (the ORCID field where a researcher lists, e.g.,
+    // their LinkedIn). These power OUTBOUND LINKS ONLY on the profile page —
+    // we never scrape the linked sites. Capped to keep ingest latency inside
+    // the per-source refresh timeout.
+    if (record["orcid-id"] && enrichedCount < RESEARCHER_URL_ENRICHMENT_CAP) {
+      const urls = await fetchResearcherUrls(record["orcid-id"]);
+      if (urls.length > 0) {
+        record["researcher-urls"] = urls.map((url) => ({ url }));
+      }
+      enrichedCount += 1;
     }
 
     upsertProfile(profile);
@@ -132,6 +146,40 @@ function buildOrcidExpandedSearchUrl(input: { query: string; limit: number | und
   return url.toString();
 }
 
+/** Max matched records to enrich with researcher-URLs per ingest (bounds latency). */
+const RESEARCHER_URL_ENRICHMENT_CAP = 10;
+
+/**
+ * Fetch a researcher's self-declared website/social links (the ORCID field
+ * where researchers list, e.g., LinkedIn). Outbound-link-only; we never follow
+ * or scrape the linked URLs. Failures are non-fatal — we simply skip enrichment.
+ */
+async function fetchResearcherUrls(orcidId: string): Promise<string[]> {
+  try {
+    const response = await fetch(
+      `https://pub.orcid.org/v3.0/${encodeURIComponent(orcidId)}/researcher-urls`,
+      {
+        headers: {
+          accept: "application/json",
+          "user-agent": "PeopleSearchOrcidIngest/0.1 local-development",
+        },
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) {
+      return [];
+    }
+    const payload = (await response.json()) as {
+      "researcher-url"?: Array<{ url?: { value?: string } }>;
+    };
+    return (payload["researcher-url"] ?? [])
+      .map((entry) => entry?.url?.value)
+      .filter((value): value is string => Boolean(value && value.trim()));
+  } catch {
+    return [];
+  }
+}
+
 function formatOrcidName(record: OrcidExpandedRecord) {
   return [record["given-names"], record["family-names"]]
     .filter(Boolean)
@@ -166,4 +214,5 @@ export type OrcidExpandedRecord = {
   "credit-name"?: string;
   "other-name"?: string[];
   "institution-name"?: string[];
+  "researcher-urls"?: Array<{ url: string }>;
 };

@@ -67,23 +67,46 @@ export function normalizeProfileRecords(
 ): ProfileRecordSummary {
   const worksByKey = new Map<string, WorkItem>();
   const profiles: ProfileItem[] = [];
+  const seenProfileUrls = new Set<string>();
+
+  const addProfile = (item: ProfileItem) => {
+    const key = (item.url ?? item.label).toLowerCase();
+    if (seenProfileUrls.has(key)) {
+      return;
+    }
+    seenProfileUrls.add(key);
+    profiles.push(item);
+  };
 
   for (const record of records) {
     if (DROP_SOURCE_IDS.has(record.sourceId)) {
       continue;
     }
 
-    if (PROFILE_SOURCE_IDS.has(record.sourceId)) {
+    const isProfileSource = PROFILE_SOURCE_IDS.has(record.sourceId);
+    if (isProfileSource) {
       const profile = extractProfile(record);
       if (profile) {
-        profiles.push(profile);
+        addProfile(profile);
       }
-      continue;
     }
 
-    const work = extractWork(record);
-    if (work) {
-      mergeWork(worksByKey, work, record.sourceId);
+    // Every approved source record is also scanned for self-declared external
+    // profile/account URLs (LinkedIn, ORCID, Scholar, X/Twitter) that appear
+    // verbatim in the raw payload. These are surfaced as OUTBOUND LINKS ONLY —
+    // we never scrape the linked platform, and we never construct or guess URLs.
+    const raw = parseJson(record.rawJson);
+    if (raw) {
+      for (const link of extractProfileLinks(raw)) {
+        addProfile(link);
+      }
+    }
+
+    if (!isProfileSource) {
+      const work = extractWork(record);
+      if (work) {
+        mergeWork(worksByKey, work, record.sourceId);
+      }
     }
   }
 
@@ -250,6 +273,20 @@ function extractProfile(record: ProfileSourceRecord): ProfileItem | null {
         detail: `Semantic Scholar · ${papers} papers · h-index ${hIndex}`,
       };
     }
+    case "orcid_public_registry": {
+      const orcidId = stringAt(raw, ["orcid-id"]);
+      if (!orcidId) return null;
+      const label =
+        stringAt(raw, ["credit-name"]) ??
+        [stringAt(raw, ["given-names"]), stringAt(raw, ["family-names"])]
+          .filter(Boolean)
+          .join(" ");
+      return {
+        label: label || orcidId,
+        url: `https://orcid.org/${orcidId}`,
+        detail: "ORCID",
+      };
+    }
     default:
       return genericProfile(raw);
   }
@@ -297,6 +334,75 @@ function genericProfile(raw: Record<string, unknown>): ProfileItem | null {
     return null;
   }
   return { label, url, detail: "Public profile" };
+}
+
+/**
+ * Profile-platform URL patterns. GitHub is intentionally omitted here: a
+ * GitHub *profile* URL is indistinguishable from a *repository* URL by pattern
+ * alone, so GitHub profiles are surfaced only via the dedicated github_users
+ * extractor (which reads the structured `html_url`). LinkedIn/ORCID/Scholar/X
+ * are unambiguously person-profile URLs and are safe to extract from any
+ * approved source's raw payload.
+ */
+const PROFILE_LINK_PATTERNS: Array<{ label: string; re: RegExp }> = [
+  {
+    label: "LinkedIn",
+    re: /https?:\/\/(?:[a-z0-9-]+\.)?linkedin\.com\/(?:in|pub)\/[A-Za-z0-9_%-]+/i,
+  },
+  {
+    label: "ORCID",
+    re: /https?:\/\/(?:sandbox\.)?orcid\.org\/\d{4}-\d{4}-\d{4}-\d{3}[\dX]/i,
+  },
+  {
+    label: "Google Scholar",
+    re: /https?:\/\/scholar\.google\.com\/citations\?user=[A-Za-z0-9_-]+/i,
+  },
+  {
+    label: "X (Twitter)",
+    re: /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/(?!home|explore|search|i\/|hashtag)[A-Za-z0-9_]{1,15}/i,
+  },
+];
+
+/**
+ * Scan a source record's raw payload for self-declared profile/account URLs.
+ * The URL must appear verbatim in approved source data — we never construct or
+ * infer one (e.g. never guess linkedin.com/in/firstname-lastname).
+ */
+function extractProfileLinks(raw: Record<string, unknown>): ProfileItem[] {
+  const found = new Map<string, ProfileItem>();
+  for (const url of collectUrls(raw)) {
+    const cleaned = url.replace(/[.,;:)\]"']+$/, "");
+    const pattern = PROFILE_LINK_PATTERNS.find((entry) => entry.re.test(cleaned));
+    if (!pattern) {
+      continue;
+    }
+    const key = cleaned.toLowerCase();
+    if (!found.has(key)) {
+      found.set(key, { label: pattern.label, url: cleaned, detail: pattern.label });
+    }
+  }
+  return Array.from(found.values());
+}
+
+function collectUrls(value: unknown): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const walk = (node: unknown) => {
+    if (typeof node === "string") {
+      for (const match of node.matchAll(/https?:\/\/[^\s"'<>)\]]+/gi)) {
+        if (!seen.has(match[0])) {
+          seen.add(match[0]);
+          urls.push(match[0]);
+        }
+      }
+    } else if (Array.isArray(node)) {
+      node.forEach(walk);
+    } else if (node && typeof node === "object") {
+      Object.values(node as Record<string, unknown>).forEach(walk);
+    }
+  };
+  walk(value);
+  return urls;
 }
 
 function parseJson(value: string): Record<string, unknown> | null {
