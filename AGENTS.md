@@ -37,6 +37,8 @@ Before adding or enabling a source:
 
 **Always update the data source table when an adapter is finished.** Whenever you finish building (or substantially change) an adapter for a source, update `docs/data-sources.md` in the same change: add or update its row in the *Existing Person/Profile Sources*, *Existing Configurable Person/Property Adapters*, or *Approved Property Sources Currently Configured* table, and flip the adapter/loader/config/tests checkboxes (`[x]` done, `[~]` partial, `[ ]` not started) in the matching *Potential Source Tracker* entry. Never leave a finished adapter untracked or still marked as pending.
 
+**This is enforced, not just requested.** `npm run sources:validate-inventory` (part of `npm run presubmit`) discovers every adapter in `lib/sources/` that declares a `sourceId` and fails the build if any has no mention in `docs/data-sources.md`. Run `npm run presubmit` (lint + tests + inventory check) before committing source work; a prose rule alone is not enough.
+
 Keep the tracker readable by both humans and coding agents:
 
 - Use the stable source ID already in the tracker, or add one in lowercase kebab-case.

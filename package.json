@@ -59,7 +59,9 @@
     "ingest:sam-gov": "tsx scripts/ingest-sam-gov.ts",
     "ingest:buffalo-permits": "tsx scripts/ingest-buffalo-permits.ts",
     "collect:source": "tsx scripts/collect-approved-source.ts",
-    "sources:validate-property": "tsx scripts/validate-property-source-configs.ts"
+    "sources:validate-property": "tsx scripts/validate-property-source-configs.ts",
+    "sources:validate-inventory": "tsx scripts/validate-source-inventory.ts",
+    "presubmit": "npm run lint && npm run test && npm run sources:validate-inventory"
   },
   "keywords": [],
   "author": "",
