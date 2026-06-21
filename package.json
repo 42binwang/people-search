@@ -57,6 +57,7 @@
     "ingest:ohio-sos-business": "tsx scripts/ingest-ohio-sos-business.ts",
     "ingest:irs-990": "tsx scripts/ingest-irs-990.ts",
     "ingest:sam-gov": "tsx scripts/ingest-sam-gov.ts",
+    "ingest:buffalo-permits": "tsx scripts/ingest-buffalo-permits.ts",
     "collect:source": "tsx scripts/collect-approved-source.ts",
     "sources:validate-property": "tsx scripts/validate-property-source-configs.ts"
   },

@@ -6,6 +6,7 @@ import {
 import { createSearchCacheKey } from "@/lib/search-cache";
 import type { SearchPayload } from "@/lib/search-store";
 import { ingestArxivAuthors } from "@/lib/sources/arxiv";
+import { ingestBuffaloPermits } from "@/lib/sources/buffalo-permits";
 import { ingestClinicalTrialsPersonnel } from "@/lib/sources/clinical-trials";
 import { ingestCrossrefWorks } from "@/lib/sources/crossref";
 import { ingestDataCiteCreators } from "@/lib/sources/datacite";
@@ -473,5 +474,14 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     sourceId: "uspto_patent_inventors",
     label: "USPTO Patents",
     run: (_payload, query) => ingestUsptoPatentInventors({ query }),
+  },
+  {
+    sourceId: "buffalo_ny_building_permits",
+    label: "Buffalo Permits",
+    run: (payload) =>
+      ingestBuffaloPermits({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
   },
 ];
