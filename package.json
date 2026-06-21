@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "db:seed": "tsx scripts/seed.ts",
     "ingest:csv": "tsx scripts/ingest-approved-csv.ts",
     "ingest:nppes": "tsx scripts/ingest-nppes.ts",
@@ -61,7 +62,7 @@
     "collect:source": "tsx scripts/collect-approved-source.ts",
     "sources:validate-property": "tsx scripts/validate-property-source-configs.ts",
     "sources:validate-inventory": "tsx scripts/validate-source-inventory.ts",
-    "presubmit": "npm run lint && npm run test && npm run sources:validate-inventory"
+    "presubmit": "npm run lint && npm run test:coverage && npm run sources:validate-inventory"
   },
   "keywords": [],
   "author": "",
