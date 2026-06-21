@@ -11,7 +11,7 @@ type PropertySourceConfig = {
   layerUrl?: string;
   url?: string;
   discoveryUrls?: string[];
-  fields?: Record<string, string | undefined>;
+  fields?: Record<string, string | string[] | undefined>;
 };
 
 type ValidationResult = {
@@ -98,7 +98,10 @@ async function validateConfig(file: string): Promise<ValidationResult> {
 
   const remoteFieldNames = new Set(remoteFields.map((field) => field.toLowerCase()));
   const mappedFields = unique(
-    Object.values(config.fields ?? {}).filter(isNonEmptyString),
+    Object.entries(config.fields ?? {})
+      .filter(([key]) => key !== "stateValue")
+      .flatMap(([, value]) => (Array.isArray(value) ? value : [value]))
+      .filter(isNonEmptyString),
   );
   const missingRemoteFields = mappedFields.filter(
     (field) => !remoteFieldNames.has(field.toLowerCase()),
@@ -148,10 +151,13 @@ function validateLocalShape(
   }
 
   if (adapter === "arcgis" || adapter === "socrata") {
-    for (const field of ["recordId", "city", "state"] as const) {
+    for (const field of ["recordId", "city"] as const) {
       if (!config.fields?.[field]) {
         missing.push(`Missing required fields.${field}.`);
       }
+    }
+    if (!config.fields?.state && !config.fields?.stateValue) {
+      missing.push("Missing required fields.state or fields.stateValue.");
     }
     // Name may be a single `name` field OR a composite `nameFields` array
     // (e.g. first/last split across two columns).

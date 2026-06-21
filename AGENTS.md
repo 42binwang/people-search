@@ -1,6 +1,6 @@
 # Coding Agent Guide
 
-Last updated: 2026-06-20
+Last updated: 2026-06-21
 
 This file is for every coding agent working in this repository. Read it before changing code, docs, configs, tests, or ingestion behavior.
 
@@ -47,6 +47,20 @@ Keep the tracker readable by both humans and coding agents:
 - Mark implementation artifacts explicitly as `[x]`, `[ ]`, or `[~]` for partial/in-progress.
 - Include concrete paths for implemented or planned adapters, loader scripts, configs, and tests.
 - Do not mark a source ready for public display until approval/terms and display policy are complete.
+
+## Continuous Source Addition Loop
+
+Use this loop for repeated or 7x24 source expansion work. Each pass should be a bounded unit of work: research one source, add one config, build one adapter, or finish one source through tests and docs.
+
+1. Record the starting git state with `git status --short --branch`. Expect unrelated dirty files and do not stage, revert, or commit changes outside the current pass.
+2. Pick the next source by product value and deployability: prefer recent official/bulk/API sources with real person names plus source-observed addresses, phones, or explicitly published emails; prefer sources that reuse existing adapters; demote stale, aggregate-only, context-only, sensitive, blocked, or license-unclear sources.
+3. If the backlog/tracker has no suitable ready source, run a bounded new-source detection pass instead of stalling. Search only for official public-data portals, agency bulk downloads, records-request exports, or licensed-provider candidates; compare every candidate against existing `sourceId`s and `docs/data-sources.md`; reject sources with unclear terms, sensitive/prohibited use, scraping-only access, aggregate-only value, or no person-bearing fields. Add the best candidates to the `Potential Source Tracker` with approval status, fields, coverage, refresh cadence, adapter fit, and the next implementation step.
+4. Run the source approval workflow before implementation. Record source URL, terms URL, fields, coverage, refresh cadence, protected-address handling, and review date before enabling ingestion.
+5. Implement the smallest safe integration path. Use existing configurable adapters first (`ArcGIS`, `Socrata`, `CKAN`, `Opendatasoft`, official JSON/XML/delimited, or approved CSV). Build a custom adapter only when the source is high value and does not fit an existing adapter.
+6. Treat phones, emails, street addresses, and raw names as sourced PII. Import them only when the approved source explicitly publishes them, preserve provenance, and never infer them from names, affiliations, usernames, domains, or publication metadata.
+7. A source pass is not complete until mapping and failure behavior have unit-test coverage, the relevant validation commands pass, `docs/data-sources.md` is updated, and tracker/table checkboxes match the actual code state.
+8. After a clean completed pass, stage only the files changed for that pass, commit them with a concise source-specific message, and push the current branch. If validation fails, the pass is incomplete, there are unresolved unrelated changes in the files to commit, or push is blocked by auth/remote conflicts, do not commit; leave a concise resume note instead.
+9. If a pass cannot be completed cleanly in the current run, preserve progress in docs or code comments already in scope; do not leave a partially finished adapter marked as ready.
 
 ## Architecture Map
 

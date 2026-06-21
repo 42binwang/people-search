@@ -11,7 +11,8 @@ export type ArcGisFieldMap = {
   name: string;
   street?: string;
   city: string;
-  state: string;
+  state?: string;
+  stateValue?: string;
   zip?: string;
   updatedAt?: string;
 };
@@ -104,7 +105,9 @@ export function mapArcGisFeatureToProfileInput(
   const fields = input.fields;
   const fullName = clean(attributes[fields.name]);
   const city = clean(attributes[fields.city]);
-  const state = clean(attributes[fields.state]).toUpperCase();
+  const state = clean(
+    fields.stateValue ?? (fields.state ? attributes[fields.state] : undefined),
+  ).toUpperCase();
   const recordId = clean(attributes[fields.recordId]);
 
   if (!fullName || !city || !state || !recordId) {

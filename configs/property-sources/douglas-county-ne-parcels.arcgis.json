@@ -1,0 +1,20 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "douglas_county_ne_parcels",
+  "sourceName": "Douglas County Nebraska Parcels",
+  "category": "County parcel/property open data",
+  "jurisdiction": "Douglas County, NE",
+  "layerUrl": "https://dcgis.org/server/rest/services/vector/Parcels_public/FeatureServer/0",
+  "licenseUrl": "https://data.dogis.org/datasets/douglas::parcels-public/about",
+  "notes": "Official Douglas County, Nebraska public parcel FeatureServer. Service metadata says the data is maintained by the Douglas County Assessor and published by Douglas County GIS, and the layer exposes owner name plus mailing and property/situs address fields. User approved this source for local ingestion on 2026-06-21; commercial/public republication, protected-address exclusions, and ongoing terms compliance remain operator responsibilities. Address fields are source-observed property or owner-mailing context, not confirmed residence.",
+  "fields": {
+    "recordId": "PIN",
+    "name": "OWNER_NAME",
+    "street": "PROPERTY_A",
+    "city": "PROP_CITY",
+    "stateValue": "NE",
+    "zip": "PROP_ZIP"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "ar-gis-office-parcels",
+  "sourceName": "Arkansas GIS Office Statewide Parcels",
+  "category": "Statewide parcel/property open data",
+  "jurisdiction": "Arkansas",
+  "layerUrl": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Planning_Cadastre/FeatureServer/6",
+  "licenseUrl": "https://gis.arkansas.gov/Metadata/HTML/asdi.Planning_Cadastre.PARCEL_POLYGON_CAMP_export.html",
+  "notes": "Official Arkansas Geographic Information Systems Office statewide cadastral parcel publication. The layer exposes owner name and situs/property address fields from county assessor CAMA rolls; Arkansas is stored as a config-level literal state because the layer has no state column. User approved this source for local ingestion on 2026-06-21; commercial/public republication, protected-address handling, and ongoing terms compliance remain operator responsibilities. Address fields are source-observed situs/property context, not confirmed residence.",
+  "fields": {
+    "recordId": "parcelid",
+    "name": "ownername",
+    "street": "adrlabel",
+    "city": "adrcity",
+    "stateValue": "AR",
+    "zip": "adrzip5",
+    "updatedAt": "pubdate"
+  }
+}

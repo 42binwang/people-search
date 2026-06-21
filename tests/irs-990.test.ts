@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { deflateRawSync } from "node:zlib";
 
 vi.mock("@/lib/db", () => ({
   upsertProfile: vi.fn(),
@@ -15,7 +16,9 @@ vi.mock("fs", async (orig) => {
 import { readFileSync } from "fs";
 import { upsertProfile, upsertApprovedSource } from "@/lib/db";
 import {
+  extractIrs990XmlEntriesFromZip,
   ingestIrs990OfficersFromFile,
+  ingestIrs990OfficersFromZip,
   mapIrs990OfficersToProfileInputs,
   parseIrs990Filing,
 } from "@/lib/sources/irs-990";
@@ -281,4 +284,101 @@ describe("IRS 990 ingest", () => {
     expect(result.imported).toBe(0);
     expect(upsertProfile).not.toHaveBeenCalled();
   });
+
+  it("extracts XML entries from a TEOS-style ZIP and ignores non-XML entries", () => {
+    const zip = createZip([
+      { name: "README.txt", contents: "metadata only" },
+      { name: "2026/return-one.xml", contents: sampleXml, deflate: true },
+      { name: "return-two.XML", contents: efiledXml },
+    ]);
+
+    const entries = extractIrs990XmlEntriesFromZip(zip);
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toMatchObject({
+      name: "2026/return-one.xml",
+      xml: sampleXml,
+    });
+    expect(entries[1]).toMatchObject({
+      name: "return-two.XML",
+      xml: efiledXml,
+    });
+  });
+
+  it("ingests officers from a ZIP with query, file, and import limits", async () => {
+    vi.mocked(readFileSync).mockReturnValue(
+      createZip([
+        { name: "return-one.xml", contents: sampleXml, deflate: true },
+        { name: "return-two.xml", contents: efiledXml },
+      ]),
+    );
+
+    const result = await ingestIrs990OfficersFromZip({
+      zipFile: "/tmp/irs_990_202605.zip",
+      query: "Maria Gonzalez",
+      limit: 1,
+      maxFiles: 2,
+    });
+
+    expect(result.files).toBe(2);
+    expect(result.fetched).toBe(5);
+    expect(result.imported).toBe(1);
+    expect(result.url).toBe("/tmp/irs_990_202605.zip");
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
+    expect(profile.fullName).toBe("Maria Gonzalez");
+    expect(profile.id).toContain("return_two_xml_maria_gonzalez_0");
+    expect(profile.sourceRecord?.sourceRecordId).toContain(
+      "return_two_xml_maria_gonzalez_0",
+    );
+    expect(upsertApprovedSource).toHaveBeenCalledTimes(1);
+  });
 });
+
+function createZip(
+  entries: { name: string; contents: string; deflate?: boolean }[],
+) {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const data = Buffer.from(entry.contents);
+    const compressed = entry.deflate ? deflateRawSync(data) : data;
+    const compressionMethod = entry.deflate ? 8 : 0;
+    const localHeader = Buffer.alloc(30);
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(compressionMethod, 8);
+    localHeader.writeUInt32LE(0, 14);
+    localHeader.writeUInt32LE(compressed.length, 18);
+    localHeader.writeUInt32LE(data.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+    localParts.push(localHeader, name, compressed);
+
+    const centralHeader = Buffer.alloc(46);
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt16LE(compressionMethod, 10);
+    centralHeader.writeUInt32LE(0, 16);
+    centralHeader.writeUInt32LE(compressed.length, 20);
+    centralHeader.writeUInt32LE(data.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(localOffset, 42);
+    centralParts.push(centralHeader, name);
+    localOffset += localHeader.length + name.length + compressed.length;
+  }
+
+  const localData = Buffer.concat(localParts);
+  const centralDirectory = Buffer.concat(centralParts);
+  const endRecord = Buffer.alloc(22);
+  endRecord.writeUInt32LE(0x06054b50, 0);
+  endRecord.writeUInt16LE(entries.length, 8);
+  endRecord.writeUInt16LE(entries.length, 10);
+  endRecord.writeUInt32LE(centralDirectory.length, 12);
+  endRecord.writeUInt32LE(localData.length, 16);
+
+  return Buffer.concat([localData, centralDirectory, endRecord]);
+}

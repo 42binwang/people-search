@@ -1,6 +1,6 @@
 # Data Sources
 
-Last updated: 2026-06-20
+Last updated: 2026-06-21
 
 This file is the repo-level inventory and roadmap for source work. It should be updated whenever an adapter, config, approval status, or source-ranking decision changes.
 
@@ -64,12 +64,14 @@ These adapters can create or enrich profile records. Many are identity/context s
 | SeeThroughNY payrolls | Implemented, automatic name refresh | Public JSON | Employee name, employer, title, pay year | NYS/NYC/local NY public employees | Medium | Nonprofit republisher (FOIL-derived). Employer is a workplace affiliation, not a residence. Terms-of-use review pending public display. |
 | UC annual wage | Implemented, automatic name refresh | Public JSON | Employee name, UC campus, job title, pay year | University of California employees | Medium | Official UCOP disclosure. Campus is a workplace affiliation, not a residence. |
 | NYC ACRIS deeds | Implemented, automatic name refresh | Public API (SODA) | Real property document party names (grantor/grantee), party/property address, recording date | NYC property-record parties | Medium | Recorded property-record context; address is the recorded property address, not a current residence. |
+| Harris Central Appraisal District property data | Implemented, file ingest | Official bulk text files | Owner name, owner mailing address, property/situs address, optional personal-property account phone, account number, tax year, state class, certified date | Harris County, Texas real and personal property accounts | High | Official HCAD public data from `Real_acct_owner.zip` and optional `PP_files.zip/t_business_acct.txt`; address roles are source-observed property/situs or personal-property business addresses, not confirmed residence. Phones are source-backed account contacts only. Large ZIPs are ingested from local extracted files, not automatic name refresh. |
 | Chronicling America obituaries | Implemented, automatic name refresh | Public API (loc.gov) | Name matched in historic newspaper OCR; newspaper title, date, publication city/state | Historic US newspaper mentions (1758–1963) | Low | Weak OCR match; publication location is context, not a residence. Public domain. |
 | SEC EDGAR insiders | Implemented, automatic name refresh | Public API (EDGAR) | Insider name, issuer/company, officer/director/10% role, filing year | SEC-reporting company insiders | Low/medium | Securities-filing context. Issuer affiliation only; residential addresses are deliberately NOT ingested. Descriptive User-Agent per SEC policy. |
 | Senate LDA lobbying | Implemented, automatic name refresh | Public API (Senate) | Registered lobbyist name, registrant firm, client, filing year | Federal registered lobbyists since 1999 | Low/medium | Federal lobbying-filing context. Registrant firm is an affiliation, not a residence. No-key official JSON API. |
 | Buffalo building permits | Implemented, automatic name refresh | Public API (Socrata SoQL) | Permit applicant name, permit/work-site address, permit type, contractor-license context, issue date | City of Buffalo, NY permit applicants | Low/medium | Person-bearing via the `applicant` field (homeowner or licensed individual); contractor/business applicants are filtered out. The permit address is a work site or owner-occupied residence, not a confirmed residence. |
 | Florida Sunbiz officers | Implemented, automatic name refresh | Official bulk (SFTP via lftp) | Officer/manager/registered-agent name, title, entity name/type/status, filing type/date | Florida corporation/LLC/LP officers | Medium | Public business-registry context only; entity affiliation is not a residence. Officer street addresses are deliberately not imported. Downloads the daily corp file per query (refresh-cached 1 day). |
 | Seattle employee wages | Implemented, automatic name refresh | Public API (Socrata SODA) | Employee name, department, job title, hourly wage | City of Seattle employees (~14k) | Medium | Public payroll record. Department/job-title is a workplace affiliation, not a residence. Current snapshot (no address/DOB/phone). |
+| IRS Form 990 officers | Implemented, file/ZIP ingest | Official bulk XML | Officer/director/trustee name, title, reportable compensation, nonprofit organization name, organization business address | U.S. tax-exempt organizations that e-file Form 990 | Medium | Batch/file model only; single XML and operator-supplied TEOS monthly ZIP paths are supported. Officer addresses are the nonprofit's business address, not a residence. No live person-name lookup API is available. |
 
 Automatic name refresh sources are listed in `lib/name-source-refresh.ts`.
 
@@ -97,7 +99,10 @@ These are configured under `configs/property-sources/` and tracked in `docs/prop
 | `wi_statewide_parcels_2025` | Approved for local ingestion | ArcGIS | Parcel owner, situs/property address, mailing/address attributes where exposed | Wisconsin statewide parcels | Very high outside Bay Area | Strong source for ownership and location history, with protected-address obligations. |
 | `mt_cadastral_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs fields also present) | Montana statewide cadastral (all 56 counties) | High | Official MSDI cadastral framework (DNRC-hosted FeatureServer). Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. MT allows owner nondisclosure, so some records may be suppressed. |
 | `fl_fdor_statewide_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs/physical fields also present) | Florida statewide cadastral (all 67 counties) | High | Official FDOR Property Tax Oversight statewide cadastral FeatureServer. Public record under Chapter 119 FS. Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. |
+| `vt-statewide-parcels` | Approved for local ingestion | ArcGIS | Parcel owner name, owner mailing address, Grand List year, parcel SPAN, and raw property/location fields | Vermont statewide active parcel layer | High | Official VCGI statewide parcel FeatureServer joined to Grand List data. Owner mailing address mapped; property/E911 fields remain in raw provenance. Public display requires protected-address and direct-resale review under the Vermont Open Geodata Policy. |
 | `maricopa_county_az_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and owner mailing address (situs fields also present) | Maricopa County, AZ (Phoenix metro) | High | Official Maricopa County Assessor public `Parcels` MapServer. Owner name not suppressed. Owner mailing address mapped; situs-vs-mailing role labeling pending before public display. |
+| `ar-gis-office-parcels` | Approved for local ingestion | ArcGIS | Parcel owner name and situs/property address, with Arkansas stored as a config-level state literal | Arkansas statewide cadastral publication | High | Official Arkansas GIS Office statewide parcel FeatureServer. Situs/property address mapped; no mailing fields are exposed. Address role labeling and protected-address review remain pending before public display. |
+| `douglas_county_ne_parcels` | Approved for local ingestion | ArcGIS | Parcel owner name, owner mailing fields, and situs/property address | Douglas County, Nebraska (Omaha metro) | High | Official Douglas County public parcel FeatureServer maintained by the Assessor/Register of Deeds and published by county GIS. Situs/property address mapped; protected-address and public-display review remain pending. |
 | `cook_county_il_parcel_addresses` | Approved for local ingestion | Socrata | Owner/address fields from assessor parcel-address data | Cook County, Illinois | High | Dense county population; public display terms still operator responsibility. |
 | `dekalb_county_ga_tax_parcels` | Approved for local ingestion | ArcGIS | Tax parcel owner and situs/mailing fields | DeKalb County, Georgia | High | County property context. |
 | `racine_county_wi_tax_parcels` | Approved for local ingestion | ArcGIS | Tax parcel owner and mailing fields | Racine County, Wisconsin | Medium | Current field map uses owner mailing fields where site city/state are not separately exposed. |
@@ -371,19 +376,19 @@ Status values:
 
 ### 13. `hcad-harris-county-tx`
 - **Priority:** P1
-- **Status:** blocked — needs custom importer
+- **Status:** configured (approved for local file ingestion with optional phone import)
 - **Value:** ~2M accounts in Houston metro — one of the largest US county appraisal datasets; owner name + mailing + situs addresses free.
-- **Preserved information:** Real & Personal Property DB: owner name, owner mailing address, property/situs address, account number, certified/preliminary appraised values; GIS shapefiles keyed by APN (quarterly).
+- **Preserved information:** Real & Personal Property DB: owner name, business/personal-property account name, owner mailing address, property/situs address, optional account phone from `t_business_acct.txt`, account number, certified/preliminary appraised values; GIS shapefiles keyed by APN (quarterly).
 - **Coverage:** Harris County, TX (Houston metro), ~2M+ accounts.
 - **Progress:**
-  - [ ] adapter: `lib/sources/hcad.ts` (custom — fixed-width parser required)
-  - [ ] loader: `scripts/ingest-hcad.ts`
-  - [ ] config: `configs/hcad.json`
-  - [ ] tests: `lib/sources/__tests__/hcad.test.ts`
-  - [ ] docs
-  - [ ] display-policy: mailing vs situs role labeling
-- **Next step:** HCAD distributes fixed-width text files (not ArcGIS/delimited), so it does not fit any existing configurable adapter. Build a dedicated `lib/sources/hcad.ts` fixed-width importer against the hcad.org/pdata layouts (Real Acct + Owner + Situs + Building), then an ingest script. Deferred from the config-based batch.
-- **Notes:** Free, no registration. Quarterly GIS. Marked blocked-from-config-path (not a legal block) — needs the custom importer above.
+  - [x] adapter: `lib/sources/hcad.ts` (custom HCAD tab-delimited text parser for `real_acct.txt` + `owners.txt` + optional `t_business_acct.txt`)
+  - [x] loader: `scripts/ingest-hcad.ts` (`npm run ingest:hcad -- --real-acct=... --owners=... [--business-acct=...]`)
+  - N/A config: file-path driven; use locally extracted official `Real_acct_owner.zip` and optional `PP_files.zip` files
+  - [x] tests: `tests/hcad.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [~] display-policy: mailing vs situs vs business personal-property address labeling and account-phone provenance implemented in records; public display still needs protected-address/suppression review
+- **Next step:** Run against locally extracted official HCAD `Real_acct_owner.zip` (`real_acct.txt` + `owners.txt`) plus `PP_files.zip/t_business_acct.txt` for a sample ingest; decide public-display suppression/protected-address handling before production.
+- **Notes:** Free, no registration. The current HCAD public-data page describes ASCII tab-delimited files, not fixed-width files. `t_business_acct.txt` phones are imported only as low-confidence, source-backed account contacts and are not inferred personal/residential phones. Large official ZIPs should be downloaded deliberately by an operator from HCAD and kept out of git/raw commits.
 
 ### 14. `fl-fdor-statewide-parcels`
 - **Priority:** P1
@@ -408,14 +413,14 @@ Status values:
 - **Preserved information:** Part VII PersonNm, TitleTxt, ReportableCompFromOrgAmt/OtherCompensationAmt, business address group (street/city/state/ZIP); EIN, org name/address.
 - **Coverage:** All US tax-exempt orgs e-filing 990 series; ~2010/2011-present, monthly.
 - **Progress:**
-  - [x] adapter: `lib/sources/irs-990.ts`
-  - [x] loader: `scripts/ingest-irs-990.ts (XML Part VII parser)
+  - [x] adapter: `lib/sources/irs-990.ts` (single XML parser plus standard TEOS monthly ZIP XML extraction)
+  - [x] loader: `scripts/ingest-irs-990.ts` (`--file=...` for one XML, `--zip=...` for local TEOS monthly ZIPs, or `--zip-url=... --cache-dir=data/raw/irs-990` for explicit operator downloads)
   - [~] config: `configs/irs-990.json` (N/A — file-based adapter)
-  - [x] tests
-  - [ ] docs
-  - [ ] display-policy: business (not residential) address labeling
-- **Next step:** No clean no-key per-lookup path exposes officer names. ProPublica Nonprofit Explorer search returns organizations (no officer names) and the per-filing XML is behind a Cloudflare bot-challenge (403). The only no-key route is the IRS TEOS multi-GB monthly ZIP bulk archive + CSV index (download, extract Part VII officer names, index locally) — a batch-ingest design, not a live lookup adapter. Build a batch loader if this source is pursued.
-- **Notes:** US Gov public record, no copyright. Blocked only on access architecture, not legality.
+  - [x] tests: `tests/irs-990.test.ts`
+  - [x] docs: row added to *Existing Person/Profile Sources*
+  - [x] display-policy: business address labeled `nonprofit business address`; do not treat as residence
+- **Next step:** Run a sampled ingest against an official TEOS monthly ZIP, keep cached XML/ZIP payloads under ignored local storage such as `data/raw/irs-990`, and decide schedule/retention for recurring operator runs.
+- **Notes:** US Gov public record, no copyright. IRS TEOS bulk Form 990 series files are XML, organized by year/month, and updated monthly; latest XML posting was May 20, 2026 on the IRS page reviewed June 17, 2026. No clean no-key per-lookup path exposes officer names. ProPublica Nonprofit Explorer search returns organizations (no officer names), so the approved path is official IRS TEOS bulk XML rather than live lookup.
 
 ### 16. `nih-reporter`
 - **Priority:** P1
@@ -533,19 +538,19 @@ Status values:
 
 ### 23. `ar-gis-office-parcels`
 - **Priority:** P2
-- **Status:** blocked — adapter limitation
+- **Status:** configured (approved for local ingestion)
 - **Value:** Statewide Arkansas landowner/parcel attribution — fills AR parcel gap.
-- **Preserved information:** Statewide landowner/parcel attribution searchable by owner and parcel.
+- **Preserved information:** Parcel owner name, parcel ID, situs/property address label, city, ZIP, publication date; Arkansas state value is a config-level literal because the official layer has no state column.
 - **Coverage:** Statewide Arkansas.
 - **Progress:**
-  - [ ] adapter: needs constant-state support in `arcgis` adapter (see Notes)
-  - [ ] loader: reuses `npm run ingest:arcgis` once adapter supports it
-  - [~] config: endpoint + fields identified; config withheld to avoid bad data
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy
-- **Next step:** Add optional constant/override-state support to `lib/sources/arcgis.ts` (and relax the validator's required `fields.state` when an override is set), then create `configs/property-sources/ar-gis-office-parcels.arcgis.json` mapping `parcelid`/`ownername`/situs address with `state` overridden to `AR`.
-- **Notes:** Endpoint found and live-verified: `https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Planning_Cadastre/FeatureServer/6` (`PARCEL_POLYGON_CAMP`, ~2.1M parcels, public, no auth). BUT the layer is **situs-only** (no owner mailing fields) and has **no state column** (all records are AR). The current `arcgis` adapter reads `state` from a mapped field and rejects empty states, so mapping `state`→`county` would ingest county names as state — rejected as bad data. Needs the constant-state adapter enhancement before this (and other statewide, no-state-column) sources can be ingested correctly.
+  - [x] adapter: reuses configurable `arcgis` adapter (`lib/sources/arcgis.ts`) with `fields.stateValue` support
+  - [x] loader: reuses `npm run ingest:arcgis`
+  - [x] config: `configs/property-sources/ar-gis-office-parcels.arcgis.json`
+  - [x] tests: `tests/arcgis.test.ts` plus `npm run sources:validate-property`
+  - [x] docs: row added to *Approved Property Sources Currently Configured* and `docs/property-source-candidates.md`
+  - [~] display-policy: situs/property address only; protected-address and public display review remain pending
+- **Next step:** Run a sampled local ingest with `npm run ingest:arcgis -- --config=configs/property-sources/ar-gis-office-parcels.arcgis.json --limit=200`; decide public-display labeling/suppression for Arkansas situs addresses before production.
+- **Notes:** Endpoint live-verified 2026-06-21: `https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Planning_Cadastre/FeatureServer/6` (`PARCEL_POLYGON_CAMP`, public, no auth). The layer is situs-only and has no state column, so the config uses `stateValue: "AR"` rather than mapping `state` to an unrelated county field.
 
 ### 24. `va-nationwide-gravesite-locator`
 - **Priority:** P2
@@ -1042,13 +1047,49 @@ Status values:
 - **Next step:** Live-verified (100-row sample → 100 imported; e.g., "Grace Fan Lai", "Hilary Shirazi"). Schedule periodic re-ingest for fresher data; keep public display gated.
 - **Notes:** Bulk config source (not in auto-refresh). Filtered via `form_type='A'` (Form 460 Schedule A, monetary contributions received) AND `transaction_first_name IS NOT NULL` (individuals only — drops committee/org donors) AND `transaction_date>'2025-01-01'` (recency). Uses composite `nameFields=[transaction_first_name, transaction_last_name]`; the property validator was updated to accept `name` OR `nameFields`.
 
+### 54. `douglas-county-ne-parcels`
+
+- **Priority:** P2
+- **Status:** configured (approved for local ingestion)
+- **Value:** Omaha metro parcel owner attribution with owner mailing fields and situs/property address.
+- **Preserved information:** Parcel owner name, parcel PIN, property/situs address, owner mailing fields in raw provenance, property city/ZIP, assessor/treasurer links in source raw data.
+- **Coverage:** Douglas County, Nebraska.
+- **Progress:**
+  - [x] Approval/terms: official public-facing county FeatureServer; service metadata says data is maintained by Douglas County Assessor and published by Douglas County GIS. Local ingest approved 2026-06-21; public display still requires protected-address and republication review.
+  - [x] Adapter: reuses configurable `lib/sources/arcgis.ts`.
+  - [x] Loader/CLI: reuses `npm run ingest:arcgis`.
+  - [x] Config: `configs/property-sources/douglas-county-ne-parcels.arcgis.json`.
+  - [x] Tests: covered by `tests/arcgis.test.ts` plus `npm run sources:validate-property`.
+  - [x] Docs: row added to *Approved Property Sources Currently Configured* and `docs/property-source-candidates.md`.
+  - [~] Display policy: situs/property address is mapped for local ingestion; protected-address and public display review remain pending before production.
+- **Next step:** Run a sampled local ingest with `npm run ingest:arcgis -- --config=configs/property-sources/douglas-county-ne-parcels.arcgis.json --limit=200`; decide public-display labeling/suppression for Douglas County property addresses before production.
+- **Notes:** Endpoint live-verified 2026-06-21: `https://dcgis.org/server/rest/services/vector/Parcels_public/FeatureServer/0` exposes `OWNER_NAME`, `PROPERTY_A`, `PROP_CITY`, `PROP_ZIP`, and owner mailing fields. Nebraska is stored as a config-level state literal because the layer has no property-state column.
+
+### 55. `vt-statewide-parcels`
+
+- **Priority:** P2
+- **Status:** configured (approved for local ingestion)
+- **Value:** Statewide Vermont parcel owner attribution with Grand List owner mailing fields and raw property/E911 location context.
+- **Preserved information:** Parcel owner name (`OWNER1`), secondary owner/contact text in raw provenance (`OWNER2`), owner mailing address (`ADDRGL1`, `CITYGL`, `STGL`, `ZIPGL`), parcel SPAN, Grand List/town fields, 911/property location fields in raw provenance, and Grand List year.
+- **Coverage:** Vermont statewide active parcels; VCGI layer currently joined to 2025 Grand List fields, with 326k+ owner-bearing records that have mailing city/state.
+- **Progress:**
+  - [x] Approval/terms: official VCGI/State of Vermont open geodata service. The Vermont Open Geodata Policy allows no-cost access, download, sharing, and integration, and prohibits direct non-value-added resale; local ingestion approved 2026-06-21 while public/ad-supported display remains operator/legal responsibility.
+  - [x] Adapter: reuses configurable `lib/sources/arcgis.ts`.
+  - [x] Loader/CLI: reuses `npm run ingest:arcgis`.
+  - [x] Config: `configs/property-sources/vt-statewide-parcels.arcgis.json`.
+  - [x] Tests: covered by `tests/arcgis.test.ts` plus `npm run sources:validate-property`.
+  - [x] Docs: row added to *Approved Property Sources Currently Configured* and `docs/property-source-candidates.md`.
+  - [~] Display policy: owner mailing address is mapped for local ingestion; source-observed property-tax contact labeling, protected-address suppression, and direct-resale/public-display review remain pending before production.
+- **Next step:** Run a sampled local ingest with `npm run ingest:arcgis -- --config=configs/property-sources/vt-statewide-parcels.arcgis.json --limit=200`; decide public-display labeling/suppression for Vermont owner mailing and property-location fields before production.
+- **Notes:** Endpoint live-verified 2026-06-21: `https://services1.arcgis.com/BkFxaEFNwHqX3tAw/arcgis/rest/services/FS_VCGI_VTPARCELS_WM_NOCACHE_v2/FeatureServer/1` exposes `OWNER1`, `ADDRGL1`, `CITYGL`, `STGL`, `ZIPGL`, `SPAN`, `TNAME`, `E911ADDR`, `YEAR`, and `GLYEAR`. The config filters out blank owner/city/state rows.
+
 ## Immediate Recommended Backlog
 
 Highest-leverage new sources (public record, free bulk/API, no scraping, no license negotiation) discovered 2026-06-19 — full quality ranking in `docs/data-source-quality-ranking.md`:
 
-1. `irs-form-990-officers` — ~1.5M nonprofits; named officers/directors + business address from one XML schema; monthly bulk.
+1. Run a sampled `irs-form-990-officers` ingest from an official TEOS monthly ZIP using the new `--zip`/`--zip-url` path, then decide recurring operator schedule/retention; adapter, CLI, tests, docs, and business-address display policy are complete.
 2. `fl-fdor-statewide-parcels` — all 67 FL counties; owner + mailing + situs addresses.
-3. `hcad-harris-county-tx` — ~2M Houston-metro accounts; free bulk text + shapefiles.
+3. Sample-ingest `hcad-harris-county-tx` from locally extracted official real/personal-property files and finish public-display suppression review.
 4. `nih-reporter` + `nsf-award-search` — named federal-grant PIs + institution address; public-domain APIs.
 5. `nyc-acris-deeds` — NYC grantor/grantee deed parties tied to property.
 
@@ -1056,9 +1097,10 @@ Existing priorities:
 
 6. Decide display/legal policy for `fec-schedule-a-individual-contributions`.
 7. Evaluate `licensed-california-property-feed` terms and sample schema. (ATTOM ruled out — license-blocked, see #50.)
-8. Add one more `official-open-parcel-sources` config with owner and situs fields.
-9. Choose one `professional-licensing-boards` pilot source.
-10. Choose one `county-recorder-deed-index` pilot export or API.
+8. Add another `official-open-parcel-sources` config with owner and situs fields, after completing a source-specific terms/protected-address review.
+9. If the ready backlog is exhausted, run a bounded new-source detection pass before implementing another adapter. Search official public-data portals, agency bulk downloads, records-request exports, and licensed-provider candidates; dedupe against existing `sourceId`s and this inventory; reject unclear terms, scraping-only access, sensitive/prohibited uses, aggregate-only datasets, and sources without person-bearing fields; then add the strongest candidates to the `Potential Source Tracker` with approval status, fields, coverage, refresh cadence, adapter fit, and a concrete next step.
+10. Choose one `professional-licensing-boards` pilot source.
+11. Choose one `county-recorder-deed-index` pilot export or API.
 
 ## Display Policy For Address History
 

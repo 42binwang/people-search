@@ -22,6 +22,12 @@ npm run sources:validate-property
 
 The validator checks live Socrata or ArcGIS metadata and confirms that every mapped field exists before ingestion is attempted. It also validates reference-source URLs where possible. See `docs/property-source-candidates.md` for the current registry and operational checklist.
 
+For sparse ArcGIS parcel layers, pass an explicit source filter when sampling so the first page contains usable person-bearing rows:
+
+```bash
+npm run ingest:arcgis -- --config=configs/property-sources/mt-cadastral-parcels.arcgis.json --where="OwnerName IS NOT NULL AND OwnerCity IS NOT NULL AND OwnerState IS NOT NULL" --limit=200
+```
+
 ## Reference-Only Broker Coverage Lists
 
 Reference configs under `configs/reference-sources/` document source-discovery or opt-out planning inputs that are not approved for person-profile ingestion. They must not be used to scrape people-search brokers, private datasets, or broker-derived personal information.

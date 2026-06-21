@@ -19,6 +19,9 @@ Bay Area-specific source registry configs live in `configs/property-sources/bay-
 | `dekalb_county_ga_tax_parcels` | DeKalb County, GA | ArcGIS | County | User-approved local ingestion | Official tax parcel layer with owner, situs, city, state, and ZIP fields. |
 | `racine_county_wi_tax_parcels` | Racine County, WI | ArcGIS | County | User-approved local ingestion | Official tax parcel layer. Current config maps owner mailing address fields because site city/state are not separately exposed. |
 | `cedar_rapids_ia_parcels` | Cedar Rapids, IA | ArcGIS | City | User-approved local ingestion | Official parcel layer. Current config maps owner mailing address fields because site city/state are not separately exposed. |
+| `vt-statewide-parcels` | Vermont | ArcGIS | Statewide, active parcels joined to Grand List data | User-approved local ingestion | Official VCGI statewide parcel layer with owner name and owner mailing fields. Public display must label mailing fields as source-observed property-tax contact context, not confirmed residence; protected-address and direct-resale review remain required. |
+| `ar-gis-office-parcels` | Arkansas | ArcGIS | Statewide, county assessor parcel roll publication | User-approved local ingestion | Official AGISO parcel layer with owner name and situs/property address fields. Uses config-level `stateValue: "AR"` because the layer has no state column; public display must label addresses as source-observed property context, not confirmed residence. |
+| `douglas_county_ne_parcels` | Douglas County, NE | ArcGIS | County | User-approved local ingestion | Official Douglas County public parcel FeatureServer with owner name, owner mailing fields, and situs/property address. Uses config-level `stateValue: "NE"` because the layer has no property-state column; protected-address and public-display review remain required. |
 
 Operational checklist before public display:
 

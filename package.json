@@ -55,6 +55,7 @@
     "ingest:faa-airmen": "tsx scripts/ingest-faa-airmen.ts",
     "ingest:ohio-sos-business": "tsx scripts/ingest-ohio-sos-business.ts",
     "ingest:irs-990": "tsx scripts/ingest-irs-990.ts",
+    "ingest:hcad": "tsx scripts/ingest-hcad.ts",
     "ingest:buffalo-permits": "tsx scripts/ingest-buffalo-permits.ts",
     "ingest:fl-sunbiz": "tsx scripts/ingest-fl-sunbiz.ts",
     "ingest:seattle-wages": "tsx scripts/ingest-seattle-wages.ts",

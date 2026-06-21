@@ -8,11 +8,12 @@ import {
 const args = parseArgs(process.argv.slice(2));
 const configPath = args.config || args.c || "";
 const query = args.query || args.q;
+const where = args.where;
 const limit = args.limit ? Math.min(Number(args.limit), 5000) : undefined;
 
 if (!configPath) {
   console.error(
-    "Usage: npm run ingest:arcgis -- --config=configs/source.json [--query='Jane Smith'] [--limit=n]",
+    "Usage: npm run ingest:arcgis -- --config=configs/source.json [--query='Jane Smith'] [--where='OWNER IS NOT NULL'] [--limit=n]",
   );
   process.exit(1);
 }
@@ -34,6 +35,7 @@ async function main() {
   const result = await ingestArcGisFeatureLayer({
     ...config,
     query: query ?? config.query,
+    where: where ?? config.where,
     limit: limit ?? config.limit,
   });
 

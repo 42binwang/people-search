@@ -1,0 +1,22 @@
+{
+  "adapter": "arcgis",
+  "approved": true,
+  "approvalStatus": "user_approved_for_local_ingestion",
+  "sourceId": "vt-statewide-parcels",
+  "sourceName": "Vermont Statewide Parcel Data",
+  "category": "Statewide parcel/property open data",
+  "jurisdiction": "Vermont",
+  "layerUrl": "https://services1.arcgis.com/BkFxaEFNwHqX3tAw/arcgis/rest/services/FS_VCGI_VTPARCELS_WM_NOCACHE_v2/FeatureServer/1",
+  "licenseUrl": "https://files.vcgi.vermont.gov/other/policies/vermont-open-geodata-policy.html",
+  "where": "OWNER1 <> '' AND CITYGL <> '' AND STGL <> ''",
+  "notes": "Official Vermont Center for Geographic Information statewide parcel FeatureServer layer for current active parcels joined to Grand List data. The Vermont Open Geodata Policy allows no-cost access, download, sharing, and integration of open geodata from the state portal, while prohibiting direct non-value-added resale. User approved this source for local ingestion on 2026-06-21; public/ad-supported display, direct resale restrictions, protected-address exclusions, and ongoing terms compliance remain operator responsibilities. Owner mailing address fields are source-observed property-tax contact context, not confirmed residence.",
+  "fields": {
+    "recordId": "SPAN",
+    "name": "OWNER1",
+    "street": "ADDRGL1",
+    "city": "CITYGL",
+    "state": "STGL",
+    "zip": "ZIPGL",
+    "updatedAt": "GLYEAR"
+  }
+}
