@@ -1,5 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { mapNsfAwardToProfileInput } from "@/lib/sources/nsf-award-search";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+
+import { upsertProfile, upsertApprovedSource } from "@/lib/db";
+import {
+  ingestNsfAwards,
+  mapNsfAwardToProfileInput,
+} from "@/lib/sources/nsf-award-search";
 
 describe("NSF Award Search source mapping", () => {
   it("maps an award PI to a context profile", () => {
@@ -175,5 +185,212 @@ describe("NSF Award Search source mapping", () => {
     expect(profile?.fullName).toBe("Jane Smith");
     expect(profile?.locations?.[0]?.city).toBe("MIT");
     expect(profile?.aliases).toEqual(["Last known institution: MIT"]);
+  });
+});
+
+describe("NSF award ingest", () => {
+  const NSF_URL = "https://api.nsf.gov/services/v1/awards.json";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("fetches the NSF awards endpoint and imports one profile per matching PI", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        response: {
+          award: [
+            {
+              id: 8611317,
+              title: "Development of New Software for Genetic Linkage Mapping",
+              awardeeName: "Whitehead Institute for Biomedical Research",
+              awardeeCountryCode: "US",
+              piFirstName: "Jane",
+              piLastName: "Smith",
+              startDate: "01/15/1987",
+              fundsObligatedAmt: 1197532,
+            },
+            {
+              id: 9999999,
+              title: "Unrelated award with a different PI",
+              awardeeName: "Stanford University",
+              awardeeCountryCode: "US",
+              piFirstName: "Alan",
+              piLastName: "Turing",
+              startDate: "2019-09-01",
+            },
+          ],
+        },
+      }),
+    } as any);
+
+    const result = await ingestNsfAwards({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain(NSF_URL);
+    expect(url).toContain("piFirstName=Jane");
+    expect(url).toContain("piLastName=Smith");
+    expect(url).toContain("offset=0");
+    expect((init as RequestInit)?.cache).toBe("no-store");
+
+    // 2 awards fetched, only the Jane Smith PI passes the name-token filter.
+    expect(result.fetched).toBe(2);
+    expect(result.imported).toBe(1);
+    expect(result.url.startsWith(NSF_URL)).toBe(true);
+
+    // The matching PI was upserted with a correctly mapped profile.
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = (
+      upsertProfile as unknown as { mock: { calls: any[][] } }
+    ).mock.calls[0][0];
+    expect(profile.id).toBe("p_nsf_jane_smith");
+    expect(profile.fullName).toBe("Jane Smith");
+    expect(profile.confidence).toBe("Medium");
+    expect(profile.ageRange).toBe("Unknown");
+    expect(profile.aliases).toContain(
+      "Last known institution: Whitehead Institute for Biomedical Research",
+    );
+    expect(profile.aliases).toContain("Year: 1987");
+    expect(profile.sourceRecord.sourceId).toBe("nsf_award_search");
+    expect(profile.sourceRecord.sourceRecordId).toBe("8611317__jane_smith");
+
+    // The source is registered as an approved source.
+    expect(upsertApprovedSource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "nsf_award_search",
+        name: "NSF Award Search API",
+      }),
+    );
+
+    fetchMock.mockRestore();
+  });
+
+  it("dedupes multiple awards sharing the same PI into a single profile", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        response: {
+          award: [
+            {
+              id: 111,
+              title: "First award",
+              awardeeName: "MIT",
+              awardeeCountryCode: "US",
+              piFirstName: "Jane",
+              piLastName: "Smith",
+              startDate: "2010-01-01",
+            },
+            {
+              id: 222,
+              title: "Second award",
+              awardeeName: "Stanford University",
+              awardeeCountryCode: "US",
+              piFirstName: "Jane",
+              piLastName: "Smith",
+              startDate: "2015-06-01",
+            },
+          ],
+        },
+      }),
+    } as any);
+
+    const result = await ingestNsfAwards({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(result.fetched).toBe(2);
+    expect(result.imported).toBe(1);
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    expect(
+      (upsertProfile as unknown as { mock: { calls: any[][] } }).mock.calls[0][0]
+        .id,
+    ).toBe("p_nsf_jane_smith");
+
+    fetchMock.mockRestore();
+  });
+
+  it("uses the free-form query fallback when firstName/lastName are absent", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        response: {
+          award: [
+            {
+              id: 333,
+              title: "Award",
+              awardeeName: "MIT",
+              piFirstName: "Jane",
+              piLastName: "Smith",
+              startDate: "2020-01-01",
+            },
+          ],
+        },
+      }),
+    } as any);
+
+    const result = await ingestNsfAwards({ query: "Jane Smith" });
+
+    const url = fetchMock.mock.calls[0][0] as string;
+    // splitQuery/tokenizeName lowercases tokens; first token -> piFirstName,
+    // remaining tokens -> piLastName.
+    expect(url).toContain("piFirstName=jane");
+    expect(url).toContain("piLastName=smith");
+    expect(result.imported).toBe(1);
+
+    fetchMock.mockRestore();
+  });
+
+  it("returns imported 0 without throwing when the response has no awards", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ response: { award: [] } }),
+    } as any);
+
+    const result = await ingestNsfAwards({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+
+    fetchMock.mockRestore();
+  });
+
+  it("throws when the endpoint returns a non-ok status", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    } as any);
+
+    await expect(
+      ingestNsfAwards({ firstName: "Jane", lastName: "Smith" }),
+    ).rejects.toThrow(/NSF Award Search request failed: 500/);
+
+    expect(upsertProfile).not.toHaveBeenCalled();
+
+    fetchMock.mockRestore();
+  });
+
+  it("returns imported 0 when no name tokens are provided", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+
+    const result = await ingestNsfAwards({});
+
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

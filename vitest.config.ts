@@ -12,14 +12,14 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "text-summary"],
-      include: ["lib/**"],
+      include: ["lib/**/*.ts"],
       // Ratchet: set just below the current level so the build fails on any
       // regression, and is bumped up as tests are added. Goal is 90%.
       thresholds: {
-        statements: 73,
-        branches: 64,
-        functions: 82,
-        lines: 73,
+        statements: 79,
+        branches: 69,
+        functions: 85,
+        lines: 79,
       },
     },
   },

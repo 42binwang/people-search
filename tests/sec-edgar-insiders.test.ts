@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+
+import { upsertProfile } from "@/lib/db";
 import {
+  ingestSecEdgarInsiders,
   mapSecEdgarInsiderToProfileInput,
   type SecEdgarInsiderProfileFiling,
 } from "@/lib/sources/sec-edgar-insiders";
@@ -170,5 +178,295 @@ describe("SEC EDGAR insiders source mapping", () => {
       "0001234567-24-000001__unknown",
     );
     expect(profile?.id).toBe("p_secedgar_acme_corporation");
+  });
+});
+
+describe("SEC EDGAR insiders ingest", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  it("fetches EDGAR full-text search, resolves the Form 4 role, and upserts a profile", async () => {
+    // Multi-step fetch: (1) the EDGAR FTS JSON, then (2) the Form 4 XML for the
+    // reporting-owner relationship. We branch on URL.
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input: any) => {
+        const url =
+          typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
+        if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
+          return {
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            json: async () => ({
+              hits: {
+                hits: [
+                  {
+                    _id: "0001234567-24-000001:primary_doc.xml",
+                    _source: {
+                      // Positionally aligned: insider first (person), issuer second (corp).
+                      display_names: [
+                        "JANE A SMITH (CIK 0007654321)",
+                        "ACME CORPORATION (CIK 0001234567)",
+                      ],
+                      ciks: ["0007654321", "0001234567"],
+                      adsh: "0001234567-24-000001",
+                      form: "4",
+                      file_date: "2024-03-15",
+                      biz_states: ["CA"],
+                      biz_locations: ["San Francisco, CA"],
+                    },
+                  },
+                ],
+              },
+            }),
+          } as any;
+        }
+        // Archives Form 4 XML — role resolution path.
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          text: async () =>
+            "<ownershipDocument>" +
+            "<reportingOwnerRelationship>" +
+            "<isDirector>0</isDirector>" +
+            "<isOfficer>1</isOfficer>" +
+            "<isTenPercentOwner>0</isTenPercentOwner>" +
+            "<officerTitle>Chief Financial Officer</officerTitle>" +
+            "</reportingOwnerRelationship>" +
+            "</ownershipDocument>",
+        } as any;
+      });
+
+    const result = await ingestSecEdgarInsiders({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    // FTS search was called once with the right query/forms params and a UA.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const ftsCall = fetchMock.mock.calls[0];
+    const ftsUrl = String(ftsCall[0]);
+    expect(ftsUrl.startsWith("https://efts.sec.gov/LATEST/search-index")).toBe(true);
+    expect(ftsUrl).toContain("q=Jane+Smith");
+    expect(ftsUrl).toContain("forms=3%2C4%2C5");
+    expect(ftsCall[1]?.headers).toMatchObject({
+      accept: "application/json",
+    });
+    expect(ftsCall[1]?.headers).toHaveProperty("user-agent");
+
+    // One hit, one profile imported, no token-filter drop.
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(1);
+    expect(result.url.startsWith("https://efts.sec.gov/LATEST/search-index")).toBe(
+      true,
+    );
+
+    // upsertProfile got the mapped profile with the resolved CFO role.
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = (upsertProfile as any).mock.calls[0][0];
+    expect(profile.id).toBe("p_secedgar_jane_a_smith_acme_corporation");
+    expect(profile.fullName).toBe("JANE A SMITH");
+    expect(profile.ageRange).toBe("Unknown");
+    expect(profile.confidence).toBe("Medium");
+    expect(profile.aliases).toContain("Last known institution: ACME CORPORATION");
+    expect(profile.aliases).toContain("Role: Officer (Chief Financial Officer)");
+    expect(profile.aliases).toContain("Year: 2024");
+    expect(profile.locations).toHaveLength(1);
+    expect(profile.locations[0]).toMatchObject({
+      city: "ACME CORPORATION",
+      state: "CA",
+      kind: "corporate filing affiliation",
+      sourceId: "sec_edgar_insiders",
+    });
+    expect(profile.contacts).toEqual([]);
+    expect(profile.relationships).toEqual([]);
+    expect(profile.sourceRecord).toMatchObject({
+      sourceId: "sec_edgar_insiders",
+      sourceRecordId: "0001234567-24-000001__jane_a_smith",
+      raw: {
+        filing: expect.objectContaining({
+          form: "4",
+          adsh: "0001234567-24-000001",
+          issuerName: "ACME CORPORATION",
+          role: "Officer (Chief Financial Officer)",
+        }),
+        matchedInsider: "JANE A SMITH",
+      },
+    });
+  });
+
+  it("imports a profile with the generic role when the per-filing XML fetch fails", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input: any) => {
+        const url =
+          typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
+        if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
+          return {
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            json: async () => ({
+              hits: {
+                hits: [
+                  {
+                    _id: "0001234567-24-000001:primary_doc.xml",
+                    _source: {
+                      display_names: [
+                        "ROBERT LEE (CIK 0007654321)",
+                        "ACME CORPORATION (CIK 0001234567)",
+                      ],
+                      ciks: ["0007654321", "0001234567"],
+                      adsh: "0001234567-24-000001",
+                      form: "4",
+                      file_date: "2024-01-02",
+                    },
+                  },
+                ],
+              },
+            }),
+          } as any;
+        }
+        // Archives fetch fails — ingest must fall back to generic role, not throw.
+        return { ok: false, status: 404, statusText: "Not Found" } as any;
+      });
+
+    const result = await ingestSecEdgarInsiders({ query: "Robert Lee" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.imported).toBe(1);
+    const profile = (upsertProfile as any).mock.calls[0][0];
+    expect(profile.fullName).toBe("ROBERT LEE");
+    expect(profile.aliases).toContain(
+      "Role: Securities filing insider (Form 3/4/5 reporting owner)",
+    );
+  });
+
+  it("drops hits whose insider name does not match the required query tokens", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: async () => ({
+        hits: {
+          hits: [
+            {
+              _id: "0001234567-24-000002:primary_doc.xml",
+              _source: {
+                // Insider name shares no token with the "Jane Smith" query.
+                display_names: [
+                  "CAROL NGUYEN (CIK 0001111111)",
+                  "ACME CORPORATION (CIK 0001234567)",
+                ],
+                ciks: ["0001111111", "0001234567"],
+                adsh: "0001234567-24-000002",
+                form: "4",
+                file_date: "2024-02-10",
+              },
+            },
+          ],
+        },
+      }),
+    } as any);
+
+    const result = await ingestSecEdgarInsiders({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("returns imported 0 and never fetches when the query is empty", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+    } as any);
+
+    const result = await ingestSecEdgarInsiders({});
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.imported).toBe(0);
+    expect(result.fetched).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("throws when the EDGAR FTS request is not ok", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    } as any);
+
+    await expect(
+      ingestSecEdgarInsiders({ firstName: "Jane", lastName: "Smith" }),
+    ).rejects.toThrow(/SEC EDGAR full-text search request failed: 500/);
+
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("respects the limit option, only importing the capped number of profiles", async () => {
+    const hits = [
+      {
+        _id: "0001234567-24-000010:primary_doc.xml",
+        _source: {
+          display_names: [
+            "JANE SMITH (CIK 0007654321)",
+            "ACME CORPORATION (CIK 0001234567)",
+          ],
+          ciks: ["0007654321", "0001234567"],
+          adsh: "0001234567-24-000010",
+          form: "4",
+          file_date: "2024-03-15",
+        },
+      },
+      {
+        _id: "0001234567-24-000011:primary_doc.xml",
+        _source: {
+          display_names: [
+            "JANE SMITH (CIK 0007654321)",
+            "BETA HOLDINGS INC (CIK 0002000000)",
+          ],
+          ciks: ["0007654321", "0002000000"],
+          adsh: "0001234567-24-000011",
+          form: "4",
+          file_date: "2024-03-16",
+        },
+      },
+    ];
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input: any) => {
+      const url =
+        typeof input === "string" ? input : (input?.url ?? input?.toString?.() ?? "");
+      if (url.startsWith("https://efts.sec.gov/LATEST/search-index")) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: async () => ({ hits: { hits } }),
+        } as any;
+      }
+      return { ok: false, status: 404, statusText: "Not Found" } as any;
+    });
+
+    const result = await ingestSecEdgarInsiders({
+      firstName: "Jane",
+      lastName: "Smith",
+      limit: 1,
+    });
+
+    // applyImportLimit caps the fetched hits to 1 before processing.
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(1);
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = (upsertProfile as any).mock.calls[0][0];
+    // First hit's issuer is ACME CORPORATION.
+    expect(profile.id).toBe("p_secedgar_jane_smith_acme_corporation");
   });
 });

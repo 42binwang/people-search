@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+
+import { upsertApprovedSource, upsertProfile } from "@/lib/db";
 import {
+  ingestNycAcrisDeeds,
   mapNycAcrisPartyToProfileInput,
   type AcrisLegal,
   type AcrisParty,
@@ -228,5 +236,217 @@ describe("NYC ACRIS deeds source mapping", () => {
     expect(profile?.sourceRecord?.sourceRecordId).toBe(
       "2024030100099001__shaun_o_neal",
     );
+  });
+});
+
+describe("NYC ACRIS deeds ingest", () => {
+  const fetchMock = vi.spyOn(globalThis, "fetch");
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.mocked(upsertProfile).mockReset();
+    vi.mocked(upsertApprovedSource).mockClear();
+  });
+
+  it("fetches parties then legals, maps, and upserts matching profiles", async () => {
+    const parties: AcrisParty[] = [
+      {
+        document_id: "2008091000033001",
+        record_type: "P",
+        party_type: "1",
+        name: "SMITH, JANE Q",
+        address_1: "123 EXAMPLE ST",
+        city: "NEW YORK",
+        state: "NY",
+        zip: "10019",
+        country: "US",
+      },
+      // Different surname — should be filtered out by name-token matching.
+      {
+        document_id: "2010010200055002",
+        party_type: "2",
+        name: "JOHNSON, ROBERT",
+        city: "BROOKLYN",
+        state: "NY",
+      },
+    ];
+    const legals: AcrisLegal[] = [
+      {
+        document_id: "2008091000033001",
+        borough: "1",
+        block: "01000",
+        lot: "0050",
+        street_number: "456",
+        street_name: "WEST 42 STREET",
+      },
+    ];
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => parties,
+    } as any);
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => legals,
+    } as any);
+
+    const result = await ingestNycAcrisDeeds({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    // Two HTTP fetches: parties lookup, then the legals document_id IN (...) lookup.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toContain(
+      "data.cityofnewyork.us/resource/636b-3b5g.json",
+    );
+    // URLSearchParams encodes `$` as %24, space as +, comma as %2C.
+    expect(fetchMock.mock.calls[0][0]).toContain("%24where=");
+    expect(fetchMock.mock.calls[0][0]).toContain("SMITH%2C+JANE");
+    expect(fetchMock.mock.calls[1][0]).toContain(
+      "data.cityofnewyork.us/resource/8h5j-fqxa.json",
+    );
+    expect(fetchMock.mock.calls[1][0]).toContain("document_id+in+%28");
+
+    expect(result.fetched).toBe(2);
+    expect(result.imported).toBe(1);
+    expect(result.url).toContain("636b-3b5g.json");
+
+    // The source is registered once at the start of ingest.
+    expect(upsertApprovedSource).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(upsertApprovedSource).mock.calls[0][0]).toMatchObject({
+      id: "nyc_acris_deeds",
+      category: "Real property record mention",
+    });
+
+    // Only the name-matching party is upserted; mapping reflects the real
+    // adapter contract (alias = party role, location = party mailing address).
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
+    expect(profile.id).toBe("p_acris_jane_q_smith");
+    // The adapter preserves ACRIS's stored casing.
+    expect(profile.fullName).toBe("JANE Q SMITH");
+    expect(profile.aliases).toContain("Party role: grantor (seller)");
+    expect(profile.locations?.[0]).toMatchObject({
+      city: "NEW YORK",
+      state: "NY",
+    });
+    expect(profile.sourceRecord?.sourceId).toBe("nyc_acris_deeds");
+    expect(profile.sourceRecord?.sourceRecordId).toBe(
+      "2008091000033001__jane_q_smith",
+    );
+  });
+
+  it("skips the legals fetch when parties return no document_ids", async () => {
+    const parties: AcrisParty[] = [
+      {
+        party_type: "2",
+        name: "SMITH, JANE",
+        city: "NEW YORK",
+        state: "NY",
+      },
+    ];
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => parties,
+    } as any);
+
+    const result = await ingestNycAcrisDeeds({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(1);
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    // Falls back to "doc" as the document id when document_id is missing.
+    expect(vi.mocked(upsertProfile).mock.calls[0][0].sourceRecord
+      ?.sourceRecordId).toBe("doc__jane_smith");
+  });
+
+  it("returns zero imported when the parties request fails", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: async () => [],
+    } as any);
+
+    await expect(
+      ingestNycAcrisDeeds({ firstName: "Jane", lastName: "Smith" }),
+    ).rejects.toThrow(/NYC ACRIS request failed: 500/);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("tolerates a legals fetch failure by still importing matched parties", async () => {
+    const parties: AcrisParty[] = [
+      {
+        document_id: "2024012000122003",
+        party_type: "3",
+        name: "SMITH, JANE",
+        city: "NEW YORK",
+        state: "NY",
+      },
+    ];
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => parties,
+    } as any);
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      statusText: "Bad Gateway",
+      json: async () => [],
+    } as any);
+
+    const result = await ingestNycAcrisDeeds({
+      firstName: "Jane",
+      lastName: "Smith",
+    });
+
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(1);
+    // The party still has a mailing address, so it imports without the legal.
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
+    // The adapter preserves the stored casing (ACRIS is uppercase).
+    expect(profile.fullName).toBe("JANE SMITH");
+    expect(profile.aliases).toContain("Party role: lender");
+  });
+
+  it("returns fetched 0 without any fetch when no name is provided", async () => {
+    const result = await ingestNycAcrisDeeds({});
+
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(upsertProfile).not.toHaveBeenCalled();
+    // Source registration still happens up front.
+    expect(upsertApprovedSource).toHaveBeenCalledTimes(1);
+  });
+
+  it("parses a free-form query into LAST, FIRST and queries ACRIS", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [] as AcrisParty[],
+    } as any);
+
+    const result = await ingestNycAcrisDeeds({ query: "Jane Smith" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // splitQuery treats the first token as given, rest as surname ->
+    // "SMITH, JANE" prefix pattern.
+    expect(fetchMock.mock.calls[0][0]).toContain("SMITH%2C+JANE");
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
   });
 });

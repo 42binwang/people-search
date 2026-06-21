@@ -1,5 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { mapNihProjectToProfileInputs } from "@/lib/sources/nih-reporter";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+
+import { upsertApprovedSource, upsertProfile } from "@/lib/db";
+import {
+  ingestNihReporterProjects,
+  mapNihProjectToProfileInputs,
+} from "@/lib/sources/nih-reporter";
 
 const project = {
   appl_id: "9085351",
@@ -71,5 +81,163 @@ describe("NIH RePORTER source mapping", () => {
     expect(
       mapNihProjectToProfileInputs("Maike Krenz", { ...project, appl_id: undefined }),
     ).toEqual([]);
+  });
+});
+
+describe("NIH RePORTer ingest", () => {
+  const searchUrl = "https://api.reporter.nih.gov/v2/projects/search";
+  let fetchMock: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    fetchMock = vi.spyOn(globalThis, "fetch");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("POSTs a pi_names search, parses results, and upserts matching investigators", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        meta: { total: 1 },
+        results: [
+          {
+            appl_id: "9085351",
+            project_num: "4R01HL116525-04",
+            project_title: "SHP2 controls cardiac stress adaptation",
+            fiscal_year: 2016,
+            award_amount: 365025,
+            agency_code: "HL",
+            organization: {
+              org_name: "University of Missouri-Columbia",
+              org_city: "Columbia",
+              org_state: "MO",
+              org_country: "UNITED STATES",
+            },
+            principal_investigators: [
+              {
+                first_name: "Maike",
+                last_name: "Krenz",
+                full_name: "Maike  Krenz",
+                is_contact_pi: true,
+              },
+              {
+                first_name: "Alex",
+                last_name: "Rivera",
+                full_name: "Alex Rivera",
+                is_contact_pi: false,
+              },
+            ],
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await ingestNihReporterProjects({ query: "Maike Krenz" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [calledUrl, init] = fetchMock.mock.calls[0];
+    expect(calledUrl).toBe(searchUrl);
+    expect(init?.method).toBe("POST");
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body).toMatchObject({
+      offset: 0,
+      // normalizeName lowercases the query before splitting into pi_names.
+      criteria: { pi_names: [{ last_name: "krenz", first_name: "maike" }] },
+    });
+    // Default limit is undefined, so it is not serialized into the body.
+    expect(body).not.toHaveProperty("limit");
+    const headers = (init as RequestInit).headers as Record<string, string>;
+    expect(headers["content-type"]).toBe("application/json");
+
+    expect(result.imported).toBe(1);
+    expect(result.fetched).toBe(1);
+    expect(result.url).toBe(searchUrl);
+
+    // Only the matching PI (Krenz, not Rivera) is upserted.
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    const profile = (upsertProfile as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(profile.id).toBe("p_nih_reporter_maike_krenz_9085351_0");
+    expect(profile.fullName).toBe("Maike Krenz");
+    expect(profile.aliases).toContain(
+      "NIH project: SHP2 controls cardiac stress adaptation",
+    );
+    expect(profile.aliases).toContain("Fiscal year: 2016");
+    expect(profile.aliases).toContain("Award amount: $365,025");
+    expect(profile.sourceRecord).toMatchObject({
+      sourceId: "nih_reporter",
+      sourceRecordId: "9085351:0",
+    });
+
+    // The approved source gets registered on ingest.
+    expect(upsertApprovedSource).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "nih_reporter" }),
+    );
+  });
+
+  it("clamps an explicit limit into the request body", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ results: [] }),
+    } as any);
+
+    const result = await ingestNihReporterProjects({
+      query: "Jane Smith",
+      limit: 5,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(init.body as string)).toMatchObject({ limit: 5 });
+    expect(result.imported).toBe(0);
+    expect(result.fetched).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("returns imported 0 without calling fetch when the query has no last name", async () => {
+    const result = await ingestNihReporterProjects({ query: "   " });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result).toEqual({ fetched: 0, imported: 0, url: searchUrl });
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("throws on a non-ok response", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: async () => ({}),
+    } as any);
+
+    await expect(ingestNihReporterProjects({ query: "Jane Smith" })).rejects.toThrow(
+      /NIH RePORTER search failed: 500/,
+    );
+  });
+
+  it("ignores projects whose principal investigators do not match the query", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: [
+          {
+            appl_id: "1111111",
+            project_title: "Unrelated project",
+            principal_investigators: [{ full_name: "Completely Other" }],
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await ingestNihReporterProjects({ query: "Jane Smith" });
+
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
   });
 });
