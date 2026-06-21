@@ -1,8 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+
+import { upsertApprovedSource, upsertProfile } from "@/lib/db";
 import {
+  ingestUsptoTrademarkOwners,
   mapUsptoTrademarkToProfileInput,
   type UsptoTrademarkRecord,
 } from "@/lib/sources/uspto-trademark";
+
+const ORIGINAL_ENV = { ...process.env };
 
 const baseRecord: UsptoTrademarkRecord = {
   ownerName: "Maria Elena Castillo",
@@ -138,5 +148,246 @@ describe("USPTO trademark owners source mapping", () => {
         registrationNumber: "6123456",
       }),
     ).toBeNull();
+  });
+});
+
+const matchingRecord: UsptoTrademarkRecord = {
+  ownerName: "Jane Allison Smith",
+  ownerAddress1: "500 Summit Blvd",
+  ownerCity: "Denver",
+  ownerState: "CO",
+  ownerPostalCode: "80203",
+  ownerCountry: "USA",
+  markDescription: "SMITH BOTANICALS",
+  registrationNumber: "7012345",
+  serialNumber: "97123456",
+  status: "Registered",
+  filingDate: "2021-07-22",
+};
+
+function buildPayload(records: UsptoTrademarkRecord[]) {
+  // Realistic ODP-style wrapper shape; extractTrademarkRecords also accepts a
+  // bare array, but the wrapped `items` form mirrors the live endpoint.
+  return {
+    totalHits: records.length,
+    items: records,
+  };
+}
+
+describe("USPTO trademark ingest", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete process.env.USPTO_API_KEY;
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    vi.restoreAllMocks();
+  });
+
+  it("fetches, maps, and upserts matching owner records with an explicit apiKey", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => buildPayload([matchingRecord]),
+      } as any);
+
+    const result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toContain(
+      "https://api.uspto.gov/api/v1/trademark/search",
+    );
+    expect(String(url)).toContain("api_key=test-key");
+    expect(String(url)).toContain("searchType=owner");
+    expect(String(url)).toContain("query=Jane+Smith");
+    expect(init).toMatchObject({
+      headers: {
+        accept: "application/json",
+        "user-agent":
+          "PeopleSearchUsptoTrademarkIngest/0.1 local-development",
+      },
+      cache: "no-store",
+    });
+
+    expect(result.fetched).toBe(1);
+    expect(result.imported).toBe(1);
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+
+    const upserted = upsertProfile.mock.calls[0][0];
+    expect(upserted.id).toBe("p_uspto_trademark_jane_allison_smith_7012345");
+    expect(upserted.fullName).toBe("Jane Allison Smith");
+    expect(upserted.locations?.[0]).toMatchObject({
+      city: "Denver",
+      state: "CO",
+      zip: "80203",
+      kind: "trademark owner/correspondence address",
+    });
+    expect(upsertApprovedSource).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "uspto_trademark_owners" }),
+    );
+  });
+
+  it("falls back to USPTO_API_KEY env var when no apiKey is passed", async () => {
+    process.env.USPTO_API_KEY = "env-key";
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => buildPayload([matchingRecord]),
+      } as any);
+
+    const result = await ingestUsptoTrademarkOwners({ query: "Jane Smith" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("api_key=env-key");
+    expect(result.imported).toBe(1);
+  });
+
+  it("returns zero results without fetching when no key is available", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+
+    const result = await ingestUsptoTrademarkOwners({ query: "Jane Smith" });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      fetched: 0,
+      imported: 0,
+      url: "https://api.uspto.gov/api/v1/trademark/search",
+    });
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("throws when the USPTO request fails", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+    } as any);
+
+    await expect(
+      ingestUsptoTrademarkOwners({ query: "Jane Smith", apiKey: "test-key" }),
+    ).rejects.toThrow(/USPTO trademark request failed: 503/);
+
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("counts only name-matching records toward imported", async () => {
+    const records: UsptoTrademarkRecord[] = [
+      matchingRecord,
+      {
+        ownerName: "Acme Holdings LLC",
+        ownerAddress1: "1 Corporate Pl",
+        ownerCity: "Wilmington",
+        ownerState: "DE",
+        registrationNumber: "7099999",
+      },
+      {
+        ownerName: "Robert Jones",
+        ownerAddress1: "9 Pine St",
+        ownerCity: "Boston",
+        ownerState: "MA",
+        registrationNumber: "7088888",
+      },
+    ];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => buildPayload(records),
+    } as any);
+
+    const result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+
+    expect(result.fetched).toBe(3);
+    expect(result.imported).toBe(1);
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    expect(upsertProfile.mock.calls[0][0].fullName).toBe("Jane Allison Smith");
+  });
+
+  it("respects the requested limit when clamping records", async () => {
+    const records: UsptoTrademarkRecord[] = Array.from({ length: 4 }, (_, i) => ({
+      ...matchingRecord,
+      registrationNumber: String(7012345 + i),
+    }));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => buildPayload(records),
+    } as any);
+
+    const result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+      limit: 2,
+    });
+
+    expect(result.fetched).toBe(2);
+    expect(result.imported).toBe(2);
+    expect(upsertProfile).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles an empty result set", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => buildPayload([]),
+    } as any);
+
+    const result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("accepts a bare array payload and results/trademarks wrapper keys", async () => {
+    // Bare array (extractTrademarkRecords Array.isArray branch)
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => [matchingRecord],
+    } as any);
+    let result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+    expect(result.imported).toBe(1);
+
+    // `results` wrapper key
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ results: [matchingRecord] }),
+    } as any);
+    result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+    expect(result.imported).toBe(1);
+
+    // `trademarks` wrapper key (line 149 fallback)
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ trademarks: [matchingRecord] }),
+    } as any);
+    result = await ingestUsptoTrademarkOwners({
+      query: "Jane Smith",
+      apiKey: "test-key",
+    });
+    expect(result.imported).toBe(1);
   });
 });

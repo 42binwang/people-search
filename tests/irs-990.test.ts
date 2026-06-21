@@ -1,5 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/db", () => ({
+  upsertProfile: vi.fn(),
+  upsertApprovedSource: vi.fn(),
+}));
+vi.mock("fs", async (orig) => {
+  const actual = await orig();
+  return {
+    ...actual,
+    readFileSync: vi.fn(),
+  };
+});
+
+import { readFileSync } from "fs";
+import { upsertProfile, upsertApprovedSource } from "@/lib/db";
 import {
+  ingestIrs990OfficersFromFile,
   mapIrs990OfficersToProfileInputs,
   parseIrs990Filing,
 } from "@/lib/sources/irs-990";
@@ -83,5 +99,186 @@ describe("IRS Form 990 officer extraction", () => {
     });
     expect(profiles).toHaveLength(1);
     expect(profiles[0].fullName).toBe("Jordan Lee");
+  });
+});
+
+// A realistic IRS e-filed Form 990 XML (Part VII officers/directors section +
+// filer business address). Used for the full ingest path below.
+const efiledXml = `<?xml version="1.0" encoding="UTF-8"?>
+<Return returnVersion="2022v5.0">
+  <ReturnHeader>
+    <Filer>
+      <BusinessName>
+        <BusinessNameLine1Txt>Bluebonnet Community Relief Fund</BusinessNameLine1Txt>
+      </BusinessName>
+      <USAddress>
+        <AddressLine1Txt>4400 Shoal Creek Blvd</AddressLine1Txt>
+        <CityNm>Austin</CityNm>
+        <StateAbbreviationCd>TX</StateAbbreviationCd>
+        <ZIPCd>78756</ZIPCd>
+      </USAddress>
+    </Filer>
+  </ReturnHeader>
+  <ReturnData>
+    <IRS990>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>
+          <PersonFirstNameTxt>Maria</PersonFirstNameTxt>
+          <PersonLastNameTxt>Gonzalez</PersonLastNameTxt>
+        </PersonNm>
+        <TitleTxt>Executive Director</TitleTxt>
+        <ReportableCompFromOrgAmt>98500</ReportableCompFromOrgAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>
+          <PersonFirstNameTxt>David</PersonFirstNameTxt>
+          <PersonLastNameTxt>O'Connor</PersonLastNameTxt>
+        </PersonNm>
+        <TitleTxt>Board Chair</TitleTxt>
+        <ReportableCompFromOrgAmt>0</ReportableCompFromOrgAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>
+          <PersonFirstNameTxt>Priya</PersonFirstNameTxt>
+          <PersonLastNameTxt>Patel</PersonLastNameTxt>
+        </PersonNm>
+        <TitleTxt>Secretary</TitleTxt>
+        <ReportableCompFromOrgAmt>18000</ReportableCompFromOrgAmt>
+      </Form990PartVIISectionAGrp>
+    </IRS990>
+  </ReturnData>
+</Return>`;
+
+describe("IRS 990 ingest", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(readFileSync).mockReset();
+  });
+
+  it("reads the file, parses officers, and upserts matching profiles", async () => {
+    vi.mocked(readFileSync).mockReturnValue(efiledXml);
+
+    const result = await ingestIrs990OfficersFromFile({
+      file: "/tmp/irs_990_2022_bluebonnet.xml",
+      query: "Maria Gonzalez",
+    });
+
+    expect(result.imported).toBe(1);
+    expect(result.fetched).toBe(3);
+    expect(result.url).toBe("/tmp/irs_990_2022_bluebonnet.xml");
+    expect(upsertProfile).toHaveBeenCalledTimes(1);
+    expect(upsertApprovedSource).toHaveBeenCalledTimes(1);
+
+    const profile = vi.mocked(upsertProfile).mock.calls[0][0];
+    expect(profile.fullName).toBe("Maria Gonzalez");
+    expect(profile.ageRange).toBe("Unknown");
+    expect(profile.confidence).toBe("Low");
+    expect(profile.aliases).toContain(
+      "Nonprofit officer of: Bluebonnet Community Relief Fund",
+    );
+    expect(profile.aliases).toContain("Title: Executive Director");
+    expect(profile.aliases).toContain("Reportable compensation: $98,500");
+    expect(profile.locations?.[0]).toMatchObject({
+      street: "4400 Shoal Creek Blvd",
+      city: "Austin",
+      state: "TX",
+      zip: "78756",
+      kind: "nonprofit business address",
+    });
+    expect(profile.sourceRecord).toMatchObject({
+      sourceId: "irs_form_990_officers",
+      raw: { organization: "Bluebonnet Community Relief Fund" },
+    });
+  });
+
+  it("imports all named officers when no query is given", async () => {
+    vi.mocked(readFileSync).mockReturnValue(efiledXml);
+
+    const result = await ingestIrs990OfficersFromFile({
+      file: "/tmp/irs_990_2022_bluebonnet.xml",
+    });
+
+    expect(result.fetched).toBe(3);
+    expect(result.imported).toBe(3);
+    expect(upsertProfile).toHaveBeenCalledTimes(3);
+    const names = vi
+      .mocked(upsertProfile)
+      .mock.calls.map((call) => call[0].fullName);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "Maria Gonzalez",
+        "David O'Connor",
+        "Priya Patel",
+      ]),
+    );
+    // Decoded XML entity (&apos; -> ') and compensation formatting check.
+    const oconnor = vi
+      .mocked(upsertProfile)
+      .mock.calls.find((c) => c[0].fullName === "David O'Connor")![0];
+    expect(oconnor.aliases).toContain("Reportable compensation: $0");
+  });
+
+  it("returns imported 0 when the query matches no officers", async () => {
+    vi.mocked(readFileSync).mockReturnValue(efiledXml);
+
+    const result = await ingestIrs990OfficersFromFile({
+      file: "/tmp/irs_990_2022_bluebonnet.xml",
+      query: "Nonexistent Person",
+    });
+
+    expect(result.imported).toBe(0);
+    expect(result.fetched).toBe(3);
+    expect(upsertProfile).not.toHaveBeenCalled();
+  });
+
+  it("returns imported 0 for an XML file with no Part VII officer blocks", async () => {
+    const emptyXml = `<?xml version="1.0"?>
+<Return>
+  <ReturnHeader>
+    <Filer>
+      <BusinessName>
+        <BusinessNameLine1Txt>Solo Artist Trust</BusinessNameLine1Txt>
+      </BusinessName>
+      <USAddress>
+        <AddressLine1Txt>9 Lone Star Rd</AddressLine1Txt>
+        <CityNm>Dallas</CityNm>
+        <StateAbbreviationCd>TX</StateAbbreviationCd>
+        <ZIPCd>75201</ZIPCd>
+      </USAddress>
+    </Filer>
+  </ReturnHeader>
+  <ReturnData>
+    <IRS990></IRS990>
+  </ReturnData>
+</Return>`;
+    vi.mocked(readFileSync).mockReturnValue(emptyXml);
+
+    const result = await ingestIrs990OfficersFromFile({
+      file: "/tmp/irs_990_solo.xml",
+    });
+
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
+    // Source is still registered even when no officers are present.
+    expect(upsertApprovedSource).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles malformed/unparseable XML gracefully without importing", async () => {
+    const brokenXml = `<?xml version="1.0"?>
+<Return>
+  <ReturnData>
+    <IRS990><Form990PartVIISectionAGrp><PersonFirstNameTxt>Sam</Pers`;
+    vi.mocked(readFileSync).mockReturnValue(brokenXml);
+
+    const result = await ingestIrs990OfficersFromFile({
+      file: "/tmp/irs_990_broken.xml",
+    });
+
+    // The regex parser yields no complete officer blocks, so nothing imports
+    // and no exception escapes the ingest function.
+    expect(result.fetched).toBe(0);
+    expect(result.imported).toBe(0);
+    expect(upsertProfile).not.toHaveBeenCalled();
   });
 });
