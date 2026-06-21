@@ -55,4 +55,125 @@ describe("NSF Award Search source mapping", () => {
     );
     expect(profile?.aliases).toContain("Year: 2024");
   });
+
+  it("sets confidence Medium and ageRange Unknown for a mapped PI", () => {
+    const profile = mapNsfAwardToProfileInput(
+      {
+        id: 3,
+        title: "Award",
+        awardeeName: "Org",
+        awardeeCountryCode: "US",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+        startDate: "2020-01-01",
+      },
+      "Jane Smith",
+    );
+    expect(profile?.confidence).toBe("Medium");
+    expect(profile?.ageRange).toBe("Unknown");
+    expect(profile?.contacts).toEqual([]);
+    expect(profile?.relationships).toEqual([]);
+  });
+
+  it("falls back to 'Global' state when awardeeCountryCode is missing but institution is present", () => {
+    const profile = mapNsfAwardToProfileInput(
+      {
+        id: 4,
+        title: "Award",
+        awardeeName: "University of Toronto",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+      },
+      "Jane Smith",
+    );
+    expect(profile?.locations?.[0]).toMatchObject({
+      city: "University of Toronto",
+      state: "Global",
+      kind: "scholarly affiliation",
+    });
+  });
+
+  it("omits location and institution alias when awardeeName is missing", () => {
+    const profile = mapNsfAwardToProfileInput(
+      {
+        id: 5,
+        title: "Award",
+        awardeeCountryCode: "US",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+        startDate: "2018-05-01",
+      },
+      "Jane Smith",
+    );
+    expect(profile?.locations).toEqual([]);
+    expect(
+      profile?.aliases?.some((a) => a.startsWith("Last known institution")),
+    ).toBe(false);
+    expect(profile?.aliases).toContain("Year: 2018");
+  });
+
+  it("omits year alias when startDate is missing or has no 4-digit year", () => {
+    const noDate = mapNsfAwardToProfileInput(
+      {
+        id: 6,
+        title: "Award",
+        awardeeName: "Org",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+      },
+      "Jane Smith",
+    );
+    expect(noDate?.aliases?.some((a) => a.startsWith("Year:"))).toBe(false);
+
+    const noYear = mapNsfAwardToProfileInput(
+      {
+        id: 7,
+        title: "Award",
+        awardeeName: "Org",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+        startDate: "TBD",
+      },
+      "Jane Smith",
+    );
+    expect(noYear?.aliases?.some((a) => a.startsWith("Year:"))).toBe(false);
+  });
+
+  it("extracts the year from a non-ISO date string", () => {
+    const profile = mapNsfAwardToProfileInput(
+      {
+        id: 8,
+        title: "Award",
+        awardeeName: "Org",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+        startDate: "Award started March 2021",
+      },
+      "Jane Smith",
+    );
+    expect(profile?.aliases).toContain("Year: 2021");
+  });
+
+  it("uses the 'award' placeholder when award id is absent", () => {
+    const profile = mapNsfAwardToProfileInput(
+      {
+        title: "Award",
+        awardeeName: "Org",
+        piFirstName: "Jane",
+        piLastName: "Smith",
+      },
+      "Jane Smith",
+    );
+    expect(profile?.sourceRecord?.sourceRecordId).toBe("award__jane_smith");
+  });
+
+  it("maps a minimal award with only institution context when fullName is present", () => {
+    const profile = mapNsfAwardToProfileInput(
+      { awardeeName: "MIT", awardeeCountryCode: "US" },
+      "Jane Smith",
+    );
+    expect(profile?.fullName).toBe("Jane Smith");
+    expect(profile?.locations?.[0]?.city).toBe("MIT");
+    expect(profile?.aliases).toEqual(["Last known institution: MIT"]);
+  });
 });

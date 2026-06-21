@@ -17,7 +17,7 @@ export default defineConfig({
       // regression, and is bumped up as tests are added. Goal is 90%.
       thresholds: {
         statements: 73,
-        branches: 63,
+        branches: 64,
         functions: 82,
         lines: 73,
       },
