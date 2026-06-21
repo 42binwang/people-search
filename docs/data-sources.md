@@ -66,6 +66,7 @@ These adapters can create or enrich profile records. Many are identity/context s
 | SEC EDGAR insiders | Implemented, automatic name refresh | Public API (EDGAR) | Insider name, issuer/company, officer/director/10% role, filing year | SEC-reporting company insiders | Low/medium | Securities-filing context. Issuer affiliation only; residential addresses are deliberately NOT ingested. Descriptive User-Agent per SEC policy. |
 | Senate LDA lobbying | Implemented, automatic name refresh | Public API (Senate) | Registered lobbyist name, registrant firm, client, filing year | Federal registered lobbyists since 1999 | Low/medium | Federal lobbying-filing context. Registrant firm is an affiliation, not a residence. No-key official JSON API. |
 | Buffalo building permits | Implemented, automatic name refresh | Public API (Socrata SoQL) | Permit applicant name, permit/work-site address, permit type, contractor-license context, issue date | City of Buffalo, NY permit applicants | Low/medium | Person-bearing via the `applicant` field (homeowner or licensed individual); contractor/business applicants are filtered out. The permit address is a work site or owner-occupied residence, not a confirmed residence. |
+| Florida Sunbiz officers | Implemented, automatic name refresh | Official bulk (SFTP via lftp) | Officer/manager/registered-agent name, title, entity name/type/status, filing type/date | Florida corporation/LLC/LP officers | Medium | Public business-registry context only; entity affiliation is not a residence. Officer street addresses are deliberately not imported. Downloads the daily corp file per query (refresh-cached 1 day). |
 
 Automatic name refresh sources are listed in `lib/name-source-refresh.ts`.
 
@@ -226,7 +227,7 @@ Status values:
 ### 5. `business-entity-registrations`
 
 - Priority: P1
-- Status: `ready-local` (Ohio built, entry #28; Florida blocked — Cloudflare-gated layout)
+- Status: `ready-local` (Ohio #28 + Florida #40 — both built)
 - Value: Medium/high
 - Preserved information: Officers, registered agents, business/mailing addresses, company names, filing dates.
 - Coverage: Statewide business owners/officers.
@@ -236,9 +237,9 @@ Status values:
   - [x] Loader/CLI: Ohio (`scripts/ingest-ohio-sos-business.ts`).
   - [ ] Config: per-state configs planned; Ohio is file-based (no config).
   - [x] Tests: Ohio tests exist.
-  - [x] Docs: Ohio tracked (#28); FL researched here.
+  - [x] Docs: Ohio (#28) + Florida (#40) tracked.
   - [ ] Display policy: registered-agent and business addresses are not residences.
-- Next step: Ohio is built (#28). Florida BLOCKED 2026-06-20: the bulk data is SFTP-accessible (`sftp.floridados.gov`, user `Public` / `PubAccess1845!`, via `lftp` with host-key auto-confirm — `sshpass`+`sftp` batch auth is rejected) and is a person-bearing fixed-width corp master (`doc/cor/YYYYMMDDc.txt`, 1436-char rows, embedded officer/manager/registered-agent name + address — record shows manager "SUMELIA WADDELL" @ 4367 COCONUT RD). BUT the authoritative field-offset layout (the "Corporate File Definitions" page) is behind a Cloudflare managed-challenge (curl and headless reader both blocked; reader 500s), is NOT bundled in the SFTP files (only a file index, `corindex.txt`), and the Wayback snapshot is rate-limited/unavailable. FL's own guide warns against deriving offsets by eye. Do NOT ship a guessed-offset parser (it would silently misparse person data). Unblocks only if the layout is obtained — e.g. a manual browser download of the page, or a records request. Georgia and Washington SoS remain blocked (Cloudflare/Turnstile + paid FTP).
+- Next step: Ohio is built (#28). Florida is ALSO built (#40) — the `fl-sunbiz` adapter ingests officers/managers/registered agents from the official daily bulk file via `lftp` (transport fixed 2026-06-20: the FL host rejects sshpass+sftp password auth, but lftp works). Live-verified (Smith→25 matched, 5 imported). This corrects an earlier "FL blocked (Cloudflare-gated layout)" note — the fixed-width layout was already implemented in the parser; only the transport was broken. Georgia (#41) and Washington SoS remain blocked (Cloudflare/Turnstile + paid FTP).
 - Notes: Good for identity resolution and business affiliations, not residential proof.
 
 ### 6. `fec-schedule-a-individual-contributions`
@@ -800,20 +801,20 @@ Status values:
 - **Notes:** CONDITIONAL — Privacy Act SORN; airmen may opt out of address (name stays public). Growing withheld share.
 
 ### 40. `fl-sunbiz-business-entity-search`
-- **Priority:** P3
-- **Status:** blocked/legal review (bot-gated)
-- **Value:** FL (large entity registry) officers/directors/registered agents — but HTML-only path; records-request preferred.
-- **Preserved information:** Officers, directors, managers, registered-agent name+address, entity name/type/status, annual-report history, principal address.
-- **Coverage:** All FL corporations, LLCs, LPs.
+- **Priority:** P2
+- **Status:** `ready-local` (built + live-verified 2026-06-20; transport fixed sshpass→lftp)
+- **Value:** FL (large entity registry) officers/managers/registered agents — direct named-person-to-entity affiliation.
+- **Preserved information:** Officer/manager/registered-agent name + title, entity name/type/status, filing type/date. Officer street addresses are deliberately NOT imported (residential).
+- **Coverage:** All FL corporations, LLCs, LPs via the official Division of Corporations daily bulk file.
 - **Progress:**
-  - [ ] adapter: `lib/sources/fl-sunbiz.ts`
-  - [ ] loader: `scripts/ingest-fl-sunbiz.ts`
-  - [ ] config: `configs/fl-sunbiz.json`
-  - [ ] tests
-  - [ ] docs
-  - [ ] display-policy: business/contact address role
-- **Next step:** Pursue FL Dept. of State public-records bulk extract instead of HTML scraping (AGENTS.md requires explicit permission for HTML).
-- **Notes:** CONDITIONAL — HTML path needs explicit permission; registered-agent/officer addresses are business/contact, NOT residences.
+  - [x] adapter: `lib/sources/fl-sunbiz.ts` (fixed-width parser + officer matcher)
+  - [x] loader: `scripts/ingest-fl-sunbiz.ts` (`npm run ingest:fl-sunbiz`)
+  - N/A config: dedicated adapter (no config)
+  - [x] tests: `tests/fl-sunbiz.test.ts` (4 tests)
+  - [x] docs: tracked here + registry table
+  - [x] display-policy: affiliation context only; officer addresses not imported
+- **Next step:** Live-verified (Smith→25 matched, 5 imported from the 20260620 daily file). Wired into name-search auto-refresh. Monitor SFTP download load at scale; move to CLI bulk if per-query download proves too heavy.
+- **Notes:** Official FL Division of Corporations public bulk data via documented public SFTP (`sftp.floridados.gov`, user `Public`). Transport uses `lftp` because the host rejects non-interactive password auth over plain `sftp` (sshpass+sftp fails). Entity affiliation and officer role are NOT residential/contact evidence. This corrects an earlier "blocked (Cloudflare-gated layout)" note — the fixed-width layout was already implemented in the parser.
 
 ### 41. `ga-corporations-division-ecorp`
 - **Priority:** P3

@@ -24,6 +24,7 @@ import { ingestNppes } from "@/lib/sources/nppes";
 import { ingestNsfAwards } from "@/lib/sources/nsf-award-search";
 import { ingestChicagoSalaries } from "@/lib/sources/chicago-salaries";
 import { ingestFloridaSalaries } from "@/lib/sources/florida-salaries";
+import { ingestFlSunbiz } from "@/lib/sources/fl-sunbiz";
 import { ingestNycPayroll } from "@/lib/sources/nyc-payroll";
 import { ingestSeeThroughNyPayrolls } from "@/lib/sources/seethroughny-payrolls";
 import { ingestUcAnnualWage } from "@/lib/sources/uc-annual-wage";
@@ -480,6 +481,15 @@ const automaticNameSourceAdapters: NameSourceAdapter[] = [
     label: "Buffalo Permits",
     run: (payload) =>
       ingestBuffaloPermits({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      }),
+  },
+  {
+    sourceId: "fl_sunbiz_business_entities",
+    label: "FL Sunbiz",
+    run: (payload) =>
+      ingestFlSunbiz({
         firstName: payload.firstName,
         lastName: payload.lastName,
       }),

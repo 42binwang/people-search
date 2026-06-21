@@ -31,9 +31,10 @@ import { applyImportLimit, clampLimit } from "@/lib/sources/limits";
  *
  * The adapter reads the most recent available corporate daily file, parses its
  * fixed-length records, and matches officer names against the query. The SFTP
- * fetch is performed by shelling out to the system `sftp` client via `sshpass`
- * (the published credentials are a fixed public password, not a per-user key),
- * so neither a registration, payment, nor a private API key is required.
+ * fetch is performed by shelling out to the system `lftp` client (the Florida
+ * host rejects non-interactive password auth over plain `sftp`, but lftp
+ * performs the documented public-password login), so neither a registration,
+ * payment, nor a private API key is required.
  */
 
 export type FlSunbizIngestInput = {
@@ -58,7 +59,7 @@ const COR_FIELD_DEFS_URL = "https://dos.sunbiz.org/data-definitions/cor.html";
 const SFTP_HOST = "sftp.floridados.gov";
 const SFTP_USER = "Public";
 const SFTP_PASSWORD = "PubAccess1845!";
-const COR_DIR = "/Public/doc/cor";
+const COR_DIR = "doc/cor";
 /** Number of recent weekdays to probe for a corporate daily file (skips holidays). */
 const MAX_DATE_PROBE = 10;
 
@@ -379,28 +380,15 @@ async function fetchLatestCorporateFile(): Promise<string | null> {
 }
 
 function fetchCorporateFileText(remotePath: string): string | null {
-  // Use the published public SFTP credentials. sshpass supplies the fixed
-  // public password non-interactively. Output is captured from stdout.
+  // The Florida host rejects non-interactive password auth over plain `sftp`
+  // (sshpass+sftp fails with "Permission denied (publickey,password)"), but
+  // `lftp` performs the documented public-password SFTP login correctly.
+  // Host key is auto-confirmed (public data endpoint). Output via stdout.
   const result = spawnSync(
-    "sshpass",
+    "lftp",
     [
-      "-p",
-      SFTP_PASSWORD,
-      "sftp",
-      "-o",
-      "BatchMode=no",
-      "-o",
-      "StrictHostKeyChecking=no",
-      "-o",
-      "UserKnownHostsFile=/dev/null",
-      "-o",
-      "PreferredAuthentications=password",
-      "-o",
-      "PubkeyAuthentication=no",
-      "-o",
-      "ConnectTimeout=20",
-      `${SFTP_USER}@${SFTP_HOST}:${remotePath}`,
-      "/dev/stdout",
+      "-c",
+      `set sftp:auto-confirm yes; open -u ${SFTP_USER},${SFTP_PASSWORD} sftp://${SFTP_HOST}; cat ${remotePath}; bye`,
     ],
     {
       encoding: "utf8",

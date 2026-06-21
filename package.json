@@ -59,6 +59,7 @@
     "ingest:irs-990": "tsx scripts/ingest-irs-990.ts",
     "ingest:sam-gov": "tsx scripts/ingest-sam-gov.ts",
     "ingest:buffalo-permits": "tsx scripts/ingest-buffalo-permits.ts",
+    "ingest:fl-sunbiz": "tsx scripts/ingest-fl-sunbiz.ts",
     "collect:source": "tsx scripts/collect-approved-source.ts",
     "sources:validate-property": "tsx scripts/validate-property-source-configs.ts",
     "sources:validate-inventory": "tsx scripts/validate-source-inventory.ts",
